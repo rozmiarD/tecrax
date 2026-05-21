@@ -2,9 +2,12 @@
 
 Tecrax is a governed infrastructure-operations runtime/profile built on GovEngine and SCLite.
 
-This repository/package now contains the first dry-run/local-fixture profile
-slice. It still does not execute infrastructure changes, connect to hosts, manage
-credentials, or provide production operational capability.
+Current source/package baseline: `tecrax==0.2.0a0`, depending on
+`govengine>=0.10.1a0,<0.11` and `sclite-core>=0.6.0a0,<0.7`.
+
+This repository/package contains a dry-run/local-fixture profile slice. It still
+does not execute infrastructure changes, connect to hosts, manage credentials,
+or provide production operational capability.
 
 Planned foundation:
 
@@ -27,3 +30,14 @@ The command emits a public-safe fixture review payload. It uses GovEngine
 profile/planning/supervision/runtime-review contracts and binds its fixture
 receipt through an SCLite artifact descriptor. It has no live runner, host
 inventory, credential path, or infrastructure adapter.
+
+## Validation
+
+```bash
+python scripts/validate_public_truth.py
+python -m pytest -q
+```
+
+The validator keeps this package as a second-host proof surface only. Any future
+infrastructure runner, inventory, credential, scheduler, or carrier-adapter
+claim must be backed by code and tests before it becomes public truth.
