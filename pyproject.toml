@@ -4,15 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tecrax"
-version = "0.0.0"
-description = "Governed infrastructure-operations runtime/profile built on GovEngine and SCLite."
+version = "0.1.0a0"
+description = "Dry-run local-fixture infrastructure-operations profile over GovEngine and SCLite."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Krzysztof Probola" }]
 keywords = ["governance", "infrastructure", "operations", "sclite", "govengine"]
 classifiers = [
-  "Development Status :: 1 - Planning",
+  "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: System Administrators",
   "License :: OSI Approved :: MIT License",
@@ -21,7 +21,10 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: System :: Systems Administration",
 ]
-dependencies = []
+dependencies = [
+  "govengine>=0.10.0a0,<0.11",
+  "sclite-core>=0.5.1,<0.6",
+]
 
 [project.urls]
 Homepage = "https://github.com/rozmiarD/tecrax"
@@ -29,6 +32,11 @@ Repository = "https://github.com/rozmiarD/tecrax"
 
 [project.scripts]
 tecrax = "tecrax.cli:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tecrax"]
