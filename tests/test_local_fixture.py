@@ -1,7 +1,14 @@
 from __future__ import annotations
 
-from tecrax import build_local_fixture_review
+import subprocess
+import sys
+from pathlib import Path
+
+from tecrax import __version__, build_local_fixture_review
 from tecrax.cli import main
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_local_fixture_review_binds_govengine_and_sclite_without_live_authority() -> None:
@@ -24,3 +31,18 @@ def test_cli_status_keeps_local_fixture_posture(capsys) -> None:
     stdout = capsys.readouterr().out
     assert 'local-fixture profile' in stdout
     assert 'no live infrastructure' in stdout
+
+
+def test_version_and_public_truth_validator_agree() -> None:
+    assert __version__ == '0.2.0a0'
+    result = subprocess.run(
+        [sys.executable, str(ROOT / 'scripts' / 'validate_public_truth.py')],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert result.stdout.strip() == (
+        'public_truth_ok:tecrax==0.2.0a0:'
+        'govengine>=0.10.1a0,<0.11:sclite-core>=0.6.0a0,<0.7'
+    )
