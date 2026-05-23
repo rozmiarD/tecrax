@@ -84,6 +84,16 @@ def collect_errors() -> list[str]:
     _require(errors, 'PUBLIC_STATUS.md', EXPECTED_RELEASE_LABEL)
     _require(errors, 'README.md', 'tecrax fixture-review --service demo-web')
     _require(errors, 'VALIDATION.md', 'python scripts/validate_public_truth.py')
+    _require(errors, '.github/workflows/ci.yml', 'actions/checkout@v6')
+    _require(errors, '.github/workflows/ci.yml', 'actions/setup-python@v6')
+    _require(errors, '.github/workflows/ci.yml', "python-version: ['3.11', '3.12']")
+    _require(errors, '.github/workflows/ci.yml', 'python scripts/validate_public_truth.py')
+    _require(errors, '.github/workflows/ci.yml', 'package-dry-run:')
+    _require(errors, '.github/workflows/ci.yml', 'rm -rf dist build *.egg-info')
+    _require(errors, '.github/workflows/ci.yml', 'python -m twine check dist/*')
+    _require(errors, '.github/workflows/ci.yml', 'python -m pip check')
+    _require(errors, '.github/workflows/ci.yml', 'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main')
+    _require(errors, '.github/workflows/ci.yml', 'govengine @ git+https://github.com/rozmiarD/GovEngine.git@main')
 
     review = build_local_fixture_review('truth-fixture')
     if review.get('artifact_type') != 'tecrax_local_fixture_review':

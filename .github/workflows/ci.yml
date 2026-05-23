@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install source dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main"
+          python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@main"
+          python -m pip install -e '.[dev]'
+      - name: Validate public truth
+        run: python scripts/validate_public_truth.py
+      - name: Run tests
+        run: python -m pytest -q
+
+  package-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install source dependencies and build tooling
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main"
+          python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@main"
+      - name: Clean build artifacts
+        run: rm -rf dist build *.egg-info
+      - name: Build package
+        run: python -m build
+      - name: Check package metadata
+        run: python -m twine check dist/*
+      - name: Wheel install smoke
+        run: |
+          python -m venv /tmp/tecrax-wheel-smoke
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install --upgrade pip
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main"
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@main"
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl
+          /tmp/tecrax-wheel-smoke/bin/python -m pip check
+          /tmp/tecrax-wheel-smoke/bin/python -c "import importlib.metadata as md, tecrax; assert md.version('tecrax') == tecrax.__version__"
