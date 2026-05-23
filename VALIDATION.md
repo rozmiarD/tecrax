@@ -9,10 +9,10 @@ python -m pytest -q
 tecrax fixture-review --service demo-web
 ```
 
-Expected result for `0.2.0a0`:
+Expected result for `0.2.1a0`:
 
-- `pyproject.toml`, `tecrax.__version__`, README, public status, and validators agree on `0.2.0a0` / `0.2.0-alpha`;
-- dependency truth is `govengine>=0.10.1a0,<0.11` and `sclite-core>=0.6.0a0,<0.7`;
+- `pyproject.toml`, `tecrax.__version__`, README, public status, and validators agree on `0.2.1a0` / `0.2.1-alpha`;
+- dependency truth is `govengine>=0.10.2a0,<0.11` and `sclite-core>=0.7.0a0,<0.8`;
 - fixture review output validates GovEngine profile, planning, supervision, runtime snapshot, review result, and runtime contract proof objects;
 - SCLite is used only for local artifact descriptors;
 - non-claims remain explicit for live infrastructure, credentials, adapters, scheduler/storage, and production readiness.

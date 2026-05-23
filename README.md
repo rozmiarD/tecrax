@@ -2,8 +2,8 @@
 
 Tecrax is a governed infrastructure-operations runtime/profile built on GovEngine and SCLite.
 
-Current source/package baseline: `tecrax==0.2.0a0`, depending on
-`govengine>=0.10.1a0,<0.11` and `sclite-core>=0.6.0a0,<0.7`.
+Current source/package baseline: `tecrax==0.2.1a0`, depending on
+`govengine>=0.10.2a0,<0.11` and `sclite-core>=0.7.0a0,<0.8`.
 
 This repository/package contains a dry-run/local-fixture profile slice. It still
 does not execute infrastructure changes, connect to hosts, manage credentials,
@@ -30,6 +30,10 @@ The command emits a public-safe fixture review payload. It uses GovEngine
 profile/planning/supervision/runtime-review contracts and binds its fixture
 receipt through an SCLite artifact descriptor. It has no live runner, host
 inventory, credential path, or infrastructure adapter.
+
+The `0.2.1-alpha` patch only aligns this fixture consumer with the curated
+SCLite/GovEngine package chain. It does not add an infrastructure runtime or a
+new contract surface.
 
 ## Validation
 
