@@ -34,7 +34,7 @@ def test_cli_status_keeps_local_fixture_posture(capsys) -> None:
 
 
 def test_version_and_public_truth_validator_agree() -> None:
-    assert __version__ == '0.2.1a0'
+    assert __version__ == '0.2.2a0'
     result = subprocess.run(
         [sys.executable, str(ROOT / 'scripts' / 'validate_public_truth.py')],
         cwd=ROOT,
@@ -43,6 +43,6 @@ def test_version_and_public_truth_validator_agree() -> None:
         check=True,
     )
     assert result.stdout.strip() == (
-        'public_truth_ok:tecrax==0.2.1a0:'
-        'govengine>=0.10.2a0,<0.11:sclite-core>=0.7.0a0,<0.8'
+        'public_truth_ok:tecrax==0.2.2a0:'
+        'govengine>=0.11.0a0,<0.12:sclite-core>=0.8.0a0,<0.9'
     )
