@@ -111,6 +111,11 @@ def collect_errors() -> list[str]:
         errors.append('fixture_claims_credentials')
     if not review.get('sclite_fixture_receipt_descriptor', {}).get('digest'):
         errors.append('fixture_missing_sclite_descriptor_digest')
+    cli_text = _read('src/tecrax/cli.py')
+    if EXPECTED_RELEASE_LABEL not in cli_text:
+        errors.append(f'src/tecrax/cli.py:missing_current_release_label:{EXPECTED_RELEASE_LABEL}')
+    if '0.2.0-alpha' in cli_text or '0.2.1-alpha' in cli_text:
+        errors.append('src/tecrax/cli.py:stale_cli_status_release_label')
 
     for path in PUBLIC_DOCS:
         lowered = _read(path).lower()

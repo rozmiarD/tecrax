@@ -29,6 +29,7 @@ def test_cli_status_keeps_local_fixture_posture(capsys) -> None:
     assert main(['status']) == 0
 
     stdout = capsys.readouterr().out
+    assert '0.2.2-alpha' in stdout
     assert 'local-fixture profile' in stdout
     assert 'no live infrastructure' in stdout
 

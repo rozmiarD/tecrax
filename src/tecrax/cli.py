@@ -28,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(
-        "Tecrax 0.2.0-alpha local-fixture profile: no live infrastructure "
+        "Tecrax 0.2.2-alpha local-fixture profile: no live infrastructure "
         "connections, credentials, or operational changes are enabled."
     )
     return 0
