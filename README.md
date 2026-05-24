@@ -2,7 +2,7 @@
 
 Tecrax is a governed infrastructure-operations runtime/profile built on GovEngine and SCLite.
 
-Current source/package baseline: `tecrax==0.2.2a0`, depending on
+Current published fixture-package baseline: `tecrax==0.2.2a0`, depending on
 `govengine>=0.11.0a0,<0.12` and `sclite-core>=0.8.0a0,<0.9`.
 
 This repository/package contains a dry-run/local-fixture profile slice. It still

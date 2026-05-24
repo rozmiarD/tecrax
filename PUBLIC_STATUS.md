@@ -6,6 +6,7 @@ Tecrax is an **alpha local-fixture infrastructure-operations profile package** o
 
 - Source version: `0.2.2a0`.
 - Public release label: `0.2.2-alpha`.
+- PyPI package: `tecrax==0.2.2a0` is the published current fixture-only alpha package.
 - Dependency chain: `tecrax -> govengine>=0.11.0a0,<0.12 -> sclite-core>=0.8.0a0,<0.9`.
 - Runtime posture: dry-run/local-fixture only.
 - Public surface: `tecrax fixture-review --service demo-web`.
