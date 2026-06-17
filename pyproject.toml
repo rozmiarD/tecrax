@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tecrax"
-version = "0.3.0a0"
+version = "0.3.1a0"
 description = "Governed infrastructure-operations profile and RExecOp domain package over GovEngine and SCLite."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,6 +29,12 @@ dependencies = [
 [project.entry-points."rexecop.profiles"]
 tecrax = "tecrax:profile_root"
 
+[project.entry-points."rexecop.internal_actions"]
+tecrax = "tecrax.internal_actions:register_handlers"
+
+[project.entry-points."rexecop.connector_backends"]
+tecrax_fixture = "tecrax.fixture.mock_runtime:build_runtime"
+
 [project.urls]
 Homepage = "https://github.com/rozmiarD/tecrax"
 Repository = "https://github.com/rozmiarD/tecrax"
@@ -39,6 +45,9 @@ tecrax = "tecrax.cli:main"
 [project.optional-dependencies]
 dev = [
   "pytest>=8,<9",
+]
+fixture = [
+  "rexecop>=0.1.2a0,<0.2",
 ]
 
 [tool.hatch.build.targets.wheel]

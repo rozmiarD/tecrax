@@ -14,8 +14,8 @@ import tecrax  # noqa: E402
 from tecrax.local_fixture import build_local_fixture_review  # noqa: E402
 
 
-EXPECTED_VERSION = '0.3.0a0'
-EXPECTED_RELEASE_LABEL = '0.3.0-alpha'
+EXPECTED_VERSION = '0.3.1a0'
+EXPECTED_RELEASE_LABEL = '0.3.1-alpha'
 EXPECTED_GOVENGINE = 'govengine>=0.12.2a0,<0.15'
 EXPECTED_SCLITE = 'sclite-core>=1.0.1,<1.1'
 PUBLIC_DOCS = (

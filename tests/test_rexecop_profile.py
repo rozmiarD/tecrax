@@ -19,7 +19,7 @@ def test_profile_yaml_loads_with_expected_contract() -> None:
     profile_path = Path(profile_root()) / "profile.yaml"
     text = profile_path.read_text(encoding="utf-8")
     assert "name: tecrax" in text
-    assert 'version: "0.3.0"' in text
+    assert 'version: "0.3.1"' in text
 
 
 def test_rexecop_profiles_entry_point_registered() -> None:
@@ -32,4 +32,4 @@ def test_rexecop_profiles_entry_point_registered() -> None:
 
 
 def test_package_version_matches_profile_bundle() -> None:
-    assert tecrax.__version__ == "0.3.0a0"
+    assert tecrax.__version__ == "0.3.1a0"

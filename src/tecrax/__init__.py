@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .local_fixture import build_local_fixture_review
 
-__version__ = "0.3.0a0"
+__version__ = "0.3.1a0"
 
 __all__ = ["__version__", "build_local_fixture_review", "profile_root"]
 

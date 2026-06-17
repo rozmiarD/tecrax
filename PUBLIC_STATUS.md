@@ -1,6 +1,6 @@
 # Tecrax Public Status
 
-- **Package version:** `0.3.0a0` (`0.3.0-alpha`)
+- **Package version:** `0.3.1a0` (`0.3.1-alpha`)
 - **Dependencies:** `govengine>=0.12.2a0,<0.15`, `sclite-core>=1.0.1,<1.1`
 - **RExecOp profile:** bundled at `src/tecrax/profile/` via `rexecop.profiles:tecrax`
 - **Local fixture:** `tecrax fixture-review` — dry-run GovEngine/SCLite proof only
