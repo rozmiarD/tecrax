@@ -2,12 +2,17 @@
 
 Tecrax is a governed infrastructure-operations runtime/profile built on GovEngine and SCLite.
 
-Current published fixture-package baseline: `tecrax==0.2.2a0`, depending on
-`govengine>=0.11.0a0,<0.12` and `sclite-core>=0.8.0a0,<0.9`.
+Current published baseline: `tecrax==0.3.0a0`, depending on
+`govengine>=0.12.2a0,<0.15` and `sclite-core>=1.0.1,<1.1`.
 
-This repository/package contains a dry-run/local-fixture profile slice. It still
-does not execute infrastructure changes, connect to hosts, manage credentials,
-or provide production operational capability.
+This package provides:
+
+- **RExecOp domain profile** — bundled YAML profile with intents, workflows, connectors,
+  and validation rules (entry point `rexecop.profiles:tecrax`).
+- **Local fixture review** — dry-run proof slice without live infrastructure.
+
+It does not execute infrastructure changes, connect to hosts, manage credentials,
+or provide production operational capability without explicit operator configuration.
 
 Planned foundation:
 
@@ -20,7 +25,18 @@ Tecrax -> GovEngine -> SCLite
 - Tecrax owns the infrastructure-operations profile semantics, fixture review
   payloads, UX, and future host integrations when those boundaries are mature.
 
-Current local fixture proof:
+## RExecOp profile
+
+Install `tecrax` alongside `rexecop` to register the domain profile:
+
+```bash
+pip install rexecop tecrax
+rexecop profile list
+```
+
+The profile root is exposed via `tecrax:profile_root` (directory `src/tecrax/profile/`).
+
+## Local fixture proof
 
 ```bash
 tecrax fixture-review --service demo-web
@@ -31,9 +47,9 @@ profile/planning/supervision/runtime-review contracts and binds its fixture
 receipt through an SCLite artifact descriptor. It has no live runner, host
 inventory, credential path, or infrastructure adapter.
 
-The `0.2.2-alpha` patch only aligns this fixture consumer with the curated
-SCLite/GovEngine package chain. It does not add an infrastructure runtime or a
-new contract surface.
+The `0.3.0-alpha` release consolidates the RExecOp domain profile into this
+package and aligns dependencies with RExecOp `0.1.x`. It does not add an
+infrastructure runtime or a new contract surface beyond the bundled profile.
 
 ## Validation
 

@@ -14,10 +14,10 @@ import tecrax  # noqa: E402
 from tecrax.local_fixture import build_local_fixture_review  # noqa: E402
 
 
-EXPECTED_VERSION = '0.2.2a0'
-EXPECTED_RELEASE_LABEL = '0.2.2-alpha'
-EXPECTED_GOVENGINE = 'govengine>=0.11.0a0,<0.12'
-EXPECTED_SCLITE = 'sclite-core>=0.8.0a0,<0.9'
+EXPECTED_VERSION = '0.3.0a0'
+EXPECTED_RELEASE_LABEL = '0.3.0-alpha'
+EXPECTED_GOVENGINE = 'govengine>=0.12.2a0,<0.15'
+EXPECTED_SCLITE = 'sclite-core>=1.0.1,<1.1'
 PUBLIC_DOCS = (
     'README.md',
     'PUBLIC_STATUS.md',
@@ -83,6 +83,12 @@ def collect_errors() -> list[str]:
         _require(errors, path, EXPECTED_SCLITE)
     _require(errors, 'PUBLIC_STATUS.md', EXPECTED_RELEASE_LABEL)
     _require(errors, 'README.md', 'tecrax fixture-review --service demo-web')
+    _require(errors, 'README.md', 'rexecop.profiles:tecrax')
+    _require(errors, 'pyproject.toml', 'rexecop.profiles')
+    _require(errors, 'pyproject.toml', 'tecrax:profile_root')
+    profile_root = Path(tecrax.profile_root())
+    if not (profile_root / 'profile.yaml').is_file():
+        errors.append('profile_bundle_missing:profile.yaml')
     _require(errors, 'VALIDATION.md', 'python scripts/validate_public_truth.py')
     _require(errors, '.github/workflows/ci.yml', 'actions/checkout@v6')
     _require(errors, '.github/workflows/ci.yml', 'actions/setup-python@v6')

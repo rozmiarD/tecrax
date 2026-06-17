@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tecrax"
-version = "0.2.2a0"
-description = "Dry-run local-fixture infrastructure-operations profile over GovEngine and SCLite."
+version = "0.3.0a0"
+description = "Governed infrastructure-operations profile and RExecOp domain package over GovEngine and SCLite."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -22,9 +22,12 @@ classifiers = [
   "Topic :: System :: Systems Administration",
 ]
 dependencies = [
-  "govengine>=0.11.0a0,<0.12",
-  "sclite-core>=0.8.0a0,<0.9",
+  "govengine>=0.12.2a0,<0.15",
+  "sclite-core>=1.0.1,<1.1",
 ]
+
+[project.entry-points."rexecop.profiles"]
+tecrax = "tecrax:profile_root"
 
 [project.urls]
 Homepage = "https://github.com/rozmiarD/tecrax"
