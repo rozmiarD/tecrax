@@ -14,10 +14,11 @@ import tecrax  # noqa: E402
 from tecrax.local_fixture import build_local_fixture_review  # noqa: E402
 
 
-EXPECTED_VERSION = '0.3.1a0'
+EXPECTED_VERSION = '0.3.2a0'
 EXPECTED_RELEASE_LABEL = '0.3.1-alpha'
 EXPECTED_GOVENGINE = 'govengine>=0.12.2a0,<0.15'
 EXPECTED_SCLITE = 'sclite-core>=1.0.1,<1.1'
+EXPECTED_REXECOP = 'rexecop>=0.2.1a0,<0.3'
 PUBLIC_DOCS = (
     'README.md',
     'PUBLIC_STATUS.md',
@@ -65,6 +66,7 @@ def collect_errors() -> list[str]:
     version = str(project['version'])
     govengine_dep = _dependency(project, 'govengine')
     sclite_dep = _dependency(project, 'sclite-core')
+    rexecop_dep = _dependency(project, 'rexecop')
 
     if project['name'] != 'tecrax':
         errors.append(f'distribution_name_mismatch:{project["name"]}')
@@ -76,11 +78,14 @@ def collect_errors() -> list[str]:
         errors.append(f'govengine_dependency_mismatch:{govengine_dep}!={EXPECTED_GOVENGINE}')
     if sclite_dep != EXPECTED_SCLITE:
         errors.append(f'sclite_dependency_mismatch:{sclite_dep}!={EXPECTED_SCLITE}')
+    if rexecop_dep != EXPECTED_REXECOP:
+        errors.append(f'rexecop_dependency_mismatch:{rexecop_dep}!={EXPECTED_REXECOP}')
 
     for path in PUBLIC_DOCS:
         _require(errors, path, EXPECTED_VERSION)
         _require(errors, path, EXPECTED_GOVENGINE)
         _require(errors, path, EXPECTED_SCLITE)
+        _require(errors, path, EXPECTED_REXECOP)
     _require(errors, 'PUBLIC_STATUS.md', EXPECTED_RELEASE_LABEL)
     _require(errors, 'README.md', 'tecrax fixture-review --service demo-web')
     _require(errors, 'README.md', 'rexecop.profiles:tecrax')
@@ -100,6 +105,8 @@ def collect_errors() -> list[str]:
     _require(errors, '.github/workflows/ci.yml', 'python -m pip check')
     _require(errors, '.github/workflows/ci.yml', 'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main')
     _require(errors, '.github/workflows/ci.yml', 'govengine @ git+https://github.com/rozmiarD/GovEngine.git@main')
+    _require(errors, '.github/workflows/ci.yml', 'repository: rozmiarD/RExecOP')
+    _require(errors, '.github/workflows/ci.yml', 'pip install -e ./rexecop')
 
     review = build_local_fixture_review('truth-fixture')
     if review.get('artifact_type') != 'tecrax_local_fixture_review':
@@ -139,7 +146,7 @@ def main() -> int:
         for error in errors:
             print(error, file=sys.stderr)
         return 1
-    print(f'public_truth_ok:tecrax=={EXPECTED_VERSION}:{EXPECTED_GOVENGINE}:{EXPECTED_SCLITE}')
+    print(f'public_truth_ok:tecrax=={EXPECTED_VERSION}:{EXPECTED_GOVENGINE}:{EXPECTED_SCLITE}:{EXPECTED_REXECOP}')
     return 0
 
 

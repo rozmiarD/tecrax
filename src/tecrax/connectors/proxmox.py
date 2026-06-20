@@ -59,3 +59,32 @@ def build_http_api_connector_config(
         },
         "actions": actions,
     }
+
+
+def merge_http_api_connector_config(
+    template: dict[str, Any],
+    overrides: dict[str, Any],
+) -> dict[str, Any]:
+    """Merge operator overrides into a Proxmox http_api template."""
+    merged: dict[str, Any] = dict(template)
+    skip_keys = {"backend", "plugin", "staging_paths"}
+    for key, value in overrides.items():
+        if key in skip_keys:
+            continue
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            nested = dict(merged[key])
+            nested.update(value)
+            merged[key] = nested
+        else:
+            merged[key] = value
+    merged["backend"] = "http_api"
+    if "base_url" in overrides:
+        merged.pop("base_url_secret_ref", None)
+        if "auth" not in overrides:
+            merged.pop("auth", None)
+    auth = overrides.get("auth")
+    if isinstance(auth, dict) and auth.get("secret_ref"):
+        merged_auth = dict(merged.get("auth") or {})
+        merged_auth.update(auth)
+        merged["auth"] = merged_auth
+    return merged

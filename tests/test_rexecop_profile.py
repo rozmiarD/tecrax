@@ -32,4 +32,4 @@ def test_rexecop_profiles_entry_point_registered() -> None:
 
 
 def test_package_version_matches_profile_bundle() -> None:
-    assert tecrax.__version__ == "0.3.1a0"
+    assert tecrax.__version__ == "0.3.2a0"
