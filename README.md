@@ -12,6 +12,8 @@ This package provides:
 - **Local fixture review** — dry-run proof slice without live infrastructure.
 - **Read-only host inventory profile** — fixed SSH command shapes and bounded
   normalization for operator-configured Ubuntu inventory.
+- **Verified read-only service slices** — NTP synchronization over fixed SSH commands
+  and bounded Zabbix API version health through RExecOp `http_api`.
 
 It does not execute infrastructure changes or manage credentials. Live SSH execution
 is performed by RExecOp only from explicit operator configuration outside this package.

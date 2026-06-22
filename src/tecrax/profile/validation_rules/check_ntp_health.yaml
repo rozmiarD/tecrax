@@ -1,0 +1,14 @@
+validation_rule:
+  intent: check_ntp_health
+  steps:
+    - type: require_mapping
+      key: ntp_health
+      fail:
+        rule: check_ntp_health.result_required
+        details: {reason: missing normalized NTP health}
+    - type: require_equals
+      path: ntp_health.healthy
+      value: true
+      pass_rule: check_ntp_health.healthy
+      fail_rule: check_ntp_health.unhealthy
+      details_from: ntp_health

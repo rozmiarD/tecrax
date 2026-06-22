@@ -1,0 +1,8 @@
+intent:
+  id: check_zabbix_container_health
+  workflow: workflows/check_zabbix_container_health.yaml
+  risk: low
+  enforce_declared_modes: true
+  modes:
+    - read_only
+    - dry_run

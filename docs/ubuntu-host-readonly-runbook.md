@@ -1,6 +1,8 @@
 # Ubuntu host read-only inventory
 
-This runbook covers only `collect_basic_host_inventory` over `ssh_readonly`.
+This runbook covers `collect_basic_host_inventory`, discovered-host `check_ntp_health`,
+and bounded `check_zabbix_container_health`. NTP uses `ssh_readonly`; Zabbix uses its
+unauthenticated `apiinfo.version` endpoint through `http_api`.
 
 ## Operator prerequisites
 
@@ -14,6 +16,11 @@ This runbook covers only `collect_basic_host_inventory` over `ssh_readonly`.
 
 Do not use `accept-new`. Do not add sudo, service management, Docker commands,
 configuration changes, arbitrary `cat`, arbitrary command arguments, or log collection.
+
+`check_zabbix_container_health` proves application endpoint reachability. It does not
+claim Docker container state because the read-only SSH account must not receive Docker
+socket access. `check_docker_services_health`, AdGuard health and the aggregate diagnosis
+remain blocked until a bounded read-only adapter or verified endpoint exists.
 
 ## Run
 

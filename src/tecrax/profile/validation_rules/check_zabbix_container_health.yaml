@@ -1,0 +1,14 @@
+validation_rule:
+  intent: check_zabbix_container_health
+  steps:
+    - type: require_mapping
+      key: zabbix_health
+      fail:
+        rule: check_zabbix_container_health.result_required
+        details: {reason: missing normalized Zabbix health}
+    - type: require_equals
+      path: zabbix_health.healthy
+      value: true
+      pass_rule: check_zabbix_container_health.healthy
+      fail_rule: check_zabbix_container_health.unhealthy
+      details_from: zabbix_health

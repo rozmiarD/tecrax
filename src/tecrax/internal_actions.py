@@ -13,6 +13,8 @@ def register_handlers() -> Mapping[str, Any]:
         "capture_agent_state": capture_agent_state,
         "verify_agent_state": verify_agent_state,
         "normalize_basic_host_inventory": normalize_basic_host_inventory,
+        "normalize_ntp_health": normalize_ntp_health,
+        "normalize_zabbix_health": normalize_zabbix_health,
     }
 
 
@@ -107,6 +109,39 @@ def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, A
     return inventory
 
 
+def normalize_ntp_health(context: StepExecutionContext) -> dict[str, Any]:
+    results = context.shared_state.get("connector_results", {})
+    if not isinstance(results, dict):
+        results = {}
+    properties = _parse_properties(_stdout(results, "read_ntp_sync_state"))
+    service_state = _single_line(_stdout(results, "read_ntp_service_state"), limit=32)
+    result = {
+        "synchronized": properties.get("NTPSynchronized", "").lower() == "yes",
+        "systemd_ntp_enabled": properties.get("NTP", "").lower() == "yes",
+        "service": "ntp",
+        "service_state": service_state,
+    }
+    result["healthy"] = result["synchronized"] and service_state == "active"
+    context.shared_state["ntp_health"] = result
+    return result
+
+
+def normalize_zabbix_health(context: StepExecutionContext) -> dict[str, Any]:
+    results = context.shared_state.get("connector_results", {})
+    payload = results.get("read_zabbix_api_version") if isinstance(results, dict) else None
+    if not isinstance(payload, dict):
+        payload = {}
+    version = str(payload.get("result") or "").strip()[:64]
+    result = {
+        "application_reachable": bool(version) and not payload.get("error"),
+        "api_version": version,
+        "container_runtime_state": "not_observed",
+    }
+    result["healthy"] = result["application_reachable"]
+    context.shared_state["zabbix_health"] = result
+    return result
+
+
 def _stdout(results: dict[str, Any], step_id: str) -> str:
     payload = results.get(step_id)
     if not isinstance(payload, dict):
@@ -127,6 +162,15 @@ def _parse_os_release(value: str) -> dict[str, str]:
         if not separator or key not in allowed:
             continue
         parsed[key.lower()] = raw.strip().strip('"')[:256]
+    return parsed
+
+
+def _parse_properties(value: str) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for line in value.splitlines():
+        key, separator, raw = line.partition("=")
+        if separator and key in {"NTP", "NTPSynchronized"}:
+            parsed[key] = raw.strip()[:32]
     return parsed
 
 

@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from rexecop.execution.backend import StepExecutionContext
 
-from tecrax.internal_actions import normalize_basic_host_inventory
+from tecrax.internal_actions import (
+    normalize_basic_host_inventory,
+    normalize_ntp_health,
+    normalize_zabbix_health,
+)
 
 
 def test_normalize_basic_host_inventory_builds_bounded_complete_result() -> None:
@@ -57,3 +61,54 @@ def test_normalize_basic_host_inventory_marks_missing_data_incomplete() -> None:
     result = normalize_basic_host_inventory(context)
 
     assert result["complete"] is False
+
+
+def test_normalize_ntp_health_requires_sync_and_discovered_service() -> None:
+    context = StepExecutionContext(
+        operation_id="op-test",
+        target="monitoring-host-01",
+        mode="dry_run",
+        step={"id": "normalize_ntp_health"},
+        shared_state={
+            "connector_results": {
+                "read_ntp_sync_state": {
+                    "stdout": "NTP=no\nNTPSynchronized=yes\n"
+                },
+                "read_ntp_service_state": {"stdout": "active\n"},
+            }
+        },
+    )
+
+    result = normalize_ntp_health(context)
+
+    assert result["healthy"] is True
+    assert result["synchronized"] is True
+    assert result["systemd_ntp_enabled"] is False
+    assert result["service"] == "ntp"
+
+
+def test_normalize_zabbix_health_does_not_claim_container_runtime_state() -> None:
+    context = StepExecutionContext(
+        operation_id="op-test",
+        target="monitoring-host-01",
+        mode="dry_run",
+        step={"id": "normalize_zabbix_health"},
+        shared_state={
+            "connector_results": {
+                "read_zabbix_api_version": {
+                    "jsonrpc": "2.0",
+                    "result": "7.2.14",
+                    "id": 1,
+                }
+            }
+        },
+    )
+
+    result = normalize_zabbix_health(context)
+
+    assert result == {
+        "application_reachable": True,
+        "api_version": "7.2.14",
+        "container_runtime_state": "not_observed",
+        "healthy": True,
+    }

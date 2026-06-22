@@ -8,6 +8,8 @@ connector:
     - read_uptime
     - read_filesystem_usage
     - read_memory_summary
+    - read_ntp_sync_state
+    - read_ntp_service_state
   modes:
     - read_only
     - dry_run
@@ -31,3 +33,9 @@ connector:
     read_memory_summary:
       command: free
       args: ["-m"]
+    read_ntp_sync_state:
+      command: timedatectl
+      args: ["show", "--property=NTPSynchronized", "--property=NTP"]
+    read_ntp_service_state:
+      command: systemctl
+      args: ["is-active", "ntp"]

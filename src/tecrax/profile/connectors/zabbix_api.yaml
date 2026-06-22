@@ -1,0 +1,9 @@
+connector:
+  name: zabbix_api
+  backend: http_api
+  capabilities:
+    - read_zabbix_api_version
+  modes:
+    - read_only
+    - dry_run
+  timeout_default: 10s

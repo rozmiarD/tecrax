@@ -1,0 +1,33 @@
+workflow:
+  id: tecrax.check_ntp_health
+  intent: check_ntp_health
+  mode: read_only
+  risk: low
+  description: Check bounded synchronization and discovered ntp daemon state.
+
+  steps:
+    - id: read_ntp_sync_state
+      type: connector
+      connector: monitoring_host
+      action: read_ntp_sync_state
+      timeout: 10s
+      pause_safe: true
+    - id: read_ntp_service_state
+      type: connector
+      connector: monitoring_host
+      action: read_ntp_service_state
+      timeout: 10s
+      pause_safe: true
+    - id: normalize_ntp_health
+      type: internal
+      action: normalize_ntp_health
+      pause_safe: true
+    - id: produce_receipt
+      type: evidence
+      action: produce_receipt
+      pause_safe: true
+
+  retry:
+    max_attempts: 1
+    allowed_on: [timeout, transient_connector_error]
+    blocked_on: [policy_denied]

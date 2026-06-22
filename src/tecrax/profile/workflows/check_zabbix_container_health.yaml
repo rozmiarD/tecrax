@@ -1,0 +1,27 @@
+workflow:
+  id: tecrax.check_zabbix_container_health
+  intent: check_zabbix_container_health
+  mode: read_only
+  risk: low
+  description: Check the bounded, unauthenticated Zabbix API version endpoint.
+
+  steps:
+    - id: read_zabbix_api_version
+      type: connector
+      connector: zabbix_api
+      action: read_zabbix_api_version
+      timeout: 10s
+      pause_safe: true
+    - id: normalize_zabbix_health
+      type: internal
+      action: normalize_zabbix_health
+      pause_safe: true
+    - id: produce_receipt
+      type: evidence
+      action: produce_receipt
+      pause_safe: true
+
+  retry:
+    max_attempts: 1
+    allowed_on: [timeout, transient_connector_error]
+    blocked_on: [policy_denied]
