@@ -30,6 +30,12 @@ workflow:
       action: read_uptime
       timeout: 10s
       pause_safe: true
+    - id: read_load_average
+      type: connector
+      connector: monitoring_host
+      action: read_load_average
+      timeout: 10s
+      pause_safe: true
     - id: read_filesystem_usage
       type: connector
       connector: monitoring_host

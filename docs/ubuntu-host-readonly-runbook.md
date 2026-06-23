@@ -1,8 +1,9 @@
 # Ubuntu host read-only inventory
 
 This runbook covers `collect_basic_host_inventory`, discovered-host `check_ntp_health`,
-bounded `check_zabbix_container_health`, and `diagnose_monitoring_host`. NTP uses `ssh_readonly`; Zabbix uses its
-unauthenticated `apiinfo.version` endpoint through `http_api`.
+bounded `check_zabbix_container_health`, and `diagnose_monitoring_host`. Host inventory
+includes bounded uptime, load average, root filesystem usage and memory summary. NTP uses
+`ssh_readonly`; Zabbix uses its unauthenticated `apiinfo.version` endpoint through `http_api`.
 
 ## Operator prerequisites
 
@@ -15,7 +16,8 @@ unauthenticated `apiinfo.version` endpoint through `http_api`.
 - explicit operator approval before the real SSH run.
 
 Do not use `accept-new`. Do not add sudo, service management, Docker commands,
-configuration changes, arbitrary `cat`, arbitrary command arguments, or log collection.
+configuration changes, arbitrary `cat`, arbitrary command arguments, process listings,
+or log collection.
 
 `check_zabbix_container_health` proves application endpoint reachability. It does not
 claim Docker container state because the read-only SSH account must not receive Docker

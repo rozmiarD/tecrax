@@ -10,6 +10,7 @@ workflow:
     - {id: read_kernel_identity, type: connector, connector: monitoring_host, action: read_kernel_identity, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_hostname, type: connector, connector: monitoring_host, action: read_hostname, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_uptime, type: connector, connector: monitoring_host, action: read_uptime, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
+    - {id: read_load_average, type: connector, connector: monitoring_host, action: read_load_average, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_filesystem_usage, type: connector, connector: monitoring_host, action: read_filesystem_usage, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_memory_summary, type: connector, connector: monitoring_host, action: read_memory_summary, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_ntp_sync_state, type: connector, connector: monitoring_host, action: read_ntp_sync_state, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}

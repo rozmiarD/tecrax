@@ -18,6 +18,7 @@ def test_normalize_basic_host_inventory_builds_bounded_complete_result() -> None
         "read_kernel_identity": {"stdout": "Linux 6.8.0-generic x86_64\n"},
         "read_hostname": {"stdout": "monitoring-host\n"},
         "read_uptime": {"stdout": "up 2 days, 3 hours\n"},
+        "read_load_average": {"stdout": "0.10 0.20 0.30 1/234 5678\n"},
         "read_filesystem_usage": {
             "stdout": (
                 "Filesystem 1024-blocks Used Available Capacity Mounted on\n"
@@ -46,6 +47,13 @@ def test_normalize_basic_host_inventory_builds_bounded_complete_result() -> None
         "version_id": "24.04",
     }
     assert result["root_filesystem"]["mounted_on"] == "/"
+    assert result["load_average"] == {
+        "one_minute": 0.10,
+        "five_minutes": 0.20,
+        "fifteen_minutes": 0.30,
+        "runnable_processes": 1,
+        "total_processes": 234,
+    }
     assert result["memory_mib"]["available"] == 24000
     assert shared_state["basic_host_inventory"] == result
 

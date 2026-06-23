@@ -87,12 +87,14 @@ def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, A
     os_release = _parse_os_release(_stdout(results, "read_os_release"))
     filesystem = _parse_df(_stdout(results, "read_filesystem_usage"))
     memory = _parse_free(_stdout(results, "read_memory_summary"))
+    load_average = _parse_loadavg(_stdout(results, "read_load_average"))
     inventory = {
         "target": context.target,
         "os": os_release,
         "kernel": _single_line(_stdout(results, "read_kernel_identity")),
         "hostname": _single_line(_stdout(results, "read_hostname")),
         "uptime": _single_line(_stdout(results, "read_uptime")),
+        "load_average": load_average,
         "root_filesystem": filesystem,
         "memory_mib": memory,
     }
@@ -102,6 +104,7 @@ def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, A
             inventory["kernel"],
             inventory["hostname"],
             inventory["uptime"],
+            load_average.get("one_minute") is not None,
             filesystem.get("mounted_on") == "/",
             memory.get("total") is not None,
         )
@@ -253,8 +256,29 @@ def _parse_free(value: str) -> dict[str, Any]:
     return result
 
 
+def _parse_loadavg(value: str) -> dict[str, Any]:
+    parts = value.split()
+    if len(parts) < 5:
+        return {}
+    process_counts = parts[3].split("/", 1)
+    return {
+        "one_minute": _float(parts[0]),
+        "five_minutes": _float(parts[1]),
+        "fifteen_minutes": _float(parts[2]),
+        "runnable_processes": _integer(process_counts[0]) if process_counts else None,
+        "total_processes": _integer(process_counts[1]) if len(process_counts) == 2 else None,
+    }
+
+
 def _integer(value: str) -> int | None:
     try:
         return int(value)
+    except ValueError:
+        return None
+
+
+def _float(value: str) -> float | None:
+    try:
+        return float(value)
     except ValueError:
         return None
