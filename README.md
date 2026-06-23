@@ -11,7 +11,8 @@ This package provides:
   and validation rules (entry point `rexecop.profiles:tecrax`).
 - **Local fixture review** — dry-run proof slice without live infrastructure.
 - **Read-only host inventory profile** — fixed SSH command shapes and bounded
-  normalization for operator-configured Ubuntu inventory.
+  normalization for operator-configured Ubuntu inventory, with a sanitized
+  GovEngine B2 policy-control example for receipt, digest, timeout, step and output bounds.
 - **Verified read-only service slices** — NTP synchronization and Docker systemd service
   health over fixed SSH commands, plus bounded Zabbix API version health through RExecOp
   `http_api`, AdGuard DNS/login reachability, and unauthenticated Portainer status through
@@ -109,6 +110,10 @@ inventory, credential path, or infrastructure adapter.
 The `0.3.3-alpha` line adds the profile-owned read-only reaction pack over
 RExecOp `0.2.5a0` and SCLite `1.0.4`. It does not add a second policy engine,
 lifecycle runner, or truth layer.
+
+The Ubuntu environment example uses profile-owned policy semantics, but GovEngine
+compiles and admits the controls and RExecOp enforces them. Tecrax does not claim
+that writing obligations in YAML alone satisfies them.
 
 ## Validation
 

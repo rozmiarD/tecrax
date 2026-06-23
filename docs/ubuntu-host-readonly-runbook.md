@@ -70,3 +70,9 @@ The `produce_receipt` workflow step emits the SCLite bundle during `start`.
 The environment allowlist must exactly match the profile command shapes. Any changed
 command, argument, backend, unknown action, mutating action, or unmatched policy rule
 must fail closed before connector execution.
+
+For `collect_basic_host_inventory`, the sanitized example also requires a receipt,
+per-step output digests, at most nine workflow steps, a ten-second per-connector-call
+timeout, and an 8192-byte persisted output bound. GovEngine owns projection and digest
+binding of these controls. RExecOp validates that binding at start and enforces it;
+SCLite owns the resulting canonical execution contract and receipt artifacts.

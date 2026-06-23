@@ -108,12 +108,27 @@ environment:
     version: "2026-06-22"
     rules:
       - rule_id: allow-basic-host-inventory-operation
-        effect: allow
+        effect: allow_with_obligations
         conditions:
           action.category: operation
           action.mode: read
           action.intent: collect_basic_host_inventory
         reason_code: basic_host_inventory_allowed
+        obligations:
+          - obligation_id: inventory-receipt
+            kind: receipt
+          - obligation_id: inventory-output-digests
+            kind: output_digest_required
+        constraints:
+          - constraint_id: inventory-timeout
+            kind: timeout
+            value: 10
+          - constraint_id: inventory-max-steps
+            kind: max_steps
+            value: 9
+          - constraint_id: inventory-output-limit
+            kind: output_limit
+            value: 8192
       - rule_id: allow-ntp-health-operation
         effect: allow
         conditions:
