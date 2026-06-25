@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from rexecop.execution.backend import StepExecutionContext
 
+from tecrax.contracts import validate_basic_host_inventory_v1
 from tecrax.internal_actions import (
     aggregate_monitoring_host_diagnosis,
     normalize_adguard_health,
@@ -58,6 +59,12 @@ def test_normalize_basic_host_inventory_builds_bounded_complete_result() -> None
         "total_processes": 234,
     }
     assert result["memory_mib"]["available"] == 24000
+    assert result["schema_ref"] == "schemas/basic_host_inventory.v1.schema.json"
+    assert result["contract"] == {
+        "id": "tecrax.basic_host_inventory",
+        "version": "1.0",
+    }
+    assert validate_basic_host_inventory_v1(result) == []
     assert shared_state["basic_host_inventory"] == result
 
 
@@ -73,6 +80,8 @@ def test_normalize_basic_host_inventory_marks_missing_data_incomplete() -> None:
     result = normalize_basic_host_inventory(context)
 
     assert result["complete"] is False
+    assert result["coverage"]["state"] == "partial"
+    assert validate_basic_host_inventory_v1(result) == []
 
 
 def test_normalize_ntp_health_requires_sync_and_discovered_service() -> None:

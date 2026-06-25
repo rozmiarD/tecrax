@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rozmiarD/tecrax/schemas/basic_host_inventory.v1.schema.json",
+  "title": "Tecrax basic host inventory facts v1",
+  "type": "object",
+  "required": [
+    "contract",
+    "target",
+    "os",
+    "kernel",
+    "hostname",
+    "uptime",
+    "load_average",
+    "root_filesystem",
+    "memory_mib",
+    "complete",
+    "scope",
+    "coverage",
+    "assessment",
+    "non_claims"
+  ],
+  "properties": {
+    "contract": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"const": "tecrax.basic_host_inventory"},
+        "version": {"const": "1.0"}
+      },
+      "additionalProperties": false
+    },
+    "target": {"type": "string", "minLength": 1, "maxLength": 128},
+    "os": {
+      "type": "object",
+      "required": ["pretty_name", "id", "version_id"],
+      "properties": {
+        "pretty_name": {"type": "string", "maxLength": 256},
+        "id": {"type": "string", "maxLength": 64},
+        "version_id": {"type": "string", "maxLength": 64}
+      },
+      "additionalProperties": false
+    },
+    "kernel": {"type": "string", "maxLength": 256},
+    "hostname": {"type": "string", "maxLength": 128},
+    "uptime": {"type": "string", "maxLength": 256},
+    "load_average": {
+      "type": "object",
+      "required": [
+        "one_minute",
+        "five_minutes",
+        "fifteen_minutes",
+        "runnable_processes",
+        "total_processes"
+      ],
+      "properties": {
+        "one_minute": {"type": ["number", "null"]},
+        "five_minutes": {"type": ["number", "null"]},
+        "fifteen_minutes": {"type": ["number", "null"]},
+        "runnable_processes": {"type": ["integer", "null"]},
+        "total_processes": {"type": ["integer", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "root_filesystem": {
+      "type": "object",
+      "required": ["filesystem", "blocks_1024", "used_1024", "available_1024", "capacity", "mounted_on"],
+      "properties": {
+        "filesystem": {"type": "string", "maxLength": 128},
+        "blocks_1024": {"type": ["integer", "null"]},
+        "used_1024": {"type": ["integer", "null"]},
+        "available_1024": {"type": ["integer", "null"]},
+        "capacity": {"type": "string", "maxLength": 16},
+        "mounted_on": {"type": "string", "maxLength": 128}
+      },
+      "additionalProperties": false
+    },
+    "memory_mib": {
+      "type": "object",
+      "required": ["total", "used", "free", "shared", "buff_cache", "available"],
+      "properties": {
+        "total": {"type": ["integer", "null"]},
+        "used": {"type": ["integer", "null"]},
+        "free": {"type": ["integer", "null"]},
+        "shared": {"type": ["integer", "null"]},
+        "buff_cache": {"type": ["integer", "null"]},
+        "available": {"type": ["integer", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "complete": {"type": "boolean"},
+    "scope": {"type": "object"},
+    "coverage": {"type": "object"},
+    "assessment": {"type": "object"},
+    "non_claims": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

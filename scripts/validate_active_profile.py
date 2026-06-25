@@ -13,6 +13,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from tecrax import profile_root as bundled_profile_root  # noqa: E402
+from tecrax.contracts import FACTS_CONTRACTS  # noqa: E402
 
 
 READ_ONLY_MODES = {"read_only", "dry_run"}
@@ -73,8 +74,20 @@ def collect_errors(profile_root: Path | None = None) -> list[str]:
         ):
             if not catalog.get(key):
                 errors.append(f"{intent_id}:missing_catalog_field:{key}")
-        if not data.get("facts_contract"):
+        facts_contract = str(data.get("facts_contract") or "")
+        if not facts_contract:
             errors.append(f"{intent_id}:missing_facts_contract")
+        else:
+            contract_id, separator, version = facts_contract.partition("@")
+            spec = FACTS_CONTRACTS.get(contract_id)
+            if not separator or not contract_id or not version:
+                errors.append(f"{intent_id}:invalid_facts_contract_ref:{facts_contract}")
+            elif spec is None:
+                errors.append(f"{intent_id}:unknown_facts_contract:{contract_id}")
+            elif spec.version != version:
+                errors.append(
+                    f"{intent_id}:facts_contract_version_mismatch:{facts_contract}"
+                )
         domain_capabilities = {
             str(item)
             for item in catalog.get("required_capabilities") or []

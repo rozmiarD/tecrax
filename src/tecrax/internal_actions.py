@@ -5,7 +5,7 @@ from typing import Any
 
 from rexecop.execution.backend import StepExecutionContext
 
-from tecrax.contracts import finalize_facts
+from tecrax.contracts import build_basic_host_inventory_v1, finalize_facts
 
 
 def register_handlers() -> Mapping[str, Any]:
@@ -33,35 +33,15 @@ def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, A
     filesystem = _parse_df(_stdout(results, "read_filesystem_usage"))
     memory = _parse_free(_stdout(results, "read_memory_summary"))
     load_average = _parse_loadavg(_stdout(results, "read_load_average"))
-    inventory = {
-        "target": context.target,
-        "os": os_release,
-        "kernel": _single_line(_stdout(results, "read_kernel_identity")),
-        "hostname": _single_line(_stdout(results, "read_hostname")),
-        "uptime": _single_line(_stdout(results, "read_uptime")),
-        "load_average": load_average,
-        "root_filesystem": filesystem,
-        "memory_mib": memory,
-    }
-    inventory["complete"] = all(
-        (
-            os_release.get("id"),
-            inventory["kernel"],
-            inventory["hostname"],
-            inventory["uptime"],
-            load_average.get("one_minute") is not None,
-            filesystem.get("mounted_on") == "/",
-            memory.get("total") is not None,
-        )
-    )
-    inventory = finalize_facts(
-        inventory,
-        contract_id="tecrax.basic_host_inventory",
-        requested=["os", "kernel", "hostname", "uptime", "load", "root_filesystem", "memory"],
-        observed=["os", "kernel", "hostname", "uptime", "load", "root_filesystem", "memory"] if inventory["complete"] else [],
-        not_observed=[] if inventory["complete"] else ["one_or_more_inventory_fields"],
-        assessment="healthy" if inventory["complete"] else "unknown",
-        non_claims=["packages", "users", "processes", "network_listeners"],
+    inventory = build_basic_host_inventory_v1(
+        target=context.target,
+        os=os_release,
+        kernel=_single_line(_stdout(results, "read_kernel_identity")),
+        hostname=_single_line(_stdout(results, "read_hostname")),
+        uptime=_single_line(_stdout(results, "read_uptime")),
+        load_average=load_average,
+        root_filesystem=filesystem,
+        memory_mib=memory,
     )
     context.shared_state["basic_host_inventory"] = inventory
     return inventory

@@ -39,6 +39,26 @@ def test_active_profile_rejects_missing_runbook(tmp_path: Path) -> None:
     assert any("missing_runbook" in item for item in collect_errors(root))
 
 
+def test_active_profile_rejects_unknown_facts_contract(tmp_path: Path) -> None:
+    root = _copy_profile(tmp_path)
+    path = root / "intents" / "collect_basic_host_inventory.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data["intent"]["facts_contract"] = "tecrax.unknown@1.0"
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+    assert any("unknown_facts_contract" in item for item in collect_errors(root))
+
+
+def test_active_profile_rejects_wrong_facts_contract_version(tmp_path: Path) -> None:
+    root = _copy_profile(tmp_path)
+    path = root / "intents" / "collect_basic_host_inventory.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data["intent"]["facts_contract"] = "tecrax.basic_host_inventory@2.0"
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+    assert any("facts_contract_version_mismatch" in item for item in collect_errors(root))
+
+
 def test_active_profile_rejects_undeclared_connector_action(tmp_path: Path) -> None:
     root = _copy_profile(tmp_path)
     path = root / "workflows" / "collect_basic_host_inventory.yaml"
