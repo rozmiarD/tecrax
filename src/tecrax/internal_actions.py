@@ -24,10 +24,35 @@ def register_handlers() -> Mapping[str, Any]:
     }
 
 
-def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, Any]:
+def _connector_results(context: StepExecutionContext) -> dict[str, Any]:
     results = context.shared_state.get("connector_results", {})
-    if not isinstance(results, dict):
-        results = {}
+    return results if isinstance(results, dict) else {}
+
+
+def _store_facts(
+    context: StepExecutionContext,
+    state_key: str,
+    facts: dict[str, Any],
+) -> dict[str, Any]:
+    context.shared_state[state_key] = facts
+    return facts
+
+
+def _finalize_and_store(
+    context: StepExecutionContext,
+    state_key: str,
+    payload: dict[str, Any],
+    **metadata: Any,
+) -> dict[str, Any]:
+    return _store_facts(
+        context,
+        state_key,
+        finalize_facts(payload, **metadata),
+    )
+
+
+def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, Any]:
+    results = _connector_results(context)
 
     os_release = _parse_os_release(_stdout(results, "read_os_release"))
     filesystem = _parse_df(_stdout(results, "read_filesystem_usage"))
@@ -43,14 +68,11 @@ def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, A
         root_filesystem=filesystem,
         memory_mib=memory,
     )
-    context.shared_state["basic_host_inventory"] = inventory
-    return inventory
+    return _store_facts(context, "basic_host_inventory", inventory)
 
 
 def normalize_ntp_health(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    if not isinstance(results, dict):
-        results = {}
+    results = _connector_results(context)
     properties = _parse_properties(_stdout(results, "read_ntp_sync_state"))
     service_state = _single_line(_stdout(results, "read_ntp_service_state"), limit=32)
     result = {
@@ -60,7 +82,9 @@ def normalize_ntp_health(context: StepExecutionContext) -> dict[str, Any]:
         "service_state": service_state,
     }
     result["healthy"] = result["synchronized"] and service_state == "active"
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "ntp_health",
         result,
         contract_id="tecrax.ntp_local_health",
         requested=["local_synchronization", "daemon_state"],
@@ -68,14 +92,10 @@ def normalize_ntp_health(context: StepExecutionContext) -> dict[str, Any]:
         assessment="healthy" if result["healthy"] else "unhealthy",
         non_claims=["server_serving_state", "peer_identity", "offset", "stratum"],
     )
-    context.shared_state["ntp_health"] = result
-    return result
 
 
 def normalize_host_security_posture(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    if not isinstance(results, dict):
-        results = {}
+    results = _connector_results(context)
     unattended = _single_line(_stdout(results, "read_unattended_upgrades_state"), limit=32)
     aslr = _integer(_single_line(_stdout(results, "read_aslr_state"), limit=8))
     dmesg = _integer(_single_line(_stdout(results, "read_dmesg_restrict_state"), limit=8))
@@ -86,9 +106,15 @@ def normalize_host_security_posture(context: StepExecutionContext) -> dict[str, 
         "dmesg_restrict": dmesg,
         "reboot_required": reboot_marker == "reboot-required",
     }
-    complete = unattended in {"enabled", "disabled", "static", "masked"} and aslr is not None and dmesg is not None
+    complete = (
+        unattended in {"enabled", "disabled", "static", "masked"}
+        and aslr is not None
+        and dmesg is not None
+    )
     healthy = complete and signals["unattended_upgrades_enabled"] and aslr == 2 and dmesg == 1
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "host_security_posture",
         {"signals": signals, "complete": complete, "healthy": healthy},
         contract_id="tecrax.host_security_posture",
         requested=["unattended_upgrades", "aslr", "dmesg_restrict", "reboot_required"],
@@ -97,21 +123,19 @@ def normalize_host_security_posture(context: StepExecutionContext) -> dict[str, 
         assessment="healthy" if healthy else ("degraded" if complete else "unknown"),
         non_claims=["cis_compliance", "users", "packages", "ports", "ssh_configuration"],
     )
-    context.shared_state["host_security_posture"] = result
-    return result
 
 
 def normalize_ntp_server_observation(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    if not isinstance(results, dict):
-        results = {}
+    results = _connector_results(context)
     daemon_state = _single_line(_stdout(results, "read_ntp_service_state"), limit=32)
     variables = _parse_ntp_variables(_stdout(results, "read_ntp_server_variables"))
     stratum = _integer(variables.get("stratum", ""))
     leap = _integer(variables.get("leap", ""))
     complete = daemon_state == "active" and stratum is not None and leap is not None
     healthy = complete and 1 <= int(stratum) <= 15 and leap != 3
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "ntp_server_observation",
         {
             "daemon_state": daemon_state,
             "serving_state": "local_daemon_query_available" if variables else "unknown",
@@ -131,14 +155,10 @@ def normalize_ntp_server_observation(context: StepExecutionContext) -> dict[str,
         assessment="healthy" if healthy else ("degraded" if complete else "unknown"),
         non_claims=["peer_identity", "peer_address", "remote_client_reachability", "firewall_state"],
     )
-    context.shared_state["ntp_server_observation"] = result
-    return result
 
 
 def normalize_docker_services_health(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    if not isinstance(results, dict):
-        results = {}
+    results = _connector_results(context)
     service = _parse_systemctl_show(_stdout(results, "read_docker_service_state"))
     socket = _parse_systemctl_show(_stdout(results, "read_docker_socket_state"))
     result = {
@@ -159,7 +179,9 @@ def normalize_docker_services_health(context: StepExecutionContext) -> dict[str,
         result["service_load_state"] == "loaded"
         and result["service_active_state"] == "active"
     )
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "docker_services_health",
         result,
         contract_id="tecrax.docker_service_health",
         requested=["docker.service", "docker.socket"],
@@ -168,13 +190,11 @@ def normalize_docker_services_health(context: StepExecutionContext) -> dict[str,
         assessment="healthy" if result["healthy"] else "unhealthy",
         non_claims=["container_health", "docker_socket", "container_logs"],
     )
-    context.shared_state["docker_services_health"] = result
-    return result
 
 
 def normalize_zabbix_health(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    payload = results.get("read_zabbix_api_version") if isinstance(results, dict) else None
+    results = _connector_results(context)
+    payload = results.get("read_zabbix_api_version")
     if not isinstance(payload, dict):
         payload = {}
     version = str(payload.get("result") or "").strip()[:64]
@@ -184,7 +204,9 @@ def normalize_zabbix_health(context: StepExecutionContext) -> dict[str, Any]:
         "container_runtime_state": "not_observed",
     }
     result["healthy"] = result["application_reachable"]
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "zabbix_health",
         result,
         contract_id="tecrax.zabbix_api_reachability",
         requested=["api_reachability"],
@@ -193,14 +215,10 @@ def normalize_zabbix_health(context: StepExecutionContext) -> dict[str, Any]:
         assessment="healthy" if result["healthy"] else "unhealthy",
         non_claims=["container_health", "monitoring_health", "authenticated_api"],
     )
-    context.shared_state["zabbix_health"] = result
-    return result
 
 
 def normalize_adguard_health(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    if not isinstance(results, dict):
-        results = {}
+    results = _connector_results(context)
     dns_stdout = _stdout(results, "read_adguard_dns_resolution")
     login_status = _single_line(_stdout(results, "read_adguard_login_status"), limit=16)
     dns_answer_count = sum(
@@ -218,7 +236,9 @@ def normalize_adguard_health(context: StepExecutionContext) -> dict[str, Any]:
     }
     result["web_login_reachable"] = login_status in {"200", "302"}
     result["healthy"] = result["dns_resolves"] and result["web_login_reachable"]
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "adguard_health",
         result,
         contract_id="tecrax.adguard_reachability",
         requested=["dns_resolution", "web_login_reachability"],
@@ -227,13 +247,11 @@ def normalize_adguard_health(context: StepExecutionContext) -> dict[str, Any]:
         assessment="healthy" if result["healthy"] else "unhealthy",
         non_claims=["filter_effectiveness", "upstream_health", "container_health"],
     )
-    context.shared_state["adguard_health"] = result
-    return result
 
 
 def normalize_portainer_health(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    payload = results.get("read_portainer_status") if isinstance(results, dict) else None
+    results = _connector_results(context)
+    payload = results.get("read_portainer_status")
     if not isinstance(payload, dict):
         payload = {}
     version = str(payload.get("Version") or "").strip()[:64]
@@ -246,7 +264,9 @@ def normalize_portainer_health(context: StepExecutionContext) -> dict[str, Any]:
         "container_runtime_state": "not_observed",
     }
     result["healthy"] = result["api_reachable"]
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "portainer_health",
         result,
         contract_id="tecrax.portainer_reachability",
         requested=["unauthenticated_status"],
@@ -255,14 +275,10 @@ def normalize_portainer_health(context: StepExecutionContext) -> dict[str, Any]:
         assessment="healthy" if result["healthy"] else "unhealthy",
         non_claims=["management_plane_health", "container_health", "authenticated_api"],
     )
-    context.shared_state["portainer_health"] = result
-    return result
 
 
 def normalize_network_device_inventory(context: StepExecutionContext) -> dict[str, Any]:
-    results = context.shared_state.get("connector_results", {})
-    if not isinstance(results, dict):
-        results = {}
+    results = _connector_results(context)
     system_info = _parse_colon_fields(_stdout(results, "read_network_device_system_info"))
     ssh_status = _parse_colon_fields(_stdout(results, "read_network_device_ssh_status"))
     protocol_v1 = _enabled_value(
@@ -312,7 +328,9 @@ def normalize_network_device_inventory(context: StepExecutionContext) -> dict[st
             management["ssh_protocol_v2_enabled"] is not None,
         )
     )
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "network_device_inventory",
         result,
         contract_id="tecrax.network_device_inventory",
         requested=["device_identity", "ssh_management_posture"],
@@ -321,8 +339,6 @@ def normalize_network_device_inventory(context: StepExecutionContext) -> dict[st
         assessment="healthy" if result["complete"] else "unknown",
         non_claims=["running_configuration", "vlans", "ports", "snmp_telemetry"],
     )
-    context.shared_state["network_device_inventory"] = result
-    return result
 
 
 def assess_network_device_management_posture(
@@ -345,7 +361,9 @@ def assess_network_device_management_posture(
         findings.append({"reason_code": "ssh_idle_timeout_unknown", "severity": "low"})
     complete = bool(inventory.get("complete"))
     assessment = "degraded" if findings and complete else ("healthy" if complete else "unknown")
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "network_management_posture",
         {
             "source_inventory_contract": inventory.get("contract"),
             "findings": findings[:16],
@@ -358,8 +376,6 @@ def assess_network_device_management_posture(
         assessment=assessment,
         non_claims=["running_configuration", "port_security", "vlans", "firmware_compliance"],
     )
-    context.shared_state["network_management_posture"] = result
-    return result
 
 
 def aggregate_monitoring_host_diagnosis(
@@ -414,13 +430,17 @@ def aggregate_monitoring_host_diagnosis(
         )
     ]
     assessment = "healthy" if all(item == "healthy" for item in observed) else "degraded"
-    result = finalize_facts(
+    return _finalize_and_store(
+        context,
+        "monitoring_host_diagnosis",
         {
-        "aggregation_completed": True,
-        "coverage_status": "partial" if failures else "complete",
-        "observed_health": "healthy" if all(item == "healthy" for item in observed) else "degraded",
-        "components": components,
-        "continued_failures": failures,
+            "aggregation_completed": True,
+            "coverage_status": "partial" if failures else "complete",
+            "observed_health": (
+                "healthy" if all(item == "healthy" for item in observed) else "degraded"
+            ),
+            "components": components,
+            "continued_failures": failures,
         },
         contract_id="tecrax.monitoring_host_diagnosis",
         requested=list(components),
@@ -429,8 +449,6 @@ def aggregate_monitoring_host_diagnosis(
         assessment=assessment,
         non_claims=["continuous_monitoring", "root_cause", "automatic_remediation"],
     )
-    context.shared_state["monitoring_host_diagnosis"] = result
-    return result
 
 
 def _component_status(
