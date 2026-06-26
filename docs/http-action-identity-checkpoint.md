@@ -91,8 +91,10 @@ Before adding or widening an HTTP-based Tecrax observation, the implementation m
 
 ## Current service boundaries
 
-Zabbix remains limited to unauthenticated `apiinfo.version`. Authenticated host, problem,
-history, macro, user or configuration reads are not active.
+Zabbix has two active layers: unauthenticated `apiinfo.version` reachability and
+authenticated T4 count-only summaries for problem severity counts and host/agent
+availability counts. Authenticated history, macro, user, configuration or raw object reads
+are not active.
 
 Portainer remains limited to unauthenticated `/api/status` through verified TLS. Endpoint,
 stack, container, user, token and configuration reads are not active.
@@ -126,10 +128,6 @@ management API discovery for Zabbix, AdGuard or Portainer.
 
 ## Next implementation checkpoint
 
-The next HTTP-facing Tecrax slice should be a small migration/verification pass over the
-existing Zabbix and Portainer actions:
-
-1. confirm their profile `action_shapes` match the active environment examples;
-2. add Tecrax/RExecOp integration tests that assert `http_action_bindings` and
-   `action_contract_digest` are present for both actions;
-3. keep AdGuard management API blocked unless a constrained read-only boundary is proven.
+The T5 checkpoint keeps AdGuard, Portainer and Docker expansion blocked unless a future
+design checkpoint proves a constrained read-only boundary with negative vectors and
+bounded facts.

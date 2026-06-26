@@ -16,6 +16,9 @@ All notable Tecrax profile changes are documented here.
   while continuing to exclude package names, repositories, changelogs and paths.
 - Added authenticated, read-only Zabbix T4 summaries for bounded problem counts
   and host/agent availability counts, using an operator-owned token outside git.
+- Recorded the T5 AdGuard, Portainer and Docker boundary decision: keep Docker
+  systemd-only, AdGuard DNS/login-only and Portainer `/api/status`-only until a
+  constrained read-only projection is proven.
 - Documented the HTTP action identity checkpoint for future Zabbix, AdGuard and
   Portainer API expansion while preserving RExecOp core neutrality.
 - Refactored fact normalizer storage so active normalizers share the same

@@ -37,6 +37,7 @@ component health remains a separate field.
   constrained API. Container, endpoint, stack and user inventory are not collected.
 - AdGuard management API remains blocked without a read-only credential/role. The current
   health check intentionally uses only DNS resolution and web-login reachability.
+- T5 keeps these blockers active. See `docs/service-boundary-decision-t5.md`.
 - Future HTTP expansion must satisfy the action identity checkpoint in
   `docs/http-action-identity-checkpoint.md`; runtime environments must not redefine
   Tecrax-owned method/path/body/query/projection semantics.

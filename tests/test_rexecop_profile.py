@@ -65,6 +65,9 @@ def test_unverified_r2_intents_are_not_claimed_by_profile() -> None:
     assert not (intents / "check_frigate_host_health.yaml").exists()
     assert not (intents / "check_backup_status.yaml").exists()
     assert not (intents / "restart_zabbix_agent.yaml").exists()
+    assert not (intents / "collect_docker_runtime_summary_readonly.yaml").exists()
+    assert not (intents / "collect_portainer_runtime_summary_readonly.yaml").exists()
+    assert not (intents / "collect_adguard_runtime_summary_readonly.yaml").exists()
 
 
 def test_ubuntu_inventory_example_projects_b2_runtime_controls(tmp_path: Path) -> None:

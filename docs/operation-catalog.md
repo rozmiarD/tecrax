@@ -17,6 +17,11 @@ NTP, Docker service/socket state, Zabbix reachability, AdGuard reachability,
 Portainer status and `diagnose_monitoring_host` is in
 `docs/ubuntu-host-readonly-runbook.md`.
 
+Zabbix count-only summaries are documented in
+`docs/zabbix-readonly-summaries-runbook.md`. The explicit T5 boundary decision for
+Docker, AdGuard and Portainer expansion is in
+`docs/service-boundary-decision-t5.md`.
+
 ## Current network-device operation
 
 The bounded adapter contract for `collect_network_device_inventory_readonly` is

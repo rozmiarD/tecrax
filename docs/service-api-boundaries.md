@@ -24,14 +24,21 @@ must remain outside git and should be constrained to read-only API access.
 The current operation proves only DNS resolution and login-page reachability. Management API,
 configuration, clients and filter lists remain deliberately not observed. No read-only
 management slice is active because a technical read-only boundary has not been verified.
+The T5 decision record keeps AdGuard management expansion blocked.
 
 ## Portainer: current boundary
 
 The current operation uses only unauthenticated `/api/status` through verified TLS and drops
 instance identity. Environments, stacks, containers, users, tokens and configuration remain
 not observed. Portainer is not treated as a safe substitute for Docker socket access.
+Authenticated Portainer expansion remains blocked until a non-mutating role or constrained
+projection adapter is proven.
 
 ## Docker: current boundary
 
 Tecrax observes only `docker.service` and `docker.socket` systemd state. It does not use the
 Docker socket, `docker exec`, inspect, logs, compose, restart or configuration mutation.
+Container-level Docker summaries remain blocked because Docker socket access is not a
+read-only boundary for the operator account.
+
+See `docs/service-boundary-decision-t5.md` for the explicit T5 decision.
