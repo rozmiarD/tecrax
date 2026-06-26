@@ -35,11 +35,11 @@ Bounded escalation proposal vectors are documented in
 The bounded adapter contract for `collect_network_device_inventory_readonly` is
 in `docs/network-device-readonly-runbook.md`.
 
-## Check backup status
+## Future backup status
 
-`check_backup_status` remains fixture/local-stub only until real Proxmox and PBS
-endpoints exist. Catalog visibility does not claim that the operation is currently
-applicable to any operator target.
+`check_backup_status` is not part of the active profile. Future backup support
+must pass `docs/future-product-activation.md` and keep backup readiness, job
+execution, restore evidence and coverage as separate claims.
 
 ## Restart Zabbix agent
 

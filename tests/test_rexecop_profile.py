@@ -70,6 +70,35 @@ def test_unverified_r2_intents_are_not_claimed_by_profile() -> None:
     assert not (intents / "collect_adguard_runtime_summary_readonly.yaml").exists()
 
 
+def test_future_product_placeholders_are_not_active_profile() -> None:
+    root = Path(profile_root())
+    future_tokens = (
+        "backup",
+        "frigate",
+        "grafana",
+        "hillstone",
+        "pbs",
+        "printer",
+        "proxmox",
+        "samba",
+        "wazuh",
+    )
+    active_files = [
+        *root.joinpath("intents").glob("*.yaml"),
+        *root.joinpath("workflows").glob("*.yaml"),
+        *root.joinpath("connectors").glob("*.yaml"),
+        *root.joinpath("validation_rules").glob("*.yaml"),
+    ]
+
+    for path in active_files:
+        name = path.name.lower()
+        assert not any(token in name for token in future_tokens), path.name
+
+    taxonomy = root.joinpath("taxonomy.yaml").read_text(encoding="utf-8").lower()
+    for token in future_tokens:
+        assert token not in taxonomy
+
+
 def test_vlan_and_port_security_checkpoint_is_not_active_profile() -> None:
     intents = Path(profile_root()) / "intents"
     workflows = Path(profile_root()) / "workflows"

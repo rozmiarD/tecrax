@@ -31,6 +31,9 @@ All notable Tecrax profile changes are documented here.
   inventory facts, with bounded SSH findings and example policy admission.
 - Added the VLAN and port-security read-only design checkpoint, keeping those
   observations out of the active profile until separate contracts and fixtures exist.
+- Expanded future-product activation gates for Proxmox, PBS, Wazuh, Samba,
+  Grafana, Frigate, Hillstone, printers and future backup support while keeping
+  placeholder intents out of the active profile.
 - Documented the HTTP action identity checkpoint for future Zabbix, AdGuard and
   Portainer API expansion while preserving RExecOp core neutrality.
 - Refactored fact normalizer storage so active normalizers share the same
