@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rozmiarD/tecrax/schemas/network_management_posture.v1.schema.json",
+  "title": "Tecrax network management posture facts v1",
+  "type": "object",
+  "required": [
+    "contract",
+    "schema_ref",
+    "source_inventory_contract",
+    "findings",
+    "complete",
+    "scope",
+    "coverage",
+    "assessment",
+    "non_claims"
+  ],
+  "properties": {
+    "contract": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"const": "tecrax.network_management_posture"},
+        "version": {"const": "1.0"}
+      },
+      "additionalProperties": false
+    },
+    "schema_ref": {"const": "schemas/network_management_posture.v1.schema.json"},
+    "source_inventory_contract": {
+      "type": ["object", "null"],
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "version": {"type": "string", "minLength": 1, "maxLength": 32}
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "required": ["reason_code", "severity"],
+        "properties": {
+          "reason_code": {"type": "string", "minLength": 1, "maxLength": 64},
+          "severity": {"type": "string", "minLength": 1, "maxLength": 16}
+        },
+        "additionalProperties": false
+      }
+    },
+    "complete": {"type": "boolean"},
+    "scope": {"type": "object"},
+    "coverage": {"type": "object"},
+    "assessment": {"type": "object"},
+    "non_claims": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

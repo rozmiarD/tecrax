@@ -63,7 +63,25 @@ logs or `exec`. NTP server observation keeps bounded daemon/system variables and
 persist peer identities, peer addresses or raw command output. Host security posture remains
 a minimal signal set, not a CIS scanner or package/user/process inventory.
 
+## Network device facts v1
+
+The network slice versions the existing bounded legacy CLI observations without expanding
+device access:
+
+- `tecrax.network_device_inventory@1.0`:
+  `schemas/network_device_inventory.v1.schema.json`,
+  `NetworkDeviceInventoryV1`, `build_network_device_inventory_v1`,
+  `validate_network_device_inventory_v1`;
+- `tecrax.network_management_posture@1.0`:
+  `schemas/network_management_posture.v1.schema.json`,
+  `NetworkManagementPostureV1`, `build_network_management_posture_v1`,
+  `validate_network_management_posture_v1`.
+
+The inventory contract covers only sanitized target label, bounded device identity,
+management SSH access posture and hardening observations derived from fixed wrapper actions.
+It does not claim running configuration, VLANs, port state, port security, SNMP telemetry or
+firmware compliance. The posture contract consumes the inventory fact and emits bounded
+findings such as legacy SSH v1, observed legacy SSH crypto and unknown idle timeout.
+
 HTTP reachability facts for Zabbix, AdGuard and Portainer keep their current narrow shape
-until the separate HTTP action identity checkpoint is completed. Network device contracts
-remain a later T1/T7 slice because their parser boundaries and golden fixtures are separate
-from local host/systemd observations.
+until the separate HTTP action identity checkpoint is completed.

@@ -11,6 +11,10 @@ from tecrax.contracts import (
     FACTS_CONTRACTS,
     HOST_SECURITY_POSTURE_CONTRACT_ID,
     HOST_SECURITY_POSTURE_SCHEMA_REF,
+    NETWORK_DEVICE_INVENTORY_CONTRACT_ID,
+    NETWORK_DEVICE_INVENTORY_SCHEMA_REF,
+    NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID,
+    NETWORK_MANAGEMENT_POSTURE_SCHEMA_REF,
     NTP_LOCAL_HEALTH_CONTRACT_ID,
     NTP_LOCAL_HEALTH_SCHEMA_REF,
     NTP_SERVER_OBSERVATION_CONTRACT_ID,
@@ -18,6 +22,8 @@ from tecrax.contracts import (
     build_basic_host_inventory_v1,
     build_docker_service_health_v1,
     build_host_security_posture_v1,
+    build_network_device_inventory_v1,
+    build_network_management_posture_v1,
     build_ntp_local_health_v1,
     build_ntp_server_observation_v1,
     finalize_facts,
@@ -25,6 +31,8 @@ from tecrax.contracts import (
     validate_docker_service_health_v1,
     validate_facts,
     validate_host_security_posture_v1,
+    validate_network_device_inventory_v1,
+    validate_network_management_posture_v1,
     validate_ntp_local_health_v1,
     validate_ntp_server_observation_v1,
 )
@@ -342,6 +350,109 @@ def test_local_ssh_fact_contract_v1_rejects_malformed_payloads() -> None:
     assert (
         "ntp_server_observation.invalid_system_variables:stratum"
         in validate_ntp_server_observation_v1(ntp_server)
+    )
+
+
+def test_network_fact_contract_v1_builders_emit_schema_refs() -> None:
+    inventory = build_network_device_inventory_v1(
+        {
+            "target": "network-device-01",
+            "observation_scope": "network_cli_readonly",
+            "device": {
+                "system_name": "TL-SG2452",
+                "system_description": "48-Port Gigabit Smart Switch",
+                "hardware_version": "TL-SG2452 1.0",
+                "software_version": "1.0.4 Build",
+            },
+            "management_access": {
+                "ssh_server_enabled": True,
+                "ssh_protocol_v1_enabled": True,
+                "ssh_protocol_v2_enabled": True,
+                "idle_timeout_seconds": 120,
+                "max_clients": 5,
+            },
+            "hardening_observations": {
+                "legacy_ssh_v1_enabled": True,
+                "legacy_crypto_observed": True,
+                "mutations_observed": False,
+            },
+        }
+    )
+    posture = build_network_management_posture_v1(
+        source_inventory_contract=inventory["contract"],
+        findings=[
+            {"reason_code": "legacy_ssh_v1_enabled", "severity": "high"},
+            {"reason_code": "legacy_ssh_crypto_observed", "severity": "medium"},
+        ],
+        complete=True,
+    )
+
+    assert inventory["contract"]["id"] == NETWORK_DEVICE_INVENTORY_CONTRACT_ID
+    assert inventory["schema_ref"] == NETWORK_DEVICE_INVENTORY_SCHEMA_REF
+    assert posture["contract"]["id"] == NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID
+    assert posture["schema_ref"] == NETWORK_MANAGEMENT_POSTURE_SCHEMA_REF
+    assert posture["assessment"]["state"] == "degraded"
+    assert validate_network_device_inventory_v1(inventory) == []
+    assert validate_network_management_posture_v1(posture) == []
+
+
+def test_network_fact_contract_v1_schema_files_are_packaged() -> None:
+    refs = [
+        (NETWORK_DEVICE_INVENTORY_SCHEMA_REF, NETWORK_DEVICE_INVENTORY_CONTRACT_ID),
+        (NETWORK_MANAGEMENT_POSTURE_SCHEMA_REF, NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID),
+    ]
+
+    for schema_ref, contract_id in refs:
+        schema = resources.files("tecrax").joinpath(*schema_ref.split("/"))
+        text = schema.read_text(encoding="utf-8")
+        assert contract_id in text
+
+
+def test_network_fact_contract_v1_rejects_malformed_payloads() -> None:
+    inventory = build_network_device_inventory_v1(
+        {
+            "target": "network-device-01",
+            "observation_scope": "network_cli_readonly",
+            "device": {
+                "system_name": "TL-SG2452",
+                "system_description": "48-Port Gigabit Smart Switch",
+                "hardware_version": "TL-SG2452 1.0",
+                "software_version": "1.0.4 Build",
+            },
+            "management_access": {
+                "ssh_server_enabled": True,
+                "ssh_protocol_v1_enabled": True,
+                "ssh_protocol_v2_enabled": True,
+                "idle_timeout_seconds": 120,
+                "max_clients": 5,
+            },
+            "hardening_observations": {
+                "legacy_ssh_v1_enabled": True,
+                "legacy_crypto_observed": True,
+                "mutations_observed": False,
+            },
+        }
+    )
+    inventory["schema_ref"] = "schemas/other.schema.json"
+    inventory["hardening_observations"]["mutations_observed"] = True
+    posture = build_network_management_posture_v1(
+        source_inventory_contract=inventory["contract"],
+        findings=[{"reason_code": "legacy_ssh_v1_enabled", "severity": "high"}],
+        complete=True,
+    )
+    posture["findings"][0]["reason_code"] = ""
+
+    assert (
+        "network_device_inventory.schema_ref_mismatch"
+        in validate_network_device_inventory_v1(inventory)
+    )
+    assert (
+        "network_device_inventory.mutations_must_be_false"
+        in validate_network_device_inventory_v1(inventory)
+    )
+    assert (
+        "network_management_posture.invalid_finding:reason_code"
+        in validate_network_management_posture_v1(posture)
     )
 
 

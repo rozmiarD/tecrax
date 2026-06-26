@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rozmiarD/tecrax/schemas/network_device_inventory.v1.schema.json",
+  "title": "Tecrax network device inventory facts v1",
+  "type": "object",
+  "required": [
+    "contract",
+    "schema_ref",
+    "target",
+    "observation_scope",
+    "device",
+    "management_access",
+    "hardening_observations",
+    "complete",
+    "scope",
+    "coverage",
+    "assessment",
+    "non_claims"
+  ],
+  "properties": {
+    "contract": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"const": "tecrax.network_device_inventory"},
+        "version": {"const": "1.0"}
+      },
+      "additionalProperties": false
+    },
+    "schema_ref": {"const": "schemas/network_device_inventory.v1.schema.json"},
+    "target": {"type": "string", "minLength": 1, "maxLength": 128},
+    "observation_scope": {"type": "string", "minLength": 1, "maxLength": 64},
+    "device": {
+      "type": "object",
+      "required": [
+        "system_name",
+        "system_description",
+        "hardware_version",
+        "software_version"
+      ],
+      "properties": {
+        "system_name": {"type": "string", "maxLength": 128},
+        "system_description": {"type": "string", "maxLength": 256},
+        "hardware_version": {"type": "string", "maxLength": 128},
+        "software_version": {"type": "string", "maxLength": 128}
+      },
+      "additionalProperties": false
+    },
+    "management_access": {
+      "type": "object",
+      "required": [
+        "ssh_server_enabled",
+        "ssh_protocol_v1_enabled",
+        "ssh_protocol_v2_enabled",
+        "idle_timeout_seconds",
+        "max_clients"
+      ],
+      "properties": {
+        "ssh_server_enabled": {"type": ["boolean", "null"]},
+        "ssh_protocol_v1_enabled": {"type": ["boolean", "null"]},
+        "ssh_protocol_v2_enabled": {"type": ["boolean", "null"]},
+        "idle_timeout_seconds": {"type": ["integer", "null"], "minimum": 0},
+        "max_clients": {"type": ["integer", "null"], "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "hardening_observations": {
+      "type": "object",
+      "required": [
+        "legacy_ssh_v1_enabled",
+        "legacy_crypto_observed",
+        "mutations_observed"
+      ],
+      "properties": {
+        "legacy_ssh_v1_enabled": {"type": "boolean"},
+        "legacy_crypto_observed": {"type": "boolean"},
+        "mutations_observed": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "complete": {"type": "boolean"},
+    "scope": {"type": "object"},
+    "coverage": {"type": "object"},
+    "assessment": {"type": "object"},
+    "non_claims": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

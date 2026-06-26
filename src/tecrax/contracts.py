@@ -51,6 +51,14 @@ NTP_SERVER_OBSERVATION_REQUESTED = [
     "root_delay",
     "root_dispersion",
 ]
+NETWORK_DEVICE_INVENTORY_CONTRACT_ID = "tecrax.network_device_inventory"
+NETWORK_DEVICE_INVENTORY_CONTRACT_VERSION = "1.0"
+NETWORK_DEVICE_INVENTORY_SCHEMA_REF = "schemas/network_device_inventory.v1.schema.json"
+NETWORK_DEVICE_INVENTORY_REQUESTED = ["device_identity", "ssh_management_posture"]
+NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID = "tecrax.network_management_posture"
+NETWORK_MANAGEMENT_POSTURE_CONTRACT_VERSION = "1.0"
+NETWORK_MANAGEMENT_POSTURE_SCHEMA_REF = "schemas/network_management_posture.v1.schema.json"
+NETWORK_MANAGEMENT_POSTURE_REQUESTED = ["ssh_protocols", "ssh_crypto", "idle_timeout"]
 
 
 @dataclass(frozen=True)
@@ -437,6 +445,169 @@ class NtpServerObservationV1:
 
 
 @dataclass(frozen=True)
+class NetworkDeviceIdentityV1:
+    system_name: str
+    system_description: str
+    hardware_version: str
+    software_version: str
+
+    @classmethod
+    def from_mapping(cls, value: dict[str, Any]) -> "NetworkDeviceIdentityV1":
+        return cls(
+            system_name=_bounded_text(value.get("system_name"), limit=128),
+            system_description=_bounded_text(value.get("system_description"), limit=256),
+            hardware_version=_bounded_text(value.get("hardware_version"), limit=128),
+            software_version=_bounded_text(value.get("software_version"), limit=128),
+        )
+
+    def as_dict(self) -> dict[str, str]:
+        return {
+            "system_name": self.system_name,
+            "system_description": self.system_description,
+            "hardware_version": self.hardware_version,
+            "software_version": self.software_version,
+        }
+
+
+@dataclass(frozen=True)
+class NetworkManagementAccessV1:
+    ssh_server_enabled: bool | None
+    ssh_protocol_v1_enabled: bool | None
+    ssh_protocol_v2_enabled: bool | None
+    idle_timeout_seconds: int | None
+    max_clients: int | None
+
+    @classmethod
+    def from_mapping(cls, value: dict[str, Any]) -> "NetworkManagementAccessV1":
+        return cls(
+            ssh_server_enabled=_optional_bool(value.get("ssh_server_enabled")),
+            ssh_protocol_v1_enabled=_optional_bool(value.get("ssh_protocol_v1_enabled")),
+            ssh_protocol_v2_enabled=_optional_bool(value.get("ssh_protocol_v2_enabled")),
+            idle_timeout_seconds=_optional_non_negative_int(
+                value.get("idle_timeout_seconds")
+            ),
+            max_clients=_optional_non_negative_int(value.get("max_clients")),
+        )
+
+    def as_dict(self) -> dict[str, bool | int | None]:
+        return {
+            "ssh_server_enabled": self.ssh_server_enabled,
+            "ssh_protocol_v1_enabled": self.ssh_protocol_v1_enabled,
+            "ssh_protocol_v2_enabled": self.ssh_protocol_v2_enabled,
+            "idle_timeout_seconds": self.idle_timeout_seconds,
+            "max_clients": self.max_clients,
+        }
+
+
+@dataclass(frozen=True)
+class NetworkHardeningObservationsV1:
+    legacy_ssh_v1_enabled: bool
+    legacy_crypto_observed: bool
+    mutations_observed: bool
+
+    @classmethod
+    def from_mapping(cls, value: dict[str, Any]) -> "NetworkHardeningObservationsV1":
+        return cls(
+            legacy_ssh_v1_enabled=bool(value.get("legacy_ssh_v1_enabled")),
+            legacy_crypto_observed=bool(value.get("legacy_crypto_observed")),
+            mutations_observed=bool(value.get("mutations_observed")),
+        )
+
+    def as_dict(self) -> dict[str, bool]:
+        return {
+            "legacy_ssh_v1_enabled": self.legacy_ssh_v1_enabled,
+            "legacy_crypto_observed": self.legacy_crypto_observed,
+            "mutations_observed": self.mutations_observed,
+        }
+
+
+@dataclass(frozen=True)
+class NetworkDeviceInventoryV1:
+    target: str
+    observation_scope: str
+    device: NetworkDeviceIdentityV1
+    management_access: NetworkManagementAccessV1
+    hardening_observations: NetworkHardeningObservationsV1
+
+    @classmethod
+    def from_mapping(cls, value: dict[str, Any]) -> "NetworkDeviceInventoryV1":
+        device = value.get("device")
+        management = value.get("management_access")
+        hardening = value.get("hardening_observations")
+        return cls(
+            target=_bounded_text(value.get("target"), limit=128),
+            observation_scope=_bounded_text(value.get("observation_scope"), limit=64),
+            device=NetworkDeviceIdentityV1.from_mapping(
+                device if isinstance(device, dict) else {}
+            ),
+            management_access=NetworkManagementAccessV1.from_mapping(
+                management if isinstance(management, dict) else {}
+            ),
+            hardening_observations=NetworkHardeningObservationsV1.from_mapping(
+                hardening if isinstance(hardening, dict) else {}
+            ),
+        )
+
+    @property
+    def complete(self) -> bool:
+        return all(
+            (
+                self.device.system_name,
+                self.device.hardware_version,
+                self.device.software_version,
+                self.management_access.ssh_server_enabled is not None,
+                self.management_access.ssh_protocol_v2_enabled is not None,
+            )
+        )
+
+    def payload(self) -> dict[str, Any]:
+        return {
+            "schema_ref": NETWORK_DEVICE_INVENTORY_SCHEMA_REF,
+            "target": self.target,
+            "observation_scope": self.observation_scope,
+            "device": self.device.as_dict(),
+            "management_access": self.management_access.as_dict(),
+            "hardening_observations": self.hardening_observations.as_dict(),
+            "complete": self.complete,
+        }
+
+
+@dataclass(frozen=True)
+class NetworkManagementPostureV1:
+    source_inventory_contract: dict[str, str] | None
+    findings: tuple[dict[str, str], ...]
+    complete: bool
+
+    @classmethod
+    def from_parts(
+        cls,
+        *,
+        source_inventory_contract: Any,
+        findings: list[dict[str, Any]],
+        complete: bool,
+    ) -> "NetworkManagementPostureV1":
+        return cls(
+            source_inventory_contract=_contract_ref(source_inventory_contract),
+            findings=tuple(_bounded_finding(item) for item in findings[:16]),
+            complete=bool(complete),
+        )
+
+    @property
+    def assessment(self) -> str:
+        if not self.complete:
+            return "unknown"
+        return "degraded" if self.findings else "healthy"
+
+    def payload(self) -> dict[str, Any]:
+        return {
+            "schema_ref": NETWORK_MANAGEMENT_POSTURE_SCHEMA_REF,
+            "source_inventory_contract": self.source_inventory_contract,
+            "findings": list(self.findings),
+            "complete": self.complete,
+        }
+
+
+@dataclass(frozen=True)
 class FactsContractSpec:
     contract_id: str
     version: str
@@ -473,8 +644,8 @@ FACTS_CONTRACTS = {
         ),
         FactsContractSpec("tecrax.portainer_reachability", "1.0", ("api_reachable",)),
         FactsContractSpec(
-            "tecrax.network_device_inventory",
-            "1.0",
+            NETWORK_DEVICE_INVENTORY_CONTRACT_ID,
+            NETWORK_DEVICE_INVENTORY_CONTRACT_VERSION,
             ("target", "device", "management_access"),
         ),
         FactsContractSpec("tecrax.monitoring_host_diagnosis", "1.0", ("components",)),
@@ -489,8 +660,8 @@ FACTS_CONTRACTS = {
             ("daemon_state", "system_variables"),
         ),
         FactsContractSpec(
-            "tecrax.network_management_posture",
-            "1.0",
+            NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID,
+            NETWORK_MANAGEMENT_POSTURE_CONTRACT_VERSION,
             ("findings", "source_inventory_contract"),
         ),
     )
@@ -640,6 +811,49 @@ def validate_ntp_server_observation_v1(facts: dict[str, Any]) -> list[str]:
     return validate_facts(facts, expected_contract_id=NTP_SERVER_OBSERVATION_CONTRACT_ID)
 
 
+def build_network_device_inventory_v1(payload: dict[str, Any]) -> dict[str, Any]:
+    model = NetworkDeviceInventoryV1.from_mapping(payload)
+    return finalize_facts(
+        model.payload(),
+        contract_id=NETWORK_DEVICE_INVENTORY_CONTRACT_ID,
+        requested=NETWORK_DEVICE_INVENTORY_REQUESTED,
+        observed=NETWORK_DEVICE_INVENTORY_REQUESTED if model.complete else [],
+        not_observed=[] if model.complete else ["one_or_more_device_fields"],
+        assessment="healthy" if model.complete else "unknown",
+        non_claims=["running_configuration", "vlans", "ports", "snmp_telemetry"],
+    )
+
+
+def validate_network_device_inventory_v1(facts: dict[str, Any]) -> list[str]:
+    return validate_facts(facts, expected_contract_id=NETWORK_DEVICE_INVENTORY_CONTRACT_ID)
+
+
+def build_network_management_posture_v1(
+    *,
+    source_inventory_contract: Any,
+    findings: list[dict[str, Any]],
+    complete: bool,
+) -> dict[str, Any]:
+    model = NetworkManagementPostureV1.from_parts(
+        source_inventory_contract=source_inventory_contract,
+        findings=findings,
+        complete=complete,
+    )
+    return finalize_facts(
+        model.payload(),
+        contract_id=NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID,
+        requested=NETWORK_MANAGEMENT_POSTURE_REQUESTED,
+        observed=NETWORK_MANAGEMENT_POSTURE_REQUESTED if model.complete else [],
+        not_observed=[] if model.complete else ["one_or_more_management_fields"],
+        assessment=model.assessment,
+        non_claims=["running_configuration", "port_security", "vlans", "firmware_compliance"],
+    )
+
+
+def validate_network_management_posture_v1(facts: dict[str, Any]) -> list[str]:
+    return validate_facts(facts, expected_contract_id=NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID)
+
+
 def finalize_facts(
     payload: dict[str, Any],
     *,
@@ -727,6 +941,10 @@ def validate_facts(
         errors.extend(_validate_host_security_posture_v1_shape(facts))
     if contract_id == NTP_SERVER_OBSERVATION_CONTRACT_ID:
         errors.extend(_validate_ntp_server_observation_v1_shape(facts))
+    if contract_id == NETWORK_DEVICE_INVENTORY_CONTRACT_ID:
+        errors.extend(_validate_network_device_inventory_v1_shape(facts))
+    if contract_id == NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID:
+        errors.extend(_validate_network_management_posture_v1_shape(facts))
     return sorted(set(errors))
 
 
@@ -891,8 +1109,119 @@ def _validate_ntp_server_observation_v1_shape(facts: dict[str, Any]) -> list[str
     return errors
 
 
+def _validate_network_device_inventory_v1_shape(facts: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    complete = facts.get("complete") is True
+    if facts.get("schema_ref") != NETWORK_DEVICE_INVENTORY_SCHEMA_REF:
+        errors.append("network_device_inventory.schema_ref_mismatch")
+    if not _bounded_string(facts.get("target"), max_length=128, required=True):
+        errors.append("network_device_inventory.invalid_target")
+    if not _bounded_string(
+        facts.get("observation_scope"), max_length=64, required=True
+    ):
+        errors.append("network_device_inventory.invalid_observation_scope")
+    device = facts.get("device")
+    if not isinstance(device, dict):
+        errors.append("network_device_inventory.invalid_device")
+    else:
+        for key in ("system_name", "hardware_version", "software_version"):
+            if not _bounded_string(
+                device.get(key), max_length=128, required=complete
+            ):
+                errors.append(f"network_device_inventory.invalid_device:{key}")
+        if not _bounded_string(
+            device.get("system_description"), max_length=256, required=False
+        ):
+            errors.append("network_device_inventory.invalid_device:system_description")
+    management = facts.get("management_access")
+    if not isinstance(management, dict):
+        errors.append("network_device_inventory.invalid_management_access")
+    else:
+        for key in (
+            "ssh_server_enabled",
+            "ssh_protocol_v1_enabled",
+            "ssh_protocol_v2_enabled",
+        ):
+            if not _optional_bool_value(management.get(key)):
+                errors.append(f"network_device_inventory.invalid_management_access:{key}")
+        for key in ("idle_timeout_seconds", "max_clients"):
+            if not _optional_non_negative_int_value(management.get(key)):
+                errors.append(f"network_device_inventory.invalid_management_access:{key}")
+    hardening = facts.get("hardening_observations")
+    if not isinstance(hardening, dict):
+        errors.append("network_device_inventory.invalid_hardening_observations")
+    else:
+        for key in (
+            "legacy_ssh_v1_enabled",
+            "legacy_crypto_observed",
+            "mutations_observed",
+        ):
+            if not isinstance(hardening.get(key), bool):
+                errors.append(
+                    f"network_device_inventory.invalid_hardening_observations:{key}"
+                )
+        if hardening.get("mutations_observed") is not False:
+            errors.append("network_device_inventory.mutations_must_be_false")
+    if not isinstance(facts.get("complete"), bool):
+        errors.append("network_device_inventory.invalid_complete")
+    return errors
+
+
+def _validate_network_management_posture_v1_shape(facts: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if facts.get("schema_ref") != NETWORK_MANAGEMENT_POSTURE_SCHEMA_REF:
+        errors.append("network_management_posture.schema_ref_mismatch")
+    source = facts.get("source_inventory_contract")
+    if source is not None:
+        if not isinstance(source, dict):
+            errors.append("network_management_posture.invalid_source_inventory_contract")
+        else:
+            for key in ("id", "version"):
+                if not _bounded_string(source.get(key), max_length=128, required=True):
+                    errors.append(
+                        f"network_management_posture.invalid_source_inventory_contract:{key}"
+                    )
+    findings = facts.get("findings")
+    if not isinstance(findings, list) or len(findings) > 16:
+        errors.append("network_management_posture.invalid_findings")
+    else:
+        for item in findings:
+            if not isinstance(item, dict):
+                errors.append("network_management_posture.invalid_finding")
+                continue
+            if not _bounded_string(item.get("reason_code"), max_length=64, required=True):
+                errors.append("network_management_posture.invalid_finding:reason_code")
+            if not _bounded_string(item.get("severity"), max_length=16, required=True):
+                errors.append("network_management_posture.invalid_finding:severity")
+    if not isinstance(facts.get("complete"), bool):
+        errors.append("network_management_posture.invalid_complete")
+    return errors
+
+
 def _bounded_text(value: Any, *, limit: int) -> str:
     return " ".join(str(value or "").split())[:limit]
+
+
+def _contract_ref(value: Any) -> dict[str, str] | None:
+    if not isinstance(value, dict):
+        return None
+    return {
+        "id": _bounded_text(value.get("id"), limit=128),
+        "version": _bounded_text(value.get("version"), limit=32),
+    }
+
+
+def _bounded_finding(value: dict[str, Any]) -> dict[str, str]:
+    return {
+        "reason_code": _bounded_text(value.get("reason_code"), limit=64),
+        "severity": _bounded_text(value.get("severity"), limit=16),
+    }
+
+
+def _optional_bool(value: Any) -> bool | None:
+    if isinstance(value, bool):
+        return value
+    return None
 
 
 def _optional_float(value: Any) -> float | None:
@@ -939,3 +1268,7 @@ def _optional_number(value: Any) -> bool:
 
 def _optional_non_negative_int_value(value: Any) -> bool:
     return value is None or (isinstance(value, int) and value >= 0)
+
+
+def _optional_bool_value(value: Any) -> bool:
+    return value is None or isinstance(value, bool)

@@ -4,11 +4,15 @@ from typing import Any
 
 from rexecop.execution.backend import StepExecutionContext
 
+from tecrax.contracts import (
+    build_network_device_inventory_v1,
+    build_network_management_posture_v1,
+)
 from tecrax.normalizers.common import (
     connector_results,
-    finalize_and_store,
     integer,
     single_line,
+    store_facts,
     stdout,
 )
 
@@ -67,17 +71,8 @@ def normalize_network_device_inventory(context: StepExecutionContext) -> dict[st
             management["ssh_protocol_v2_enabled"] is not None,
         )
     )
-    return finalize_and_store(
-        context,
-        "network_device_inventory",
-        result,
-        contract_id="tecrax.network_device_inventory",
-        requested=["device_identity", "ssh_management_posture"],
-        observed=["device_identity", "ssh_management_posture"] if result["complete"] else [],
-        not_observed=[] if result["complete"] else ["one_or_more_device_fields"],
-        assessment="healthy" if result["complete"] else "unknown",
-        non_claims=["running_configuration", "vlans", "ports", "snmp_telemetry"],
-    )
+    facts = build_network_device_inventory_v1(result)
+    return store_facts(context, "network_device_inventory", facts)
 
 
 def assess_network_device_management_posture(
@@ -99,22 +94,12 @@ def assess_network_device_management_posture(
     if not isinstance(idle_timeout, int) or idle_timeout <= 0:
         findings.append({"reason_code": "ssh_idle_timeout_unknown", "severity": "low"})
     complete = bool(inventory.get("complete"))
-    assessment = "degraded" if findings and complete else ("healthy" if complete else "unknown")
-    return finalize_and_store(
-        context,
-        "network_management_posture",
-        {
-            "source_inventory_contract": inventory.get("contract"),
-            "findings": findings[:16],
-            "complete": complete,
-        },
-        contract_id="tecrax.network_management_posture",
-        requested=["ssh_protocols", "ssh_crypto", "idle_timeout"],
-        observed=["ssh_protocols", "ssh_crypto", "idle_timeout"] if complete else [],
-        not_observed=[] if complete else ["one_or_more_management_fields"],
-        assessment=assessment,
-        non_claims=["running_configuration", "port_security", "vlans", "firmware_compliance"],
+    facts = build_network_management_posture_v1(
+        source_inventory_contract=inventory.get("contract"),
+        findings=findings,
+        complete=complete,
     )
+    return store_facts(context, "network_management_posture", facts)
 
 
 def _parse_colon_fields(value: str) -> dict[str, str]:

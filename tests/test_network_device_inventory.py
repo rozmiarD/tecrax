@@ -52,6 +52,7 @@ def test_normalize_network_device_inventory_bounds_legacy_cli_output() -> None:
     }
     assert result["complete"] is True
     assert result["contract"]["id"] == "tecrax.network_device_inventory"
+    assert result["schema_ref"] == "schemas/network_device_inventory.v1.schema.json"
     assert "omitted value" not in str(result)
     assert context.shared_state["network_device_inventory"] == result
 
@@ -91,6 +92,7 @@ def test_management_posture_emits_bounded_findings() -> None:
     )
     result = assess_network_device_management_posture(context)
     assert result["assessment"]["state"] == "degraded"
+    assert result["schema_ref"] == "schemas/network_management_posture.v1.schema.json"
     assert {item["reason_code"] for item in result["findings"]} == {
         "legacy_ssh_v1_enabled",
         "legacy_ssh_crypto_observed",

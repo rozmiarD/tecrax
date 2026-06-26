@@ -10,6 +10,8 @@ All notable Tecrax profile changes are documented here.
   packaged schema artifact, bounded model builder, and pure validator.
 - Added versioned local SSH/systemd facts contracts for NTP local health, Docker
   service health, host security posture, and NTP server observation.
+- Added versioned network-device inventory and network-management posture facts
+  contracts for existing bounded legacy CLI observations.
 - Refactored fact normalizer storage so active normalizers share the same
   `finalize_facts` and `shared_state` write path.
 - Split active normalizers into host, services, network, diagnostics, and common
