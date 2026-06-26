@@ -29,12 +29,24 @@
       "type": "object",
       "required": [
         "unattended_upgrades_enabled",
+        "available_updates",
         "aslr_mode",
         "dmesg_restrict",
         "reboot_required"
       ],
       "properties": {
         "unattended_upgrades_enabled": {"type": "boolean"},
+        "available_updates": {
+          "type": "object",
+          "required": ["regular", "security", "held_back_or_blocked", "unknown"],
+          "properties": {
+            "regular": {"type": ["integer", "null"], "minimum": 0},
+            "security": {"type": ["integer", "null"], "minimum": 0},
+            "held_back_or_blocked": {"type": ["integer", "null"], "minimum": 0},
+            "unknown": {"type": ["integer", "null"], "minimum": 0}
+          },
+          "additionalProperties": false
+        },
         "aslr_mode": {"type": ["integer", "null"], "minimum": 0},
         "dmesg_restrict": {"type": ["integer", "null"], "minimum": 0},
         "reboot_required": {"type": "boolean"}

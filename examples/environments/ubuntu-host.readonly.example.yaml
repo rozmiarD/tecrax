@@ -56,6 +56,9 @@ environment:
         - action: read_unattended_upgrades_state
           command: systemctl
           args: ["is-enabled", "unattended-upgrades"]
+        - action: read_available_updates_summary
+          command: /usr/lib/update-notifier/apt-check
+          args: []
         - action: read_aslr_state
           command: sysctl
           args: ["-n", "kernel.randomize_va_space"]
@@ -241,6 +244,10 @@ environment:
       - rule_id: allow-read-unattended-upgrades-state
         effect: allow
         conditions: {action.category: connector, action.mode: read, action.backend: ssh_readonly, action.connector: monitoring_host, action.name: read_unattended_upgrades_state}
+        reason_code: fixed_read_allowed
+      - rule_id: allow-read-available-updates-summary
+        effect: allow
+        conditions: {action.category: connector, action.mode: read, action.backend: ssh_readonly, action.connector: monitoring_host, action.name: read_available_updates_summary}
         reason_code: fixed_read_allowed
       - rule_id: allow-read-aslr-state
         effect: allow

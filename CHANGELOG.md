@@ -12,6 +12,8 @@ All notable Tecrax profile changes are documented here.
   service health, host security posture, and NTP server observation.
 - Added versioned network-device inventory and network-management posture facts
   contracts for existing bounded legacy CLI observations.
+- Extended the host security posture slice with a bounded available-update count summary
+  while continuing to exclude package names, repositories, changelogs and paths.
 - Documented the HTTP action identity checkpoint for future Zabbix, AdGuard and
   Portainer API expansion while preserving RExecOp core neutrality.
 - Refactored fact normalizer storage so active normalizers share the same

@@ -5,6 +5,7 @@ workflow:
   risk: low
   steps:
     - {id: read_unattended_upgrades_state, type: connector, connector: monitoring_host, action: read_unattended_upgrades_state, pause_safe: true}
+    - {id: read_available_updates_summary, type: connector, connector: monitoring_host, action: read_available_updates_summary, pause_safe: true}
     - {id: read_aslr_state, type: connector, connector: monitoring_host, action: read_aslr_state, pause_safe: true}
     - {id: read_dmesg_restrict_state, type: connector, connector: monitoring_host, action: read_dmesg_restrict_state, pause_safe: true}
     - {id: read_reboot_required_marker, type: connector, connector: monitoring_host, action: read_reboot_required_marker, pause_safe: true}

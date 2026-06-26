@@ -235,6 +235,12 @@ def test_local_ssh_fact_contract_v1_builders_emit_schema_refs() -> None:
     security = build_host_security_posture_v1(
         signals={
             "unattended_upgrades_enabled": True,
+            "available_updates": {
+                "regular": 0,
+                "security": 0,
+                "held_back_or_blocked": None,
+                "unknown": 0,
+            },
             "aslr_mode": 2,
             "dmesg_restrict": 1,
             "reboot_required": False,
@@ -314,6 +320,12 @@ def test_local_ssh_fact_contract_v1_rejects_malformed_payloads() -> None:
     security = build_host_security_posture_v1(
         signals={
             "unattended_upgrades_enabled": True,
+            "available_updates": {
+                "regular": 0,
+                "security": 0,
+                "held_back_or_blocked": None,
+                "unknown": 0,
+            },
             "aslr_mode": 2,
             "dmesg_restrict": 1,
             "reboot_required": False,

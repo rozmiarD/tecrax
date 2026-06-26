@@ -61,7 +61,10 @@ These contracts intentionally stay small. Docker remains a systemd service/socke
 observation and does not claim container runtime health, Docker socket access, `inspect`,
 logs or `exec`. NTP server observation keeps bounded daemon/system variables and does not
 persist peer identities, peer addresses or raw command output. Host security posture remains
-a minimal signal set, not a CIS scanner or package/user/process inventory.
+a minimal signal set, not a CIS scanner or package/user/process inventory. Its available
+updates observation is a bounded count summary only: regular updates, security updates,
+unknown parse state and an explicit `held_back_or_blocked` non-measurement. Package names,
+repositories, changelogs and local package paths are not part of the facts contract.
 
 ## Network device facts v1
 

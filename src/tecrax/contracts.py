@@ -36,6 +36,7 @@ HOST_SECURITY_POSTURE_CONTRACT_VERSION = "1.0"
 HOST_SECURITY_POSTURE_SCHEMA_REF = "schemas/host_security_posture.v1.schema.json"
 HOST_SECURITY_POSTURE_REQUESTED = [
     "unattended_upgrades",
+    "available_updates",
     "aslr",
     "dmesg_restrict",
     "reboot_required",
@@ -339,7 +340,7 @@ class DockerServiceHealthV1:
 
 @dataclass(frozen=True)
 class HostSecurityPostureV1:
-    signals: dict[str, bool | int | None]
+    signals: dict[str, Any]
     complete: bool
     healthy: bool
 
@@ -351,19 +352,22 @@ class HostSecurityPostureV1:
         complete: bool,
         healthy: bool,
     ) -> "HostSecurityPostureV1":
+        available_updates = _update_summary(signals.get("available_updates"))
+        normalized_complete = bool(complete) and available_updates["unknown"] == 0
         return cls(
             signals={
                 "unattended_upgrades_enabled": bool(
                     signals.get("unattended_upgrades_enabled")
                 ),
+                "available_updates": available_updates,
                 "aslr_mode": _optional_non_negative_int(signals.get("aslr_mode")),
                 "dmesg_restrict": _optional_non_negative_int(
                     signals.get("dmesg_restrict")
                 ),
                 "reboot_required": bool(signals.get("reboot_required")),
             },
-            complete=bool(complete),
-            healthy=bool(healthy),
+            complete=normalized_complete,
+            healthy=bool(healthy) and normalized_complete,
         )
 
     def payload(self) -> dict[str, Any]:
@@ -770,7 +774,14 @@ def build_host_security_posture_v1(
         observed=HOST_SECURITY_POSTURE_REQUESTED if model.complete else [],
         not_observed=[] if model.complete else ["one_or_more_security_signals"],
         assessment="healthy" if model.healthy else ("degraded" if model.complete else "unknown"),
-        non_claims=["cis_compliance", "users", "packages", "ports", "ssh_configuration"],
+        non_claims=[
+            "cis_compliance",
+            "users",
+            "package_names",
+            "repositories",
+            "ports",
+            "ssh_configuration",
+        ],
     )
 
 
@@ -1081,10 +1092,38 @@ def _validate_host_security_posture_v1_shape(facts: dict[str, Any]) -> list[str]
         for key in ("aslr_mode", "dmesg_restrict"):
             if not _optional_non_negative_int_value(signals.get(key)):
                 errors.append(f"host_security_posture.invalid_signals:{key}")
+        updates = signals.get("available_updates")
+        if updates is not None:
+            if not isinstance(updates, dict):
+                errors.append("host_security_posture.invalid_signals:available_updates")
+            else:
+                for key in ("regular", "security", "unknown"):
+                    if not _optional_non_negative_int_value(updates.get(key)):
+                        errors.append(
+                            f"host_security_posture.invalid_available_updates:{key}"
+                        )
+                held = updates.get("held_back_or_blocked")
+                if held is not None and not _optional_non_negative_int_value(held):
+                    errors.append(
+                        "host_security_posture.invalid_available_updates:"
+                        "held_back_or_blocked"
+                    )
     for key in ("complete", "healthy"):
         if not isinstance(facts.get(key), bool):
             errors.append(f"host_security_posture.invalid_{key}")
     return errors
+
+
+def _update_summary(value: Any) -> dict[str, int | None]:
+    raw = value if isinstance(value, dict) else {}
+    return {
+        "regular": _optional_non_negative_int(raw.get("regular")),
+        "security": _optional_non_negative_int(raw.get("security")),
+        "held_back_or_blocked": _optional_non_negative_int(
+            raw.get("held_back_or_blocked")
+        ),
+        "unknown": _optional_non_negative_int(raw.get("unknown")),
+    }
 
 
 def _validate_ntp_server_observation_v1_shape(facts: dict[str, Any]) -> list[str]:

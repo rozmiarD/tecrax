@@ -43,21 +43,33 @@ def normalize_basic_host_inventory(context: StepExecutionContext) -> dict[str, A
 def normalize_host_security_posture(context: StepExecutionContext) -> dict[str, Any]:
     results = connector_results(context)
     unattended = single_line(stdout(results, "read_unattended_upgrades_state"), limit=32)
+    available_updates = _parse_update_summary(
+        _connector_text(results, "read_available_updates_summary")
+    )
     aslr = integer(single_line(stdout(results, "read_aslr_state"), limit=8))
     dmesg = integer(single_line(stdout(results, "read_dmesg_restrict_state"), limit=8))
     reboot_marker = single_line(stdout(results, "read_reboot_required_marker"), limit=32)
     signals = {
         "unattended_upgrades_enabled": unattended == "enabled",
+        "available_updates": available_updates,
         "aslr_mode": aslr,
         "dmesg_restrict": dmesg,
         "reboot_required": reboot_marker == "reboot-required",
     }
     complete = (
         unattended in {"enabled", "disabled", "static", "masked"}
+        and available_updates["unknown"] == 0
         and aslr is not None
         and dmesg is not None
     )
-    healthy = complete and signals["unattended_upgrades_enabled"] and aslr == 2 and dmesg == 1
+    healthy = (
+        complete
+        and signals["unattended_upgrades_enabled"]
+        and available_updates["security"] == 0
+        and not signals["reboot_required"]
+        and aslr == 2
+        and dmesg == 1
+    )
     facts = build_host_security_posture_v1(
         signals=signals,
         complete=complete,
@@ -108,6 +120,52 @@ def _parse_ntp_variables(value: str) -> dict[str, str]:
         if separator and key in allowed:
             parsed[key] = raw.strip()[:32]
     return parsed
+
+
+def _connector_text(results: dict[str, Any], step_id: str) -> str:
+    payload = results.get(step_id)
+    if not isinstance(payload, dict):
+        return ""
+    return "\n".join(
+        str(payload.get(key) or "")
+        for key in ("stdout", "stderr")
+        if payload.get(key) is not None
+    )
+
+
+def _parse_update_summary(value: str) -> dict[str, int | None]:
+    text = single_line(value, limit=256)
+    total: int | None = None
+    security: int | None = None
+    if ";" in text:
+        parts = [part.strip() for part in text.split(";")]
+        if len(parts) >= 2:
+            total = integer(parts[0])
+            security = integer(parts[1])
+    else:
+        tokens = text.lower().replace(".", "").split()
+        for index, token in enumerate(tokens):
+            number = integer(token)
+            if number is None:
+                continue
+            suffix = " ".join(tokens[index + 1 : index + 5])
+            if "packages can be updated" in suffix:
+                total = number
+            if "updates are security updates" in suffix:
+                security = number
+    if total is None or security is None:
+        return {
+            "regular": None,
+            "security": None,
+            "held_back_or_blocked": None,
+            "unknown": 1,
+        }
+    return {
+        "regular": max(int(total) - int(security), 0),
+        "security": max(int(security), 0),
+        "held_back_or_blocked": None,
+        "unknown": 0,
+    }
 
 
 def _parse_df(value: str) -> dict[str, Any]:

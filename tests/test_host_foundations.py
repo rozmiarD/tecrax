@@ -17,6 +17,7 @@ def test_host_security_posture_normalizes_four_bounded_signals() -> None:
         shared_state={
             "connector_results": {
                 "read_unattended_upgrades_state": {"stdout": "enabled\n"},
+                "read_available_updates_summary": {"stderr": "3;0\n"},
                 "read_aslr_state": {"stdout": "2\n"},
                 "read_dmesg_restrict_state": {"stdout": "1\n"},
                 "read_reboot_required_marker": {"stdout": ""},
@@ -27,8 +28,36 @@ def test_host_security_posture_normalizes_four_bounded_signals() -> None:
     assert result["complete"] is True
     assert result["healthy"] is True
     assert result["assessment"]["state"] == "healthy"
+    assert result["signals"]["available_updates"] == {
+        "regular": 3,
+        "security": 0,
+        "held_back_or_blocked": None,
+        "unknown": 0,
+    }
     assert result["schema_ref"] == "schemas/host_security_posture.v1.schema.json"
-    assert "users" in result["non_claims"]
+    assert "package_names" in result["non_claims"]
+
+
+def test_host_security_posture_marks_unparsed_updates_unknown() -> None:
+    context = StepExecutionContext(
+        operation_id="op",
+        target="host",
+        mode="dry_run",
+        step={"id": "normalize"},
+        shared_state={
+            "connector_results": {
+                "read_unattended_upgrades_state": {"stdout": "enabled\n"},
+                "read_available_updates_summary": {"stderr": "unexpected output\n"},
+                "read_aslr_state": {"stdout": "2\n"},
+                "read_dmesg_restrict_state": {"stdout": "1\n"},
+                "read_reboot_required_marker": {"stdout": ""},
+            }
+        },
+    )
+    result = normalize_host_security_posture(context)
+    assert result["complete"] is False
+    assert result["assessment"]["state"] == "unknown"
+    assert result["signals"]["available_updates"]["unknown"] == 1
 
 
 def test_ntp_server_observation_drops_peer_identity() -> None:

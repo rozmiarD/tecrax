@@ -18,6 +18,7 @@ workflow:
     - {id: read_docker_service_state, type: connector, connector: monitoring_host, action: read_docker_service_state, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_docker_socket_state, type: connector, connector: monitoring_host, action: read_docker_socket_state, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_unattended_upgrades_state, type: connector, connector: monitoring_host, action: read_unattended_upgrades_state, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
+    - {id: read_available_updates_summary, type: connector, connector: monitoring_host, action: read_available_updates_summary, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_aslr_state, type: connector, connector: monitoring_host, action: read_aslr_state, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_dmesg_restrict_state, type: connector, connector: monitoring_host, action: read_dmesg_restrict_state, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
     - {id: read_reboot_required_marker, type: connector, connector: monitoring_host, action: read_reboot_required_marker, timeout: 10s, pause_safe: true, metadata: {continue_on_error: true}}
