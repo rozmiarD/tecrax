@@ -122,6 +122,25 @@ The public parser fixture lives under
 `tests/fixtures/network_devices/hpe_v1910_comware5/` and does not contain the
 legacy full-CLI unlock material.
 
+## Management posture lite
+
+`assess_network_device_management_posture_readonly` reuses the same fixed wrapper
+actions as inventory, then derives `tecrax.network_management_posture@1.0` from the
+normalized inventory fact. It does not run additional device commands.
+
+The current bounded findings are limited to:
+
+- `legacy_ssh_v1_enabled`;
+- `legacy_ssh_crypto_observed`;
+- `ssh_server_disabled`;
+- `ssh_protocol_v2_disabled`;
+- `ssh_idle_timeout_unknown`;
+- `ssh_max_clients_unknown`.
+
+The posture fact keeps `running_configuration`, `port_security`, `vlans` and
+`firmware_compliance` as explicit non-claims. VLAN and port-security checks need a
+separate future design checkpoint with a dedicated facts contract and fixtures.
+
 ## Safety notes
 
 This slice observes legacy management access. It may report weak or old SSH

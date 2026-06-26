@@ -56,6 +56,10 @@ def assess_network_device_management_posture(
     management = management if isinstance(management, dict) else {}
     hardening = hardening if isinstance(hardening, dict) else {}
     findings: list[dict[str, str]] = []
+    if management.get("ssh_server_enabled") is False:
+        findings.append({"reason_code": "ssh_server_disabled", "severity": "medium"})
+    if management.get("ssh_protocol_v2_enabled") is False:
+        findings.append({"reason_code": "ssh_protocol_v2_disabled", "severity": "high"})
     if hardening.get("legacy_ssh_v1_enabled") is True:
         findings.append({"reason_code": "legacy_ssh_v1_enabled", "severity": "high"})
     if hardening.get("legacy_crypto_observed") is True:
@@ -63,6 +67,9 @@ def assess_network_device_management_posture(
     idle_timeout = management.get("idle_timeout_seconds")
     if not isinstance(idle_timeout, int) or idle_timeout <= 0:
         findings.append({"reason_code": "ssh_idle_timeout_unknown", "severity": "low"})
+    max_clients = management.get("max_clients")
+    if not isinstance(max_clients, int) or max_clients <= 0:
+        findings.append({"reason_code": "ssh_max_clients_unknown", "severity": "low"})
     complete = bool(inventory.get("complete"))
     facts = build_network_management_posture_v1(
         source_inventory_contract=inventory.get("contract"),

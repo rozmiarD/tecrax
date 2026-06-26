@@ -71,6 +71,9 @@ def test_sanitized_target_catalog_projects_network_device_operation() -> None:
     assert by_id["collect_network_device_inventory_readonly"]["applicability"][
         "status"
     ] == "admission_required"
+    assert by_id["assess_network_device_management_posture_readonly"]["applicability"][
+        "status"
+    ] == "admission_required"
     assert by_id["diagnose_monitoring_host"]["applicability"]["applicable"] is False
 
 

@@ -102,3 +102,21 @@ def test_ubuntu_inventory_example_projects_b2_runtime_controls(tmp_path: Path) -
             "inventory-timeout",
         ],
     }
+
+
+def test_network_device_management_posture_example_is_admitted(tmp_path: Path) -> None:
+    controller = OperationController(store=FileStore(tmp_path / ".rexecop"))
+
+    operation = controller.plan(
+        profile_path=Path(profile_root()),
+        environment_path=(
+            REPO_ROOT / "examples/environments/network-device.readonly.example.yaml"
+        ),
+        intent="assess_network_device_management_posture_readonly",
+        target="network-device-01",
+        mode="dry_run",
+    )
+
+    verdict = operation.metadata["policy_verdict"]
+    assert verdict["decision"] == "allow"
+    assert verdict["reason_code"] == "network_device_management_posture_allowed"

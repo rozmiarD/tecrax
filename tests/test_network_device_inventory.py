@@ -17,23 +17,27 @@ def _fixture(family: str, name: str) -> str:
     return (FIXTURES / family / name).read_text(encoding="utf-8")
 
 
-def test_tplink_sg2452_golden_fixture_normalizes_inventory() -> None:
-    context = StepExecutionContext(
+def _network_context(family: str, *, target: str = "network-device-01") -> StepExecutionContext:
+    return StepExecutionContext(
         operation_id="op-test",
-        target="network-device-01",
+        target=target,
         mode="dry_run",
         step={"id": "normalize_network_device_inventory"},
         shared_state={
             "connector_results": {
                 "read_network_device_system_info": {
-                    "stdout": _fixture("tplink_sg2452_v1", "system_info.txt")
+                    "stdout": _fixture(family, "system_info.txt")
                 },
                 "read_network_device_ssh_status": {
-                    "stdout": _fixture("tplink_sg2452_v1", "ssh_status.txt")
+                    "stdout": _fixture(family, "ssh_status.txt")
                 },
             }
         },
     )
+
+
+def test_tplink_sg2452_golden_fixture_normalizes_inventory() -> None:
+    context = _network_context("tplink_sg2452_v1")
 
     result = normalize_network_device_inventory(context)
 
@@ -54,22 +58,7 @@ def test_tplink_sg2452_golden_fixture_normalizes_inventory() -> None:
 
 
 def test_hpe_v1910_golden_fixture_normalizes_inventory() -> None:
-    context = StepExecutionContext(
-        operation_id="op-test",
-        target="network-device-02",
-        mode="dry_run",
-        step={"id": "normalize_network_device_inventory"},
-        shared_state={
-            "connector_results": {
-                "read_network_device_system_info": {
-                    "stdout": _fixture("hpe_v1910_comware5", "system_info.txt")
-                },
-                "read_network_device_ssh_status": {
-                    "stdout": _fixture("hpe_v1910_comware5", "ssh_status.txt")
-                },
-            }
-        },
-    )
+    context = _network_context("hpe_v1910_comware5", target="network-device-02")
 
     result = normalize_network_device_inventory(context)
 
@@ -179,7 +168,38 @@ def test_prompt_drift_without_device_fields_fails_closed() -> None:
     assert "_cmdline-mode" not in str(result)
 
 
-def test_management_posture_emits_bounded_findings() -> None:
+def test_tplink_management_posture_emits_bounded_findings() -> None:
+    context = _network_context("tplink_sg2452_v1")
+    normalize_network_device_inventory(context)
+
+    result = assess_network_device_management_posture(context)
+
+    assert result["assessment"]["state"] == "degraded"
+    assert result["schema_ref"] == "schemas/network_management_posture.v1.schema.json"
+    assert {item["reason_code"] for item in result["findings"]} == {
+        "legacy_ssh_v1_enabled",
+        "legacy_ssh_crypto_observed",
+    }
+    assert "running_configuration" in result["non_claims"]
+    assert "vlans" in result["non_claims"]
+    assert "port_security" in result["non_claims"]
+
+
+def test_hpe_management_posture_uses_same_bounded_contract() -> None:
+    context = _network_context("hpe_v1910_comware5", target="network-device-02")
+    normalize_network_device_inventory(context)
+
+    result = assess_network_device_management_posture(context)
+
+    assert result["complete"] is True
+    assert result["assessment"]["state"] == "degraded"
+    assert {item["reason_code"] for item in result["findings"]} == {
+        "legacy_ssh_crypto_observed",
+    }
+    assert "512900" not in str(result)
+
+
+def test_management_posture_flags_disabled_or_unbounded_ssh_state() -> None:
     context = StepExecutionContext(
         operation_id="op-test",
         target="network-device-01",
@@ -189,19 +209,36 @@ def test_management_posture_emits_bounded_findings() -> None:
             "network_device_inventory": {
                 "contract": {"id": "tecrax.network_device_inventory", "version": "1.0"},
                 "complete": True,
-                "management_access": {"idle_timeout_seconds": 120},
+                "management_access": {
+                    "ssh_server_enabled": False,
+                    "ssh_protocol_v2_enabled": False,
+                    "idle_timeout_seconds": None,
+                    "max_clients": None,
+                },
                 "hardening_observations": {
-                    "legacy_ssh_v1_enabled": True,
-                    "legacy_crypto_observed": True,
+                    "legacy_ssh_v1_enabled": False,
+                    "legacy_crypto_observed": False,
                 },
             }
         },
     )
+
     result = assess_network_device_management_posture(context)
-    assert result["assessment"]["state"] == "degraded"
-    assert result["schema_ref"] == "schemas/network_management_posture.v1.schema.json"
+
     assert {item["reason_code"] for item in result["findings"]} == {
-        "legacy_ssh_v1_enabled",
-        "legacy_ssh_crypto_observed",
+        "ssh_server_disabled",
+        "ssh_protocol_v2_disabled",
+        "ssh_idle_timeout_unknown",
+        "ssh_max_clients_unknown",
     }
-    assert "running_configuration" in result["non_claims"]
+
+
+def test_management_posture_fails_closed_when_inventory_is_incomplete() -> None:
+    context = _network_context("unsupported", target="network-device-unsupported")
+    normalize_network_device_inventory(context)
+
+    result = assess_network_device_management_posture(context)
+
+    assert result["complete"] is False
+    assert result["scope"]["not_observed"] == ["one_or_more_management_fields"]
+    assert result["assessment"]["state"] == "unknown"

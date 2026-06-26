@@ -84,7 +84,8 @@ The inventory contract covers only sanitized target label, bounded device identi
 management SSH access posture and hardening observations derived from fixed wrapper actions.
 It does not claim running configuration, VLANs, port state, port security, SNMP telemetry or
 firmware compliance. The posture contract consumes the inventory fact and emits bounded
-findings such as legacy SSH v1, observed legacy SSH crypto and unknown idle timeout.
+findings such as legacy SSH v1, observed legacy SSH crypto, disabled SSH server, disabled
+SSH v2, unknown idle timeout and unknown max-client bound.
 
 HTTP reachability facts for Zabbix, AdGuard and Portainer keep their current narrow shape.
 The HTTP action identity checkpoint in `docs/http-action-identity-checkpoint.md` defines

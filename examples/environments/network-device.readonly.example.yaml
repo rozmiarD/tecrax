@@ -40,6 +40,13 @@ environment:
           action.mode: read
           action.intent: collect_network_device_inventory_readonly
         reason_code: network_device_inventory_allowed
+      - rule_id: allow-network-device-management-posture-operation
+        effect: allow
+        conditions:
+          action.category: operation
+          action.mode: read
+          action.intent: assess_network_device_management_posture_readonly
+        reason_code: network_device_management_posture_allowed
       - rule_id: allow-read-network-device-system-info
         effect: allow
         conditions:
