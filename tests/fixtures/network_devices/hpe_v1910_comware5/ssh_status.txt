@@ -1,0 +1,6 @@
+SSH server: Enable
+SSH version: 2.0
+SSH authentication timeout: 60 second(s)
+SSH server compatible-ssh1x: Disable
+SSH max connections: 5
+AES128-CBC: Enable

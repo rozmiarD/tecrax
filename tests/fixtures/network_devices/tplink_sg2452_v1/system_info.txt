@@ -1,0 +1,6 @@
+ System Description      : 48-Port Gigabit Smart Switch with 4 SFP Slots
+ System Name             : TL-SG2452
+ Hardware Version        : TL-SG2452 1.0
+ Software Version        : 1.0.4 Build 20151127 Rel.67331(s)
+ Contact                 : SANITIZED
+ Location                : SANITIZED

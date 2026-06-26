@@ -1,0 +1,6 @@
+ SSH Server              : Enabled
+ SSH Server Protocol V1  : Enabled
+ SSH Server Protocol V2  : Enabled
+ SSH Idle Timeout        : 120
+ SSH MAX Client          : 5
+ AES128-CBC              : Enabled

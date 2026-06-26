@@ -1,0 +1,3 @@
+Vendor: Unsupported Example Device
+Model: Unknown Test Fixture
+Software: ExampleOS 0.0

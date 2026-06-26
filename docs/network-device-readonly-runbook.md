@@ -33,6 +33,15 @@ The normalizer keeps only bounded device identity and management SSH status. It
 does not preserve operator contact/location fields or user-account listings in
 the normalized result.
 
+Parser support is explicit per public fixture family:
+
+- `tplink_sg2452_v1` for the bounded TL-SG2452 system/SSH status projection;
+- `hpe_v1910_comware5` for the bounded HPE V1910 Comware 5 system/SSH status projection.
+
+Any unsupported or prompt-drifted output must normalize to `complete=false` so the
+validation rule fails closed. Do not add a generic parser that tries to infer arbitrary
+network-device CLI output.
+
 ## Current operator targets
 
 The private operator environment may map real devices to sanitized target
@@ -82,6 +91,9 @@ The current TP-Link path is a bounded read-only CLI adapter. It collects:
 
 It must not collect user lists, running configuration, VLAN tables, port security
 configuration, SNMP configuration or interface inventory in this slice.
+The public parser fixture lives under
+`tests/fixtures/network_devices/tplink_sg2452_v1/` and contains only sanitized
+system and SSH status output.
 
 ### HPE V1910-48G
 
@@ -106,6 +118,9 @@ Do not run or add HPE actions that read full configuration, local users, startup
 configuration, VLAN configuration, port security, SNMP communities or interface
 details until a separate read-only intent explicitly defines bounded output,
 redaction and validation.
+The public parser fixture lives under
+`tests/fixtures/network_devices/hpe_v1910_comware5/` and does not contain the
+legacy full-CLI unlock material.
 
 ## Safety notes
 

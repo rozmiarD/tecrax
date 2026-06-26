@@ -1,0 +1,6 @@
+HPE Comware Platform Software
+Comware Software, Version 5.20.99, Release 1111
+Copyright (c) SANITIZED
+HPE V1910-48G Switch JE009A uptime is 0 week, 0 day, 0 hour, 1 minute
+Device Name: HPE V1910-48G Switch JE009A
+Hardware Version: JE009A

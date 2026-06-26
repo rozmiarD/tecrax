@@ -24,6 +24,9 @@ All notable Tecrax profile changes are documented here.
 - Added bounded monitoring-host escalation proposal vectors with negative tests
   for unknown intents, raw command payloads, unsafe evidence refs and secret-like
   explanations; proposals remain untrusted and never grant execution.
+- Split network-device CLI parsing into explicit TP-Link SG2452 and HPE V1910
+  parser families with sanitized golden fixtures and fail-closed unsupported
+  output tests.
 - Documented the HTTP action identity checkpoint for future Zabbix, AdGuard and
   Portainer API expansion while preserving RExecOp core neutrality.
 - Refactored fact normalizer storage so active normalizers share the same
