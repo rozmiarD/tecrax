@@ -38,6 +38,7 @@ jobs:
         run: |
           python scripts/validate_public_truth.py
           python scripts/validate_active_profile.py
+          python scripts/validate_secret_topology.py
       - name: Run tests
         run: python -m pytest -q
 

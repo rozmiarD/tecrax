@@ -18,15 +18,27 @@ from tecrax.contracts import FACTS_CONTRACTS  # noqa: E402
 
 READ_ONLY_MODES = {"read_only", "dry_run"}
 FORBIDDEN_ACTIVE_TOKENS = {
-    "fixture",
-    "mock",
     "apply",
-    "restart",
-    "proxmox",
-    "pbs",
-    "wazuh",
-    "samba",
+    "backup",
+    "fixture",
+    "frigate",
     "grafana",
+    "hillstone",
+    "mock",
+    "pbs",
+    "printer",
+    "proxmox",
+    "restart",
+    "samba",
+    "wazuh",
+}
+FORBIDDEN_CONNECTOR_ACTION_TOKENS = {
+    "current-configuration",
+    "port-security-summary",
+    "running-config",
+    "show-running",
+    "startup-config",
+    "vlan-summary",
 }
 
 
@@ -130,11 +142,20 @@ def collect_errors(profile_root: Path | None = None) -> list[str]:
             capabilities = {str(item) for item in connector_data.get("capabilities") or []}
             if action not in capabilities:
                 errors.append(f"{intent_id}:undeclared_connector_action:{connector}:{action}")
+            connector_text = connector_path.read_text(encoding="utf-8").lower()
+            for token in FORBIDDEN_CONNECTOR_ACTION_TOKENS:
+                if token in connector_text:
+                    errors.append(f"{connector}:forbidden_connector_action_token:{token}")
 
         active_text = (intent_path.read_text(encoding="utf-8") + workflow_path.read_text(encoding="utf-8")).lower()
         for token in FORBIDDEN_ACTIVE_TOKENS:
             if token in active_text:
                 errors.append(f"{intent_id}:forbidden_active_token:{token}")
+
+    taxonomy_text = (profile / "taxonomy.yaml").read_text(encoding="utf-8").lower()
+    for token in FORBIDDEN_ACTIVE_TOKENS:
+        if token in taxonomy_text:
+            errors.append(f"taxonomy:forbidden_future_token:{token}")
 
     return sorted(set(errors))
 

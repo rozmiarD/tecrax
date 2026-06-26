@@ -104,6 +104,7 @@ def collect_errors() -> list[str]:
     _require(errors, '.github/workflows/ci.yml', "python-version: ['3.11', '3.12']")
     _require(errors, '.github/workflows/ci.yml', 'python scripts/validate_public_truth.py')
     _require(errors, '.github/workflows/ci.yml', 'python scripts/validate_active_profile.py')
+    _require(errors, '.github/workflows/ci.yml', 'python scripts/validate_secret_topology.py')
     _require(errors, '.github/workflows/ci.yml', 'package-dry-run:')
     _require(errors, '.github/workflows/ci.yml', 'rm -rf dist build *.egg-info')
     _require(errors, '.github/workflows/ci.yml', 'python -m twine check dist/*')

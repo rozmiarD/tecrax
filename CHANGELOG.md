@@ -34,6 +34,8 @@ All notable Tecrax profile changes are documented here.
 - Expanded future-product activation gates for Proxmox, PBS, Wazuh, Samba,
   Grafana, Frigate, Hillstone, printers and future backup support while keeping
   placeholder intents out of the active profile.
+- Added CI/profile hardening for active-profile drift, future-product placeholders,
+  premature VLAN/port-security actions and tracked secret/topology leak patterns.
 - Documented the HTTP action identity checkpoint for future Zabbix, AdGuard and
   Portainer API expansion while preserving RExecOp core neutrality.
 - Refactored fact normalizer storage so active normalizers share the same

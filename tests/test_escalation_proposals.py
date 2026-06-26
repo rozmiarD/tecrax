@@ -172,7 +172,7 @@ def test_escalation_proposal_rejects_secret_like_explanation() -> None:
 
 def test_escalation_proposal_rejects_raw_diagnosis_extras() -> None:
     diagnosis = _diagnosis()
-    diagnosis["stdout"] = "password=not-for-proposal docker exec something"
+    diagnosis["stdout"] = "raw connector output docker exec something"
 
     with pytest.raises(EscalationProposalValidationError, match="raw_output_forbidden"):
         build_monitoring_host_escalation_proposal(

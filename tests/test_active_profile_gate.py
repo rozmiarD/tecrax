@@ -67,3 +67,29 @@ def test_active_profile_rejects_undeclared_connector_action(tmp_path: Path) -> N
     path.write_text(yaml.safe_dump(data), encoding="utf-8")
 
     assert any("undeclared_connector_action" in item for item in collect_errors(root))
+
+
+def test_active_profile_rejects_future_product_placeholder(tmp_path: Path) -> None:
+    root = _copy_profile(tmp_path)
+    path = root / "intents" / "collect_basic_host_inventory.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data["intent"]["catalog"]["summary"] = "Future Proxmox placeholder"
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+    assert any("forbidden_active_token:proxmox" in item for item in collect_errors(root))
+
+
+def test_active_profile_rejects_forbidden_network_connector_action(
+    tmp_path: Path,
+) -> None:
+    root = _copy_profile(tmp_path)
+    path = root / "connectors" / "network_device_cli.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data["connector"]["capabilities"].append("vlan-summary")
+    data["connector"]["command_shapes"]["vlan-summary"] = {
+        "command": "tecrax-network-cli-readonly",
+        "args": ["vlan-summary"],
+    }
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+    assert any("forbidden_connector_action_token:vlan-summary" in item for item in collect_errors(root))

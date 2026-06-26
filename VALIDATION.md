@@ -5,6 +5,8 @@ credentials, run infrastructure commands, or call carrier adapters.
 
 ```bash
 python scripts/validate_public_truth.py
+python scripts/validate_active_profile.py
+python scripts/validate_secret_topology.py
 python -m pytest -q
 tecrax fixture-review --service demo-web
 ```
@@ -27,6 +29,10 @@ Expected result for published package `0.3.5a0`:
   target addresses, usernames, private keys, or operator-specific configuration;
 - every profile intent has bounded catalog metadata, and the sanitized target catalog
   projects host and network-device applicability without environment paths or secrets;
+- active-profile gates reject future-product placeholders, mutating modes, undeclared
+  connector actions and premature VLAN/port-security action names;
+- secret/topology gates scan tracked text files for private IPs, MAC addresses,
+  key material, private SSH paths and obvious token/password assignments;
 - fixture review output validates GovEngine profile, planning, supervision, runtime snapshot, review result, and runtime contract proof objects;
 - SCLite is used only for local artifact descriptors;
 - non-claims remain explicit for mutation, credential management, carrier adapters,

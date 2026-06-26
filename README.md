@@ -131,6 +131,8 @@ that writing obligations in YAML alone satisfies them.
 
 ```bash
 python scripts/validate_public_truth.py
+python scripts/validate_active_profile.py
+python scripts/validate_secret_topology.py
 python -m pytest -q
 ```
 

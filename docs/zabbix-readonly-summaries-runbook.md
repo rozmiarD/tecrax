@@ -10,7 +10,7 @@ configuration.
 - A constrained read-only Zabbix API token is stored outside git.
 - The operator environment uses `zabbix_api_authenticated` with:
   - `auth.secret_ref: zabbix_api_token`
-  - `Authorization: Bearer <token>`
+  - an `Authorization` bearer header resolved from the external secret reference
 - `REXECOP_SECRETS_FILE` points at the operator-owned secrets file with mode
   `0600`.
 
@@ -42,11 +42,11 @@ or configuration.
 Run from an operator runtime directory, not from a repository:
 
 ```bash
-export REXECOP_SECRETS_FILE=/home/probo/.config/rexecop/r1/secrets.yaml
+export REXECOP_SECRETS_FILE=/path/outside/repo/secrets.yaml
 
 OPERATION_ID=$(rexecop plan \
   --profile tecrax \
-  --env /home/probo/rexecop-runtime/r1/environment.yaml \
+  --env /path/outside/repo/environment.yaml \
   --intent collect_zabbix_problem_summary_readonly \
   --target monitoring-host-01 \
   --mode dry_run)
