@@ -11,6 +11,9 @@ through `http_api`; AdGuard uses fixed `dig` and `curl` probes through
 TLS tunnel; it does not list Portainer-managed objects.
 Authenticated Zabbix summaries are separate T4 operations documented in
 `zabbix-readonly-summaries-runbook.md`.
+`diagnose_monitoring_host` emits `tecrax.monitoring_host_diagnosis@1.0` with bounded
+component states and deterministic findings. It does not perform root-cause analysis,
+continuous monitoring or remediation.
 
 ## Operator prerequisites
 

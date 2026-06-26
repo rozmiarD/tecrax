@@ -19,6 +19,8 @@ All notable Tecrax profile changes are documented here.
 - Recorded the T5 AdGuard, Portainer and Docker boundary decision: keep Docker
   systemd-only, AdGuard DNS/login-only and Portainer `/api/status`-only until a
   constrained read-only projection is proven.
+- Added the monitoring-host diagnosis v1 schema and deterministic bounded findings
+  with stable reason codes over existing read-only component observations.
 - Documented the HTTP action identity checkpoint for future Zabbix, AdGuard and
   Portainer API expansion while preserving RExecOp core neutrality.
 - Refactored fact normalizer storage so active normalizers share the same

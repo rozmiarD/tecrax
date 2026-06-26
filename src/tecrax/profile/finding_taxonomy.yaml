@@ -11,4 +11,24 @@ finding_taxonomy:
     - monitoring.host_security_degraded
     - monitoring.ntp_server_unhealthy
     - monitoring.observed_healthy
+    - monitoring.component_unavailable
     - monitoring.unclassified_state
+  reason_codes:
+    - host_inventory_unhealthy
+    - ntp_unhealthy
+    - zabbix_unhealthy
+    - docker_services_unhealthy
+    - adguard_unhealthy
+    - portainer_unhealthy
+    - host_security_degraded
+    - ntp_server_unhealthy
+    - all_observed_components_healthy
+    - host_inventory_unavailable
+    - ntp_unavailable
+    - zabbix_unavailable
+    - docker_unavailable
+    - adguard_unavailable
+    - portainer_unavailable
+    - host_security_unavailable
+    - ntp_server_unavailable
+    - unclassified_component_state

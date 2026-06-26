@@ -338,6 +338,7 @@ def test_aggregate_diagnosis_preserves_failures_and_blockers() -> None:
     result = aggregate_monitoring_host_diagnosis(context)
 
     assert result["aggregation_completed"] is True
+    assert result["schema_ref"] == "schemas/monitoring_host_diagnosis.v1.schema.json"
     assert result["coverage_status"] == "partial"
     assert result["observed_health"] == "degraded"
     assert result["components"]["docker"]["status"] == "healthy"
@@ -349,5 +350,17 @@ def test_aggregate_diagnosis_preserves_failures_and_blockers() -> None:
             "error_class": "transient_connector_error",
         }
     ]
+    assert {
+        (item["component"], item["reason_code"], item["kind"])
+        for item in result["findings"]
+    } == {
+        ("zabbix", "zabbix_unhealthy", "monitoring.zabbix_unhealthy"),
+        (
+            "host_security",
+            "host_security_unavailable",
+            "monitoring.component_unavailable",
+        ),
+        ("ntp_server", "ntp_server_unavailable", "monitoring.component_unavailable"),
+    }
     assert result["contract"]["id"] == "tecrax.monitoring_host_diagnosis"
     assert "sensitive upstream detail" not in str(result)

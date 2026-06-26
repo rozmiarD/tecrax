@@ -11,6 +11,8 @@ from tecrax.contracts import (
     FACTS_CONTRACTS,
     HOST_SECURITY_POSTURE_CONTRACT_ID,
     HOST_SECURITY_POSTURE_SCHEMA_REF,
+    MONITORING_HOST_DIAGNOSIS_CONTRACT_ID,
+    MONITORING_HOST_DIAGNOSIS_SCHEMA_REF,
     NETWORK_DEVICE_INVENTORY_CONTRACT_ID,
     NETWORK_DEVICE_INVENTORY_SCHEMA_REF,
     NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID,
@@ -283,6 +285,10 @@ def test_local_ssh_fact_contract_v1_schema_files_are_packaged() -> None:
         (DOCKER_SERVICE_HEALTH_SCHEMA_REF, DOCKER_SERVICE_HEALTH_CONTRACT_ID),
         (HOST_SECURITY_POSTURE_SCHEMA_REF, HOST_SECURITY_POSTURE_CONTRACT_ID),
         (NTP_SERVER_OBSERVATION_SCHEMA_REF, NTP_SERVER_OBSERVATION_CONTRACT_ID),
+        (
+            MONITORING_HOST_DIAGNOSIS_SCHEMA_REF,
+            MONITORING_HOST_DIAGNOSIS_CONTRACT_ID,
+        ),
     ]
 
     for schema_ref, contract_id in refs:
@@ -365,6 +371,40 @@ def test_local_ssh_fact_contract_v1_rejects_malformed_payloads() -> None:
         "ntp_server_observation.invalid_system_variables:stratum"
         in validate_ntp_server_observation_v1(ntp_server)
     )
+
+
+def test_monitoring_host_diagnosis_v1_rejects_malformed_findings() -> None:
+    facts = finalize_facts(
+        {
+            "schema_ref": MONITORING_HOST_DIAGNOSIS_SCHEMA_REF,
+            "aggregation_completed": True,
+            "coverage_status": "complete",
+            "observed_health": "healthy",
+            "components": {"ntp": {"status": "healthy"}},
+            "findings": [
+                {
+                    "kind": "monitoring.observed_healthy",
+                    "component": "monitoring_host",
+                    "reason_code": "all_observed_components_healthy",
+                    "severity": "info",
+                }
+            ],
+            "continued_failures": [],
+        },
+        contract_id=MONITORING_HOST_DIAGNOSIS_CONTRACT_ID,
+        requested=["ntp"],
+        observed=["ntp"],
+        assessment="healthy",
+    )
+
+    assert validate_facts(facts) == []
+    facts["findings"][0]["reason_code"] = ""
+    facts["components"]["ntp"]["status"] = "mystery"
+
+    assert {
+        "monitoring_host_diagnosis.invalid_finding:reason_code",
+        "monitoring_host_diagnosis.invalid_component_status:ntp",
+    } <= set(validate_facts(facts))
 
 
 def test_network_fact_contract_v1_builders_emit_schema_refs() -> None:

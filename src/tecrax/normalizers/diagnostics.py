@@ -4,7 +4,55 @@ from typing import Any
 
 from rexecop.execution.backend import StepExecutionContext
 
+from tecrax.contracts import (
+    MONITORING_HOST_DIAGNOSIS_CONTRACT_ID,
+    MONITORING_HOST_DIAGNOSIS_REQUESTED,
+    MONITORING_HOST_DIAGNOSIS_SCHEMA_REF,
+)
 from tecrax.normalizers.common import finalize_and_store
+
+FINDINGS_BY_COMPONENT = {
+    "host_inventory": {
+        "kind": "monitoring.host_inventory_unhealthy",
+        "reason_code": "host_inventory_unhealthy",
+        "severity": "medium",
+    },
+    "ntp": {
+        "kind": "monitoring.ntp_unhealthy",
+        "reason_code": "ntp_unhealthy",
+        "severity": "medium",
+    },
+    "zabbix": {
+        "kind": "monitoring.zabbix_unhealthy",
+        "reason_code": "zabbix_unhealthy",
+        "severity": "medium",
+    },
+    "docker": {
+        "kind": "monitoring.docker_services_unhealthy",
+        "reason_code": "docker_services_unhealthy",
+        "severity": "medium",
+    },
+    "adguard": {
+        "kind": "monitoring.adguard_unhealthy",
+        "reason_code": "adguard_unhealthy",
+        "severity": "medium",
+    },
+    "portainer": {
+        "kind": "monitoring.portainer_unhealthy",
+        "reason_code": "portainer_unhealthy",
+        "severity": "medium",
+    },
+    "host_security": {
+        "kind": "monitoring.host_security_degraded",
+        "reason_code": "host_security_degraded",
+        "severity": "medium",
+    },
+    "ntp_server": {
+        "kind": "monitoring.ntp_server_unhealthy",
+        "reason_code": "ntp_server_unhealthy",
+        "severity": "medium",
+    },
+}
 
 
 def aggregate_monitoring_host_diagnosis(
@@ -48,30 +96,26 @@ def aggregate_monitoring_host_diagnosis(
     observed = [
         components[name]["status"]
         for name in (
-            "host_inventory",
-            "ntp",
-            "docker",
-            "zabbix",
-            "adguard",
-            "portainer",
-            "host_security",
-            "ntp_server",
+            *MONITORING_HOST_DIAGNOSIS_REQUESTED,
         )
     ]
+    findings = _diagnosis_findings(components)
     assessment = "healthy" if all(item == "healthy" for item in observed) else "degraded"
     return finalize_and_store(
         context,
         "monitoring_host_diagnosis",
         {
+            "schema_ref": MONITORING_HOST_DIAGNOSIS_SCHEMA_REF,
             "aggregation_completed": True,
             "coverage_status": "partial" if failures else "complete",
             "observed_health": (
                 "healthy" if all(item == "healthy" for item in observed) else "degraded"
             ),
             "components": components,
+            "findings": findings,
             "continued_failures": failures,
         },
-        contract_id="tecrax.monitoring_host_diagnosis",
+        contract_id=MONITORING_HOST_DIAGNOSIS_CONTRACT_ID,
         requested=list(components),
         observed=[
             name for name, value in components.items() if value["status"] != "unavailable"
@@ -93,3 +137,43 @@ def _component_status(
             result["reason"] = unavailable_reason
         return result
     return {"status": "healthy" if value.get(health_key) is True else "unhealthy"}
+
+
+def _diagnosis_findings(components: dict[str, dict[str, str]]) -> list[dict[str, str]]:
+    findings: list[dict[str, str]] = []
+    for component, status in components.items():
+        state = status.get("status")
+        if state == "healthy":
+            continue
+        if state == "unavailable":
+            findings.append(
+                {
+                    "kind": "monitoring.component_unavailable",
+                    "component": component,
+                    "reason_code": f"{component}_unavailable",
+                    "severity": "low",
+                }
+            )
+            continue
+        template = FINDINGS_BY_COMPONENT.get(component)
+        if template is None:
+            findings.append(
+                {
+                    "kind": "monitoring.unclassified_state",
+                    "component": component,
+                    "reason_code": "unclassified_component_state",
+                    "severity": "low",
+                }
+            )
+            continue
+        findings.append({"component": component, **template})
+    if not findings:
+        return [
+            {
+                "kind": "monitoring.observed_healthy",
+                "component": "monitoring_host",
+                "reason_code": "all_observed_components_healthy",
+                "severity": "info",
+            }
+        ]
+    return findings[:16]

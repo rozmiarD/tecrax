@@ -22,6 +22,11 @@ Zabbix count-only summaries are documented in
 Docker, AdGuard and Portainer expansion is in
 `docs/service-boundary-decision-t5.md`.
 
+`diagnose_monitoring_host` produces the versioned
+`tecrax.monitoring_host_diagnosis@1.0` aggregate with bounded findings. Reactions may use
+those findings to select an already declared read-only intent, no-op or escalation proposal;
+they do not create free-form actions.
+
 ## Current network-device operation
 
 The bounded adapter contract for `collect_network_device_inventory_readonly` is

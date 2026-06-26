@@ -25,7 +25,8 @@ receipt generation and an SCLite bundle.
 `diagnose_monitoring_host` aggregates host inventory, NTP, Docker service state, Zabbix,
 AdGuard and Portainer. Connector failures are retained as bounded step IDs plus error
 classes while later diagnostics continue. Its validation means the diagnostic completed;
-component health remains a separate field.
+component health remains a separate field. The aggregate now uses the versioned
+`tecrax.monitoring_host_diagnosis@1.0` contract with bounded finding reason codes.
 
 ## Explicit blockers
 

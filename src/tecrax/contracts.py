@@ -60,6 +60,19 @@ NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID = "tecrax.network_management_posture"
 NETWORK_MANAGEMENT_POSTURE_CONTRACT_VERSION = "1.0"
 NETWORK_MANAGEMENT_POSTURE_SCHEMA_REF = "schemas/network_management_posture.v1.schema.json"
 NETWORK_MANAGEMENT_POSTURE_REQUESTED = ["ssh_protocols", "ssh_crypto", "idle_timeout"]
+MONITORING_HOST_DIAGNOSIS_CONTRACT_ID = "tecrax.monitoring_host_diagnosis"
+MONITORING_HOST_DIAGNOSIS_CONTRACT_VERSION = "1.0"
+MONITORING_HOST_DIAGNOSIS_SCHEMA_REF = "schemas/monitoring_host_diagnosis.v1.schema.json"
+MONITORING_HOST_DIAGNOSIS_REQUESTED = [
+    "host_inventory",
+    "ntp",
+    "docker",
+    "zabbix",
+    "adguard",
+    "portainer",
+    "host_security",
+    "ntp_server",
+]
 ZABBIX_PROBLEM_SUMMARY_CONTRACT_ID = "tecrax.zabbix_problem_summary"
 ZABBIX_PROBLEM_SUMMARY_CONTRACT_VERSION = "1.0"
 ZABBIX_PROBLEM_SUMMARY_SCHEMA_REF = "schemas/zabbix_problem_summary.v1.schema.json"
@@ -662,7 +675,17 @@ FACTS_CONTRACTS = {
             NETWORK_DEVICE_INVENTORY_CONTRACT_VERSION,
             ("target", "device", "management_access"),
         ),
-        FactsContractSpec("tecrax.monitoring_host_diagnosis", "1.0", ("components",)),
+        FactsContractSpec(
+            MONITORING_HOST_DIAGNOSIS_CONTRACT_ID,
+            MONITORING_HOST_DIAGNOSIS_CONTRACT_VERSION,
+            (
+                "aggregation_completed",
+                "coverage_status",
+                "observed_health",
+                "components",
+                "findings",
+            ),
+        ),
         FactsContractSpec(
             HOST_SECURITY_POSTURE_CONTRACT_ID,
             HOST_SECURITY_POSTURE_CONTRACT_VERSION,
@@ -976,6 +999,8 @@ def validate_facts(
         errors.extend(_validate_network_device_inventory_v1_shape(facts))
     if contract_id == NETWORK_MANAGEMENT_POSTURE_CONTRACT_ID:
         errors.extend(_validate_network_management_posture_v1_shape(facts))
+    if contract_id == MONITORING_HOST_DIAGNOSIS_CONTRACT_ID:
+        errors.extend(_validate_monitoring_host_diagnosis_v1_shape(facts))
     return sorted(set(errors))
 
 
@@ -1254,6 +1279,62 @@ def _validate_network_management_posture_v1_shape(facts: dict[str, Any]) -> list
                 errors.append("network_management_posture.invalid_finding:severity")
     if not isinstance(facts.get("complete"), bool):
         errors.append("network_management_posture.invalid_complete")
+    return errors
+
+
+def _validate_monitoring_host_diagnosis_v1_shape(facts: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if facts.get("schema_ref") != MONITORING_HOST_DIAGNOSIS_SCHEMA_REF:
+        errors.append("monitoring_host_diagnosis.schema_ref_mismatch")
+    if facts.get("aggregation_completed") is not True:
+        errors.append("monitoring_host_diagnosis.invalid_aggregation_completed")
+    if facts.get("coverage_status") not in COVERAGE_STATES:
+        errors.append("monitoring_host_diagnosis.invalid_coverage_status")
+    if facts.get("observed_health") not in {"healthy", "degraded", "unknown"}:
+        errors.append("monitoring_host_diagnosis.invalid_observed_health")
+    components = facts.get("components")
+    if not isinstance(components, dict) or len(components) > MAX_SCOPE_ITEMS:
+        errors.append("monitoring_host_diagnosis.invalid_components")
+    else:
+        for name, component in components.items():
+            if not _bounded_string(name, max_length=64, required=True):
+                errors.append("monitoring_host_diagnosis.invalid_component:name")
+                continue
+            if not isinstance(component, dict):
+                errors.append(f"monitoring_host_diagnosis.invalid_component:{name}")
+                continue
+            if component.get("status") not in {"healthy", "unhealthy", "unavailable"}:
+                errors.append(f"monitoring_host_diagnosis.invalid_component_status:{name}")
+            reason = component.get("reason")
+            if reason is not None and not _bounded_string(
+                reason, max_length=64, required=False
+            ):
+                errors.append(f"monitoring_host_diagnosis.invalid_component_reason:{name}")
+    findings = facts.get("findings")
+    if not isinstance(findings, list) or len(findings) > 16:
+        errors.append("monitoring_host_diagnosis.invalid_findings")
+    else:
+        for item in findings:
+            if not isinstance(item, dict):
+                errors.append("monitoring_host_diagnosis.invalid_finding")
+                continue
+            for key in ("kind", "component", "reason_code", "severity"):
+                if not _bounded_string(item.get(key), max_length=96, required=True):
+                    errors.append(f"monitoring_host_diagnosis.invalid_finding:{key}")
+    failures = facts.get("continued_failures")
+    if failures is not None:
+        if not isinstance(failures, list) or len(failures) > MAX_BLOCKERS:
+            errors.append("monitoring_host_diagnosis.invalid_continued_failures")
+        else:
+            for item in failures:
+                if not isinstance(item, dict):
+                    errors.append("monitoring_host_diagnosis.invalid_continued_failure")
+                    continue
+                for key in ("step_id", "error_class"):
+                    if not _bounded_string(item.get(key), max_length=128, required=True):
+                        errors.append(
+                            f"monitoring_host_diagnosis.invalid_continued_failure:{key}"
+                        )
     return errors
 
 

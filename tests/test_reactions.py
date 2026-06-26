@@ -22,6 +22,7 @@ def _diagnosis(
 ) -> dict:
     payload = {
         "aggregation_completed": True,
+        "schema_ref": "schemas/monitoring_host_diagnosis.v1.schema.json",
         "coverage_status": "partial",
         "observed_health": "healthy"
         if {host, ntp, docker, zabbix, adguard, portainer} == {"healthy"}
@@ -34,6 +35,14 @@ def _diagnosis(
             "adguard": {"status": adguard},
             "portainer": {"status": portainer},
         },
+        "findings": [
+            {
+                "kind": "monitoring.observed_healthy",
+                "component": "monitoring_host",
+                "reason_code": "all_observed_components_healthy",
+                "severity": "info",
+            }
+        ],
         "continued_failures": [],
     }
     return finalize_facts(

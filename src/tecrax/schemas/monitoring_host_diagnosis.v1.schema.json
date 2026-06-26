@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rozmiarD/tecrax/schemas/monitoring_host_diagnosis.v1.schema.json",
+  "title": "Tecrax monitoring host diagnosis facts v1",
+  "type": "object",
+  "required": [
+    "contract",
+    "schema_ref",
+    "aggregation_completed",
+    "coverage_status",
+    "observed_health",
+    "components",
+    "findings",
+    "continued_failures",
+    "scope",
+    "coverage",
+    "assessment",
+    "non_claims"
+  ],
+  "properties": {
+    "contract": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"const": "tecrax.monitoring_host_diagnosis"},
+        "version": {"const": "1.0"}
+      },
+      "additionalProperties": false
+    },
+    "schema_ref": {"const": "schemas/monitoring_host_diagnosis.v1.schema.json"},
+    "aggregation_completed": {"const": true},
+    "coverage_status": {"enum": ["complete", "partial", "blocked"]},
+    "observed_health": {"enum": ["healthy", "degraded", "unknown"]},
+    "components": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {"enum": ["healthy", "unhealthy", "unavailable"]},
+          "reason": {"type": "string", "maxLength": 64}
+        },
+        "additionalProperties": false
+      }
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "required": ["kind", "component", "reason_code", "severity"],
+        "properties": {
+          "kind": {"type": "string", "minLength": 1, "maxLength": 96},
+          "component": {"type": "string", "minLength": 1, "maxLength": 64},
+          "reason_code": {"type": "string", "minLength": 1, "maxLength": 96},
+          "severity": {"enum": ["info", "low", "medium", "high"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "continued_failures": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "required": ["step_id", "error_class"],
+        "properties": {
+          "step_id": {"type": "string", "minLength": 1, "maxLength": 128},
+          "error_class": {"type": "string", "minLength": 1, "maxLength": 128}
+        },
+        "additionalProperties": false
+      }
+    },
+    "scope": {"type": "object"},
+    "coverage": {"type": "object"},
+    "assessment": {"type": "object"},
+    "non_claims": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

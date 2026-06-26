@@ -99,3 +99,10 @@ Authenticated Zabbix T4 summaries are separate facts contracts:
 
 They do not contain host names, problem names, trigger names, event payloads, interface
 addresses, templates, inventory fields or Zabbix configuration.
+
+`tecrax.monitoring_host_diagnosis@1.0` aggregates implemented bounded observations into a
+single diagnosis fact with `aggregation_completed`, `coverage_status`, `observed_health`,
+component states and bounded `findings`. Findings carry stable `kind`, `component`,
+`reason_code` and `severity` fields from the Tecrax finding taxonomy. They are deterministic
+diagnostic summaries, not remediation instructions, policy decisions or SCLite canonical
+truth.
