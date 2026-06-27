@@ -36,6 +36,7 @@ workflow:
     - {id: normalize_host_security_posture, type: internal, action: normalize_host_security_posture, pause_safe: true}
     - {id: normalize_ntp_server_observation, type: internal, action: normalize_ntp_server_observation, pause_safe: true}
     - {id: aggregate_diagnosis, type: internal, action: aggregate_monitoring_host_diagnosis, pause_safe: true}
+    - {id: build_reaction_observation, type: internal, action: build_monitoring_host_reaction_observation, pause_safe: true}
     - {id: produce_receipt, type: evidence, action: produce_receipt, pause_safe: true}
 
   retry:

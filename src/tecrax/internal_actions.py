@@ -22,6 +22,20 @@ from tecrax.normalizers.services import (
     normalize_zabbix_health,
     normalize_zabbix_problem_summary,
 )
+from tecrax.reactions import build_monitoring_host_observation
+
+
+def build_monitoring_host_reaction_observation(context: Any) -> dict[str, Any]:
+    diagnosis = context.shared_state.get("monitoring_host_diagnosis")
+    if not isinstance(diagnosis, Mapping):
+        raise ValueError("monitoring_host_diagnosis is required")
+    observation = build_monitoring_host_observation(
+        operation_id=context.operation_id,
+        target_id=context.target,
+        diagnosis=diagnosis,
+    )
+    context.shared_state["reaction_observation"] = observation
+    return observation
 
 
 def register_handlers() -> Mapping[str, Any]:
@@ -41,4 +55,7 @@ def register_handlers() -> Mapping[str, Any]:
         "normalize_ntp_server_observation": normalize_ntp_server_observation,
         "assess_network_device_management_posture": assess_network_device_management_posture,
         "aggregate_monitoring_host_diagnosis": aggregate_monitoring_host_diagnosis,
+        "build_monitoring_host_reaction_observation": (
+            build_monitoring_host_reaction_observation
+        ),
     }

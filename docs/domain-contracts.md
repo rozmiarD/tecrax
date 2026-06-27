@@ -111,6 +111,11 @@ component states and bounded `findings`. Findings carry stable `kind`, `componen
 diagnostic summaries, not remediation instructions, policy decisions or SCLite canonical
 truth.
 
+The active `diagnose_monitoring_host` workflow also projects the diagnosis into a SCLite
+`observation_envelope.v0.1` and stores it as `shared_state.reaction_observation`. Tecrax owns
+the projection and the facts semantics. RExecOp consumes only the artifact shape, profile
+digest, source operation binding and target binding when planning deterministic reactions.
+
 The active monitoring-host reaction pack handles unavailable component states explicitly.
 Each supported `unavailable` component maps to the profile-owned
 `monitoring.component_unavailable` finding and escalates without proposing a child intent.

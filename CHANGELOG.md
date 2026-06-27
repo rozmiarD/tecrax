@@ -4,6 +4,11 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- `diagnose_monitoring_host` now persists a profile-owned SCLite
+  `reaction_observation` envelope in workflow shared state so RExecOp can plan
+  deterministic reactions from a completed operation without constructing
+  Tecrax domain facts in core.
+
 ## 0.3.6a0 - 2026-06-27
 
 - Added stack-quality developer gates for `ruff` and `mypy`, plus the PEP 561

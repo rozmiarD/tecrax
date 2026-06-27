@@ -5,6 +5,7 @@ from rexecop.execution.backend import StepExecutionContext
 from tecrax.contracts import validate_basic_host_inventory_v1
 from tecrax.internal_actions import (
     aggregate_monitoring_host_diagnosis,
+    build_monitoring_host_reaction_observation,
     normalize_adguard_health,
     normalize_basic_host_inventory,
     normalize_docker_services_health,
@@ -364,3 +365,40 @@ def test_aggregate_diagnosis_preserves_failures_and_blockers() -> None:
     }
     assert result["contract"]["id"] == "tecrax.monitoring_host_diagnosis"
     assert "sensitive upstream detail" not in str(result)
+
+
+def test_build_monitoring_host_reaction_observation_records_sclite_envelope() -> None:
+    diagnosis_context = StepExecutionContext(
+        operation_id="op-source",
+        target="monitoring-host-01",
+        mode="dry_run",
+        step={"id": "aggregate_diagnosis"},
+        shared_state={
+            "basic_host_inventory": {"complete": True},
+            "ntp_health": {"healthy": True},
+            "docker_services_health": {"healthy": True},
+            "zabbix_health": {"healthy": False},
+            "adguard_health": {"healthy": True},
+            "portainer_health": {"healthy": True},
+        },
+    )
+    diagnosis = aggregate_monitoring_host_diagnosis(diagnosis_context)
+    observation_context = StepExecutionContext(
+        operation_id="op-source",
+        target="monitoring-host-01",
+        mode="dry_run",
+        step={"id": "build_reaction_observation"},
+        shared_state={"monitoring_host_diagnosis": diagnosis},
+    )
+
+    observation = build_monitoring_host_reaction_observation(observation_context)
+
+    assert observation["artifact_type"] == "observation_envelope"
+    assert observation["schema_ref"] == "schemas/observation_envelope.v0.1.schema.json"
+    assert observation["source"] == {
+        "operation_id": "op-source",
+        "intent_id": "diagnose_monitoring_host",
+        "target_id": "monitoring-host-01",
+    }
+    assert observation["facts"] == diagnosis
+    assert observation_context.shared_state["reaction_observation"] == observation
