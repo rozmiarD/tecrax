@@ -4,6 +4,8 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+## 0.3.6a0 - 2026-06-27
+
 - Added stack-quality developer gates for `ruff` and `mypy`, plus the PEP 561
   `py.typed` marker, so Tecrax profile code participates in the same typed
   tooling baseline as RExecOp, GovEngine and SCLite.
@@ -48,6 +50,10 @@ All notable Tecrax profile changes are documented here.
   `finalize_facts` and `shared_state` write path.
 - Split active normalizers into host, services, network, diagnostics, and common
   modules while preserving the `tecrax.internal_actions` RExecOp entrypoint.
+- Published the coordinated domain-profile line over
+  `govengine>=0.16.1,<0.17`, `sclite-core>=1.0.5,<1.1`, and
+  `rexecop>=0.2.7a0,<0.3` without adding mutation, credential management,
+  scheduler ownership, a second policy engine, or a second truth layer.
 
 ## 0.3.5a0 - 2026-06-24
 

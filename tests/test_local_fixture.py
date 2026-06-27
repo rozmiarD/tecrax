@@ -29,13 +29,13 @@ def test_cli_status_keeps_local_fixture_posture(capsys) -> None:
     assert main(['status']) == 0
 
     stdout = capsys.readouterr().out
-    assert '0.3.5-alpha' in stdout
+    assert '0.3.6-alpha' in stdout
     assert 'read-only profile' in stdout
     assert 'infrastructure mutation remains unavailable' in stdout
 
 
 def test_version_and_public_truth_validator_agree() -> None:
-    assert __version__ == '0.3.5a0'
+    assert __version__ == '0.3.6a0'
     result = subprocess.run(
         [sys.executable, str(ROOT / 'scripts' / 'validate_public_truth.py')],
         cwd=ROOT,
@@ -44,8 +44,8 @@ def test_version_and_public_truth_validator_agree() -> None:
         check=True,
     )
     assert result.stdout.strip() == (
-        'public_truth_ok:tecrax==0.3.5a0:'
-        'govengine>=0.16.0,<0.17:'
-        'sclite-core>=1.0.4,<1.1:'
-        'rexecop>=0.2.6a0,<0.3'
+        'public_truth_ok:tecrax==0.3.6a0:'
+        'govengine>=0.16.1,<0.17:'
+        'sclite-core>=1.0.5,<1.1:'
+        'rexecop>=0.2.7a0,<0.3'
     )

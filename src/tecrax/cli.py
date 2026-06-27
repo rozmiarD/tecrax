@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(
-        "Tecrax 0.3.5-alpha read-only profile: operator-configured live access "
+        "Tecrax 0.3.6-alpha read-only profile: operator-configured live access "
         "runs through RExecOp; infrastructure mutation remains unavailable."
     )
     return 0
