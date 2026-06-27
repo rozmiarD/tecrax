@@ -17,6 +17,13 @@ from tecrax.contracts import FACTS_CONTRACTS  # noqa: E402
 
 
 READ_ONLY_MODES = {"read_only", "dry_run"}
+REACTION_OBSERVATION_KEYS = {
+    "shared_state_key",
+    "schema_ref",
+    "source_intent",
+    "producer_step",
+    "requires_completed_operation",
+}
 FORBIDDEN_ACTIVE_TOKENS = {
     "apply",
     "backup",
@@ -129,6 +136,48 @@ def collect_errors(profile_root: Path | None = None) -> list[str]:
             continue
         if workflow.get("mode") != "read_only":
             errors.append(f"{intent_id}:workflow_not_read_only")
+        reaction_observation = data.get("reaction_observation")
+        if reaction_observation is not None:
+            if not isinstance(reaction_observation, dict):
+                errors.append(f"{intent_id}:reaction_observation_not_mapping")
+            else:
+                unknown = sorted(
+                    str(key)
+                    for key in reaction_observation
+                    if key not in REACTION_OBSERVATION_KEYS
+                )
+                if unknown:
+                    errors.append(
+                        f"{intent_id}:reaction_observation_unknown_keys:{unknown}"
+                    )
+                if reaction_observation.get("shared_state_key") != "reaction_observation":
+                    errors.append(f"{intent_id}:reaction_observation_shared_state_key")
+                if (
+                    reaction_observation.get("schema_ref")
+                    != "schemas/observation_envelope.v0.1.schema.json"
+                ):
+                    errors.append(f"{intent_id}:reaction_observation_schema_ref")
+                if reaction_observation.get("source_intent") != intent_id:
+                    errors.append(f"{intent_id}:reaction_observation_source_intent")
+                if reaction_observation.get("requires_completed_operation") is not True:
+                    errors.append(
+                        f"{intent_id}:reaction_observation_requires_completed_operation"
+                    )
+                producer_step = str(
+                    reaction_observation.get("producer_step") or ""
+                ).strip()
+                workflow_steps = {
+                    str(step.get("id") or ""): step
+                    for step in workflow.get("steps") or []
+                    if isinstance(step, dict)
+                }
+                producer = workflow_steps.get(producer_step)
+                if producer is None:
+                    errors.append(f"{intent_id}:reaction_observation_producer_missing")
+                elif producer.get("type") != "internal":
+                    errors.append(
+                        f"{intent_id}:reaction_observation_producer_not_internal"
+                    )
         for step in workflow.get("steps") or []:
             if not isinstance(step, dict) or step.get("type") != "connector":
                 continue

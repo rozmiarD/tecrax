@@ -115,6 +115,9 @@ The active `diagnose_monitoring_host` workflow also projects the diagnosis into 
 `observation_envelope.v0.1` and stores it as `shared_state.reaction_observation`. Tecrax owns
 the projection and the facts semantics. RExecOp consumes only the artifact shape, profile
 digest, source operation binding and target binding when planning deterministic reactions.
+The intent metadata declares the shared-state key, schema reference, source intent and
+producer step so RExecOp conformance checks can validate the boundary without importing
+Tecrax semantics.
 
 The active monitoring-host reaction pack handles unavailable component states explicitly.
 Each supported `unavailable` component maps to the profile-owned

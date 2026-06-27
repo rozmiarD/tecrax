@@ -8,6 +8,9 @@ All notable Tecrax profile changes are documented here.
   `reaction_observation` envelope in workflow shared state so RExecOp can plan
   deterministic reactions from a completed operation without constructing
   Tecrax domain facts in core.
+- Declared the `diagnose_monitoring_host` reaction-observation contract in
+  intent metadata and extended the active-profile gate to reject drift between
+  the declaration and workflow producer step.
 
 ## 0.3.6a0 - 2026-06-27
 

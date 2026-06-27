@@ -7,6 +7,12 @@ intent:
     - read_only
     - dry_run
   facts_contract: tecrax.monitoring_host_diagnosis@1.0
+  reaction_observation:
+    shared_state_key: reaction_observation
+    schema_ref: schemas/observation_envelope.v0.1.schema.json
+    source_intent: diagnose_monitoring_host
+    producer_step: build_reaction_observation
+    requires_completed_operation: true
   catalog:
     title: Diagnose monitoring host
     summary: Aggregate bounded host, NTP, Docker, Zabbix, AdGuard and Portainer observations while preserving partial failures.
