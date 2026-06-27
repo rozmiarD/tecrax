@@ -15,6 +15,15 @@ reaction_pack:
         summary: Basic host inventory is incomplete or unhealthy.
       outcome: run_intent
       intent_ref: collect_basic_host_inventory
+    - id: monitoring.host-inventory-unavailable
+      priority: 11
+      when:
+        - {path: facts.components.host_inventory.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: Basic host inventory was not available in the bounded diagnosis.
+      outcome: escalate
     - id: monitoring.ntp-unhealthy
       priority: 20
       when:
@@ -25,6 +34,15 @@ reaction_pack:
         summary: The bounded NTP health observation is unhealthy.
       outcome: run_intent
       intent_ref: check_ntp_health
+    - id: monitoring.ntp-unavailable
+      priority: 21
+      when:
+        - {path: facts.components.ntp.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: The bounded NTP health observation was not available.
+      outcome: escalate
     - id: monitoring.zabbix-unhealthy
       priority: 30
       when:
@@ -35,6 +53,15 @@ reaction_pack:
         summary: The bounded Zabbix API health observation is unhealthy.
       outcome: run_intent
       intent_ref: check_zabbix_container_health
+    - id: monitoring.zabbix-unavailable
+      priority: 31
+      when:
+        - {path: facts.components.zabbix.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: The bounded Zabbix API health observation was not available.
+      outcome: escalate
     - id: monitoring.docker-unhealthy
       priority: 40
       when:
@@ -45,6 +72,15 @@ reaction_pack:
         summary: The bounded Docker systemd service observation is unhealthy.
       outcome: run_intent
       intent_ref: check_docker_services_health
+    - id: monitoring.docker-unavailable
+      priority: 41
+      when:
+        - {path: facts.components.docker.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: The bounded Docker service observation was not available.
+      outcome: escalate
     - id: monitoring.adguard-unhealthy
       priority: 50
       when:
@@ -55,6 +91,15 @@ reaction_pack:
         summary: The bounded AdGuard DNS or web-login observation is unhealthy.
       outcome: run_intent
       intent_ref: check_adguard_health
+    - id: monitoring.adguard-unavailable
+      priority: 51
+      when:
+        - {path: facts.components.adguard.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: The bounded AdGuard observation was not available.
+      outcome: escalate
     - id: monitoring.portainer-unhealthy
       priority: 60
       when:
@@ -65,6 +110,15 @@ reaction_pack:
         summary: The bounded Portainer status endpoint observation is unhealthy.
       outcome: run_intent
       intent_ref: check_portainer_health
+    - id: monitoring.portainer-unavailable
+      priority: 61
+      when:
+        - {path: facts.components.portainer.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: The bounded Portainer status observation was not available.
+      outcome: escalate
     - id: monitoring.observed-healthy
       priority: 100
       when:
@@ -84,6 +138,15 @@ reaction_pack:
         summary: One or more bounded host security posture signals are degraded.
       outcome: run_intent
       intent_ref: collect_host_security_posture_readonly
+    - id: monitoring.host-security-unavailable
+      priority: 71
+      when:
+        - {path: facts.components.host_security.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: The bounded host security posture observation was not available.
+      outcome: escalate
     - id: monitoring.ntp-server-unhealthy
       priority: 80
       when:
@@ -94,6 +157,15 @@ reaction_pack:
         summary: The bounded NTP server observation is unhealthy.
       outcome: run_intent
       intent_ref: check_ntp_server_health
+    - id: monitoring.ntp-server-unavailable
+      priority: 81
+      when:
+        - {path: facts.components.ntp_server.status, operator: equals, value: unavailable}
+      finding:
+        kind: monitoring.component_unavailable
+        severity: low
+        summary: The bounded NTP server observation was not available.
+      outcome: escalate
   fallback:
     id: monitoring.unclassified
     priority: 1000

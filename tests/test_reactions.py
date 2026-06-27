@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from rexecop.profile.loader import load_profile
 from rexecop.reaction.compiler import compile_reaction_pack
 from rexecop.reaction.evaluator import evaluate_reaction
@@ -19,21 +21,28 @@ def _diagnosis(
     zabbix: str = "healthy",
     adguard: str = "healthy",
     portainer: str = "healthy",
+    host_security: str = "healthy",
+    ntp_server: str = "healthy",
 ) -> dict:
+    component_states = {
+        "host_inventory": host,
+        "ntp": ntp,
+        "docker": docker,
+        "zabbix": zabbix,
+        "adguard": adguard,
+        "portainer": portainer,
+        "host_security": host_security,
+        "ntp_server": ntp_server,
+    }
     payload = {
         "aggregation_completed": True,
         "schema_ref": "schemas/monitoring_host_diagnosis.v1.schema.json",
         "coverage_status": "partial",
-        "observed_health": "healthy"
-        if {host, ntp, docker, zabbix, adguard, portainer} == {"healthy"}
-        else "degraded",
+        "observed_health": (
+            "healthy" if set(component_states.values()) == {"healthy"} else "degraded"
+        ),
         "components": {
-            "host_inventory": {"status": host},
-            "ntp": {"status": ntp},
-            "docker": {"status": docker},
-            "zabbix": {"status": zabbix},
-            "adguard": {"status": adguard},
-            "portainer": {"status": portainer},
+            component: {"status": status} for component, status in component_states.items()
         },
         "findings": [
             {
@@ -112,7 +121,26 @@ def test_healthy_implemented_coverage_is_an_explicit_no_op() -> None:
     assert result.intent_ref is None
 
 
-def test_unknown_state_escalates_without_free_form_action() -> None:
-    _, result = _evaluate(_diagnosis(ntp="unavailable"))
+@pytest.mark.parametrize(
+    ("component_arg", "rule_id"),
+    [
+        ("host", "monitoring.host-inventory-unavailable"),
+        ("ntp", "monitoring.ntp-unavailable"),
+        ("zabbix", "monitoring.zabbix-unavailable"),
+        ("docker", "monitoring.docker-unavailable"),
+        ("adguard", "monitoring.adguard-unavailable"),
+        ("portainer", "monitoring.portainer-unavailable"),
+        ("host_security", "monitoring.host-security-unavailable"),
+        ("ntp_server", "monitoring.ntp-server-unavailable"),
+    ],
+)
+def test_unavailable_states_escalate_through_explicit_rules(
+    component_arg: str,
+    rule_id: str,
+) -> None:
+    _, result = _evaluate(_diagnosis(**{component_arg: "unavailable"}))
+    assert result.rule.rule_id == rule_id
+    assert result.rule.finding_kind == "monitoring.component_unavailable"
     assert result.outcome == "escalate"
     assert result.intent_ref is None
+    assert result.matched is True

@@ -111,6 +111,12 @@ component states and bounded `findings`. Findings carry stable `kind`, `componen
 diagnostic summaries, not remediation instructions, policy decisions or SCLite canonical
 truth.
 
+The active monitoring-host reaction pack handles unavailable component states explicitly.
+Each supported `unavailable` component maps to the profile-owned
+`monitoring.component_unavailable` finding and escalates without proposing a child intent.
+This keeps unavailable diagnostics traceable without pretending that missing observations are
+safe to remediate automatically.
+
 `build_monitoring_host_escalation_proposal()` can project those diagnosis facts into a
 bounded SCLite `escalation_proposal.v0.1` advisory artifact. The proposal is untrusted,
 contains no connector payload or command, rejects unsafe evidence refs and secret-like

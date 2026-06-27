@@ -21,6 +21,9 @@ All notable Tecrax profile changes are documented here.
   constrained read-only projection is proven.
 - Added the monitoring-host diagnosis v1 schema and deterministic bounded findings
   with stable reason codes over existing read-only component observations.
+- Added explicit monitoring-host `unavailable` reaction rules so unavailable
+  component states escalate through traceable profile-owned findings instead
+  of falling through to the unclassified fallback.
 - Added bounded monitoring-host escalation proposal vectors with negative tests
   for unknown intents, raw command payloads, unsafe evidence refs and secret-like
   explanations; proposals remain untrusted and never grant execution.
