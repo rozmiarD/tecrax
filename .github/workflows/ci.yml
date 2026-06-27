@@ -39,6 +39,10 @@ jobs:
           python scripts/validate_public_truth.py
           python scripts/validate_active_profile.py
           python scripts/validate_secret_topology.py
+      - name: Ruff
+        run: python -m ruff check .
+      - name: Mypy
+        run: python -m mypy src/tecrax
       - name: Run tests
         run: python -m pytest -q
 

@@ -43,7 +43,25 @@ tecrax = "tecrax.cli:main"
 [project.optional-dependencies]
 dev = [
   "pytest>=8,<9",
+  "ruff>=0.14,<1",
+  "mypy>=1.18,<2",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tecrax"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["F"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/tecrax"]
+check_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_unused_configs = true

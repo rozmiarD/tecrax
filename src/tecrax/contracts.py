@@ -952,8 +952,9 @@ def validate_facts(
     facts: dict[str, Any], *, expected_contract_id: str | None = None
 ) -> list[str]:
     errors: list[str] = []
-    contract = facts.get("contract")
-    contract_id = str(contract.get("id") or "") if isinstance(contract, dict) else ""
+    contract_raw = facts.get("contract")
+    contract = contract_raw if isinstance(contract_raw, dict) else {}
+    contract_id = str(contract.get("id") or "")
     spec = FACTS_CONTRACTS.get(contract_id)
     if spec is None:
         errors.append("unknown_contract")

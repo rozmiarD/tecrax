@@ -4,6 +4,9 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Added stack-quality developer gates for `ruff` and `mypy`, plus the PEP 561
+  `py.typed` marker, so Tecrax profile code participates in the same typed
+  tooling baseline as RExecOp, GovEngine and SCLite.
 - Added active-profile gates that keep fixture-only operations out of the active
   Tecrax profile and validate declared facts contract references.
 - Added the versioned `tecrax.basic_host_inventory@1.0` facts contract with a

@@ -22,16 +22,9 @@ def normalize_network_device_inventory(context: StepExecutionContext) -> dict[st
         system_info_output=stdout(results, "read_network_device_system_info"),
         ssh_status_output=stdout(results, "read_network_device_ssh_status"),
     )
-    result = {
-        "target": context.target,
-        "observation_scope": "network_cli_readonly",
-        "device": parsed.device,
-        "management_access": parsed.management_access,
-        "hardening_observations": parsed.hardening_observations,
-    }
-    device = result["device"]
-    management = result["management_access"]
-    result["complete"] = all(
+    device = parsed.device
+    management = parsed.management_access
+    complete = all(
         (
             parsed.supported,
             device["system_name"],
@@ -41,6 +34,14 @@ def normalize_network_device_inventory(context: StepExecutionContext) -> dict[st
             management["ssh_protocol_v2_enabled"] is not None,
         )
     )
+    result = {
+        "target": context.target,
+        "observation_scope": "network_cli_readonly",
+        "device": device,
+        "management_access": management,
+        "hardening_observations": parsed.hardening_observations,
+        "complete": complete,
+    }
     facts = build_network_device_inventory_v1(result)
     return store_facts(context, "network_device_inventory", facts)
 

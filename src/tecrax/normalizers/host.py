@@ -56,6 +56,8 @@ def normalize_host_security_posture(context: StepExecutionContext) -> dict[str, 
         "dmesg_restrict": dmesg,
         "reboot_required": reboot_marker == "reboot-required",
     }
+    unattended_upgrades_enabled = unattended == "enabled"
+    reboot_required = reboot_marker == "reboot-required"
     complete = (
         unattended in {"enabled", "disabled", "static", "masked"}
         and available_updates["unknown"] == 0
@@ -64,9 +66,9 @@ def normalize_host_security_posture(context: StepExecutionContext) -> dict[str, 
     )
     healthy = (
         complete
-        and signals["unattended_upgrades_enabled"]
+        and unattended_upgrades_enabled
         and available_updates["security"] == 0
-        and not signals["reboot_required"]
+        and not reboot_required
         and aslr == 2
         and dmesg == 1
     )
@@ -85,7 +87,13 @@ def normalize_ntp_server_observation(context: StepExecutionContext) -> dict[str,
     stratum = integer(variables.get("stratum", ""))
     leap = integer(variables.get("leap", ""))
     complete = daemon_state == "active" and stratum is not None and leap is not None
-    healthy = complete and 1 <= int(stratum) <= 15 and leap != 3
+    healthy = (
+        stratum is not None
+        and leap is not None
+        and complete
+        and 1 <= stratum <= 15
+        and leap != 3
+    )
     facts = build_ntp_server_observation_v1(
         daemon_state=daemon_state,
         serving_state="local_daemon_query_available" if variables else "unknown",

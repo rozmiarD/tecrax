@@ -27,17 +27,13 @@ def normalize_ntp_health(context: StepExecutionContext) -> dict[str, Any]:
     results = connector_results(context)
     properties = _parse_properties(stdout(results, "read_ntp_sync_state"))
     service_state = single_line(stdout(results, "read_ntp_service_state"), limit=32)
-    result = {
-        "synchronized": properties.get("NTPSynchronized", "").lower() == "yes",
-        "systemd_ntp_enabled": properties.get("NTP", "").lower() == "yes",
-        "service": "ntp",
-        "service_state": service_state,
-    }
+    synchronized = properties.get("NTPSynchronized", "").lower() == "yes"
+    systemd_ntp_enabled = properties.get("NTP", "").lower() == "yes"
     facts = build_ntp_local_health_v1(
-        synchronized=result["synchronized"],
-        systemd_ntp_enabled=result["systemd_ntp_enabled"],
-        service=result["service"],
-        service_state=result["service_state"],
+        synchronized=synchronized,
+        systemd_ntp_enabled=systemd_ntp_enabled,
+        service="ntp",
+        service_state=service_state,
     )
     return store_facts(context, "ntp_health", facts)
 
