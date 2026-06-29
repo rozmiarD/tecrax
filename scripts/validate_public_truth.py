@@ -109,9 +109,24 @@ def collect_errors() -> list[str]:
     _require(errors, '.github/workflows/ci.yml', 'rm -rf dist build *.egg-info')
     _require(errors, '.github/workflows/ci.yml', 'python -m twine check dist/*')
     _require(errors, '.github/workflows/ci.yml', 'python -m pip check')
-    _require(errors, '.github/workflows/ci.yml', 'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main')
-    _require(errors, '.github/workflows/ci.yml', 'govengine @ git+https://github.com/rozmiarD/GovEngine.git@main')
-    _require(errors, '.github/workflows/ci.yml', 'repository: rozmiarD/RExecOP')
+    _require(errors, '.github/workflows/ci.yml', 'REXECOP_REF=')
+    _require(errors, '.github/workflows/ci.yml', 'GOVENGINE_REF=')
+    _require(errors, '.github/workflows/ci.yml', 'SCLITE_REF=')
+    _require(
+        errors,
+        '.github/workflows/ci.yml',
+        'git clone --depth 1 --branch "$REXECOP_REF" https://github.com/rozmiarD/RExecOP.git',
+    )
+    _require(
+        errors,
+        '.github/workflows/ci.yml',
+        'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@${SCLITE_REF}',
+    )
+    _require(
+        errors,
+        '.github/workflows/ci.yml',
+        'govengine @ git+https://github.com/rozmiarD/GovEngine.git@${GOVENGINE_REF}',
+    )
     _require(errors, '.github/workflows/ci.yml', 'pip install -e ./ci-deps/rexecop')
 
     review = build_local_fixture_review('truth-fixture')
