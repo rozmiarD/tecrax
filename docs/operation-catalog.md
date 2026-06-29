@@ -100,6 +100,13 @@ operations to Tecrax.
 Home deployment gate. It keeps filtering DNS, AD DNS authority and Hillstone
 DHCP ownership separate, and does not add an active AdGuard connector to Tecrax.
 
+## Zabbix deployment
+
+`docs/zabbix-vm-docker-deployment-runbook.md` documents the operator-owned
+Zabbix VM deployment gate. It records the VM, Docker Compose, PostgreSQL and
+backup boundaries without turning Tecrax into a Zabbix administration tool or
+storing Zabbix credentials in Git.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current

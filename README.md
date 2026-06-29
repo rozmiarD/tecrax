@@ -101,6 +101,10 @@ without joining clients or turning Tecrax into identity-management tooling.
 For AdGuard Home deployment planning, see
 `docs/adguard-home-deployment-runbook.md`; it records the filtering DNS gate
 while keeping Samba AD DNS authoritative and Hillstone DHCP out of scope.
+For Zabbix deployment planning, see
+`docs/zabbix-vm-docker-deployment-runbook.md`; it records the VM, Docker
+Compose, PostgreSQL and backup gates without exposing monitoring credentials or
+adding a live Zabbix administration connector.
 
 ## Target and operation catalog
 
