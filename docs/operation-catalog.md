@@ -49,6 +49,10 @@ this domain mapping.
 must pass `docs/future-product-activation.md` and keep backup readiness, job
 execution, restore evidence and coverage as separate claims.
 
+`docs/proxmox-backup-server-readiness-runbook.md` documents the current PBS
+readiness gate for the Proxmox deployment. It is an operator-owned runbook, not
+an active backup connector or backup-health claim.
+
 ## Proxmox host readiness
 
 `docs/proxmox-host-readiness-runbook.md` documents the manual readiness pass for

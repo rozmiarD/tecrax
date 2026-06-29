@@ -74,6 +74,9 @@ procedure, not an active Tecrax intent.
 For the private live-run substrate used by Proxmox deployment, see
 `docs/admin-tools-substrate-runbook.md`; it defines wrapper, environment,
 runtime and sign-off boundaries without storing private topology in Git.
+For local backup planning, see `docs/proxmox-backup-server-readiness-runbook.md`;
+it defines PBS readiness gates and keeps backup-job success, restore proof and
+external-copy coverage as separate claims.
 
 ## Target and operation catalog
 
