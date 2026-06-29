@@ -80,6 +80,12 @@ generic shell-runner layer.
 admin-tools CT deployment gate and its role as the initial low-risk PBS backup
 and restore-proof workload.
 
+## DNS authority
+
+`docs/dns-authority-checkpoint-runbook.md` documents the operator-owned DNS
+authority model for Samba AD DNS and AdGuard filtering DNS. It is not an active
+DNS connector and does not deploy either service.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current

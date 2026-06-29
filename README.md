@@ -88,6 +88,9 @@ The follow-up PBS gates are documented in
 `docs/proxmox-backup-server-first-backup-job-runbook.md`,
 `docs/proxmox-backup-server-restore-proof-runbook.md`, and
 `docs/proxmox-backup-server-external-copy-checkpoint-runbook.md`.
+For DNS authority planning before Samba AD DC and AdGuard, see
+`docs/dns-authority-checkpoint-runbook.md`; it records the operator-owned
+authority and forwarding model without deploying DNS services.
 
 ## Target and operation catalog
 
