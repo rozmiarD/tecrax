@@ -53,6 +53,10 @@ execution, restore evidence and coverage as separate claims.
 readiness gate for the Proxmox deployment. It is an operator-owned runbook, not
 an active backup connector or backup-health claim.
 
+`docs/proxmox-backup-server-deployment-runbook.md` documents the operator-owned
+PBS VM deployment gate. It separates deployment, first backup, restore proof and
+external-copy coverage as distinct claims.
+
 ## Proxmox host readiness
 
 `docs/proxmox-host-readiness-runbook.md` documents the manual readiness pass for

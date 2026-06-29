@@ -77,6 +77,9 @@ runtime and sign-off boundaries without storing private topology in Git.
 For local backup planning, see `docs/proxmox-backup-server-readiness-runbook.md`;
 it defines PBS readiness gates and keeps backup-job success, restore proof and
 external-copy coverage as separate claims.
+For local PBS deployment, see `docs/proxmox-backup-server-deployment-runbook.md`;
+it documents the operator-owned VM deployment gate without turning PBS status
+into an active Tecrax connector.
 
 ## Target and operation catalog
 
