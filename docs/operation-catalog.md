@@ -141,6 +141,12 @@ operator-owned network-device SNMP adoption gate. It adds read-only SNMP metrics
 and basic NTP configuration for selected devices while keeping SNMP credentials,
 device secrets and full topology outside Tecrax.
 
+`docs/grafana-ct-deployment-runbook.md` documents the operator-owned Grafana CT
+deployment gate. Grafana is introduced as the visualization layer with a direct
+Zabbix datasource, initial dashboards, Zabbix monitoring of the Grafana CT and
+backup coverage, while keeping Grafana credentials, Zabbix tokens and private
+dashboard exports outside Tecrax.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current
