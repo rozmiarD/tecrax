@@ -126,6 +126,11 @@ operator-owned Zabbix monitored-target adoption gate. It starts with ICMP
 availability only and does not claim agent, SNMP, alerting or dashboard
 coverage.
 
+`docs/zabbix-agent-baseline-runbook.md` documents the operator-owned Linux
+agent baseline and mandatory new-host onboarding package. It adds active
+`zabbix-agent2` checks without claiming alerting, Grafana, Wazuh or full
+application monitoring.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current
