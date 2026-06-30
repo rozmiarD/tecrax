@@ -136,6 +136,11 @@ operator-owned network-device ICMP adoption gate. It adds the security gateway
 and selected managed switches as availability-only targets without claiming
 SNMP, SSH inventory, alerting or full topology coverage.
 
+`docs/zabbix-network-snmp-adoption-runbook.md` documents the first
+operator-owned network-device SNMP adoption gate. It adds read-only SNMP metrics
+and basic NTP configuration for selected devices while keeping SNMP credentials,
+device secrets and full topology outside Tecrax.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current
