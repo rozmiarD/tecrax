@@ -68,6 +68,11 @@ external CIFS backup gate for selected Proxmox VM/CT workloads. It complements
 local PBS backup and keeps endpoint, share and credential details outside
 Tecrax.
 
+`docs/proxmox-external-cifs-restore-proof-runbook.md` documents the first
+operator-owned restore proof from external CIFS storage. It restores a low-risk
+workload to a temporary ID, validates it offline, and removes the temporary
+restore target without claiming full disaster recovery.
+
 ## Proxmox host readiness
 
 `docs/proxmox-host-readiness-runbook.md` documents the manual readiness pass for
