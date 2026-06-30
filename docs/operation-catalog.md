@@ -168,6 +168,11 @@ BookStack CT deployment gate. It introduces BookStack as the documentation and
 handoff layer while keeping application secrets, database credentials and future
 documentation migration outside Tecrax.
 
+`docs/glpi-vm-deployment-runbook.md` documents the operator-owned GLPI VM
+deployment gate. It introduces GLPI as the helpdesk, inventory and incident
+register layer while keeping credentials, mail/LDAP integration and compliance
+claims outside Tecrax.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current
