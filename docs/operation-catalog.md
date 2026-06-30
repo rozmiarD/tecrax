@@ -131,6 +131,11 @@ agent baseline and mandatory new-host onboarding package. It adds active
 `zabbix-agent2` checks without claiming alerting, Grafana, Wazuh or full
 application monitoring.
 
+`docs/zabbix-network-icmp-adoption-runbook.md` documents the first
+operator-owned network-device ICMP adoption gate. It adds the security gateway
+and selected managed switches as availability-only targets without claiming
+SNMP, SSH inventory, alerting or full topology coverage.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current
