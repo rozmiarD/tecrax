@@ -39,6 +39,9 @@ All notable Tecrax profile changes are documented here.
 - Documented the Grafana main infrastructure dashboard baseline backed by the
   existing Zabbix datasource, with Wazuh and GLPI integrations kept as explicit
   future gates.
+- Documented the server room temperature and humidity sensor integration through
+  bounded Zabbix Agent 2 user parameters, Zabbix items/triggers and Grafana
+  environment panels.
 
 ### Changed
 

@@ -153,6 +153,12 @@ datasource for problem, reachability, agent and resource panels while keeping
 Wazuh read-only datasource access and GLPI ticket automation as explicit future
 gates.
 
+`docs/runbooks/serverroom-environment-sensor-runbook.md` documents the
+operator-owned server room temperature and humidity sensor integration. It adds
+bounded Zabbix Agent 2 user parameters on `pve01`, Zabbix items and range-based
+temperature triggers, plus Grafana panels backed by the existing Zabbix
+datasource.
+
 `docs/runbooks/wazuh-vm-deployment-runbook.md` documents the operator-owned Wazuh VM
 deployment gate. Wazuh is introduced as the security monitoring layer with
 single-node central components, host-level monitoring and VM-level backup
