@@ -33,6 +33,9 @@
   Zabbix, Grafana, Wazuh, basic alerting, BookStack and GLPI isolated
   restore-proof runbooks while keeping private addresses, credentials and
   target mappings out of Git
+- **GLPI baseline:** GLPI is documented as the future ticket channel for Zabbix
+  and Wazuh alerts, with final ticket-routing automation still outside the
+  active profile until an operator-owned credential and suppression policy exist
 - **Execution boundary:** RExecOp owns operator-configured SSH execution; Tecrax does not
   manage credentials or embed target infrastructure data
 - **Not claimed:** arbitrary host changes, credential management, automatic discovery,

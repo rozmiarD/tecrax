@@ -180,6 +180,14 @@ restore-proof gate. It restores the GLPI VM backup to an isolated temporary VM,
 validates bounded application and database health, then removes the temporary
 target without exposing restored data or secrets.
 
+## GLPI Minimal Operational Baseline
+
+`docs/runbooks/glpi-minimal-operational-baseline-runbook.md` documents the first
+operator-owned GLPI operational baseline. It records default-account hygiene,
+minimal helpdesk/inventory/incident categories, request-source values and the
+decision that GLPI is the future ticket channel for Zabbix and Wazuh alerts
+without enabling final alert automation yet.
+
 ## Restart Zabbix agent
 
 `restart_zabbix_agent` is a legacy fixture-only mutating workflow. Current

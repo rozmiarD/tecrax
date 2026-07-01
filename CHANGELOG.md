@@ -33,6 +33,9 @@ All notable Tecrax profile changes are documented here.
   GLPI VM deployment plus isolated restore-proof runbook.
 - Moved public runbooks under `docs/runbooks/` and updated README,
   operation-catalog and profile intent references to use the new structure.
+- Documented the GLPI minimal operational baseline, including default-account
+  hygiene, minimal ticket categories, request-source values and the decision
+  that GLPI is the future ticket channel for Zabbix and Wazuh alerts.
 
 ### Changed
 
