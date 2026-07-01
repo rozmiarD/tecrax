@@ -147,6 +147,12 @@ Zabbix datasource, initial dashboards, Zabbix monitoring of the Grafana CT and
 backup coverage, while keeping Grafana credentials, Zabbix tokens and private
 dashboard exports outside Tecrax.
 
+`docs/runbooks/grafana-main-infrastructure-dashboard-runbook.md` documents the
+first consolidated infrastructure dashboard. It uses the existing Zabbix
+datasource for problem, reachability, agent and resource panels while keeping
+Wazuh read-only datasource access and GLPI ticket automation as explicit future
+gates.
+
 `docs/runbooks/wazuh-vm-deployment-runbook.md` documents the operator-owned Wazuh VM
 deployment gate. Wazuh is introduced as the security monitoring layer with
 single-node central components, host-level monitoring and VM-level backup

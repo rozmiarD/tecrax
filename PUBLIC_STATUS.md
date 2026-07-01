@@ -36,6 +36,9 @@
 - **GLPI baseline:** GLPI is documented as the future ticket channel for Zabbix
   and Wazuh alerts, with final ticket-routing automation still outside the
   active profile until an operator-owned credential and suppression policy exist
+- **Grafana dashboard baseline:** the first main infrastructure dashboard is
+  documented as a Zabbix-backed operational view; Wazuh datasource access and
+  GLPI ticket automation remain future gates
 - **Execution boundary:** RExecOp owns operator-configured SSH execution; Tecrax does not
   manage credentials or embed target infrastructure data
 - **Not claimed:** arbitrary host changes, credential management, automatic discovery,

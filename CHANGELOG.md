@@ -36,6 +36,9 @@ All notable Tecrax profile changes are documented here.
 - Documented the GLPI minimal operational baseline, including default-account
   hygiene, minimal ticket categories, request-source values and the decision
   that GLPI is the future ticket channel for Zabbix and Wazuh alerts.
+- Documented the Grafana main infrastructure dashboard baseline backed by the
+  existing Zabbix datasource, with Wazuh and GLPI integrations kept as explicit
+  future gates.
 
 ### Changed
 
