@@ -2,7 +2,7 @@
 
 - **Source package version:** `0.3.9a0` (`0.3.9-alpha`) alpha
 - **Latest published PyPI package:** `tecrax==0.3.8a0`; it contains the current B2 profile vector
-- **Dependencies:** `govengine==0.16.6`, `sclite-core==1.0.8`, `rexecop==0.2.11a0`
+- **Dependencies:** `govengine==0.16.6`, `sclite-core==1.0.8`, `rexecop==0.2.12a0`
 - **RExecOp profile:** bundled at `src/tecrax/profile/` via `rexecop.profiles:tecrax`
 - **Local fixture:** `tecrax fixture-review` — dry-run GovEngine/SCLite proof only
 - **R1 profile slice:** `collect_basic_host_inventory` defines fixed read-only Ubuntu

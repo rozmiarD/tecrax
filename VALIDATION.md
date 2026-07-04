@@ -15,7 +15,7 @@ Expected result for source package `0.3.9a0`:
 
 - `pyproject.toml`, `tecrax.__version__`, README, public status, and validators agree on `0.3.9a0` / `0.3.9-alpha`;
 - latest PyPI publication is `0.3.8a0`, including the coordinated B2 profile vector;
-- dependency truth is `govengine==0.16.6`, `sclite-core==1.0.8`, and `rexecop==0.2.11a0`;
+- dependency truth is `govengine==0.16.6`, `sclite-core==1.0.8`, and `rexecop==0.2.12a0`;
 - RExecOp profile entry point `tecrax:profile_root` resolves to a valid profile bundle;
 - `collect_basic_host_inventory` declares exact `ssh_readonly` command shapes and its
   parser tests use bounded fixture outputs without network access;
