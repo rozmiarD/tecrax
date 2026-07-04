@@ -1,0 +1,432 @@
+operator_metadata:
+  schema_version: v0.1
+  profile:
+    label: Tecrax
+    description: Bounded monitoring, network posture and approved mutation operations.
+  intents:
+    assess_network_device_management_posture_readonly:
+      label: Assess network device management posture
+      runbook_hint: Follow docs/runbooks/network-device-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show assess_network_device_management_posture_readonly --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    check_adguard_health:
+      label: Check AdGuard health
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show check_adguard_health --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    check_docker_services_health:
+      label: Check Docker service health
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show check_docker_services_health --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    check_ntp_health:
+      label: Check NTP health
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show check_ntp_health --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    check_ntp_server_health:
+      label: Check NTP server observation
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show check_ntp_server_health --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    check_portainer_health:
+      label: Check Portainer health
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show check_portainer_health --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    check_zabbix_container_health:
+      label: Check Zabbix endpoint health
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show check_zabbix_container_health --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    collect_basic_host_inventory:
+      label: Collect basic host inventory
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show collect_basic_host_inventory --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    collect_host_security_posture_readonly:
+      label: Collect host security posture
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show collect_host_security_posture_readonly --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    collect_network_device_inventory_readonly:
+      label: Collect network device inventory
+      runbook_hint: Follow docs/runbooks/network-device-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show collect_network_device_inventory_readonly --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    collect_zabbix_host_availability_summary_readonly:
+      label: Collect Zabbix host availability summary
+      runbook_hint: Follow docs/runbooks/zabbix-readonly-summaries-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show collect_zabbix_host_availability_summary_readonly --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    collect_zabbix_problem_summary_readonly:
+      label: Collect Zabbix problem summary
+      runbook_hint: Follow docs/runbooks/zabbix-readonly-summaries-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show collect_zabbix_problem_summary_readonly --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+    configure_chrony_ntp_server:
+      label: Configure chrony NTP server
+      runbook_hint: Follow docs/runbooks/chrony-ntp-server-mutation-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show configure_chrony_ntp_server --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+        mutation-contract:
+          operator_summary: Mutation contract, rollback or approval evidence is incomplete for this track.
+          safe_next_options:
+          - rexecop operation review --operation <operation_id>
+          - rexecop runbook show configure_chrony_ntp_server --profile tecrax
+    diagnose_monitoring_host:
+      label: Diagnose monitoring host
+      runbook_hint: Follow docs/runbooks/ubuntu-host-readonly-runbook.md for prerequisites, connector
+        checks and operator sign-off steps.
+      safe_next_options:
+      - rexecop runbook show diagnose_monitoring_host --profile tecrax
+      - rexecop secrets doctor --env <environment.yaml>
+      - rexecop operations unavailable --catalog <targets.yaml> --target <id>
+      failure_mapping:
+        policy:
+          operator_summary: GovEngine blocked the operation or requires explicit approval before start.
+          runbook_hint: Confirm policy pack, target criticality and approval evidence before retrying.
+          safe_next_options:
+          - rexecop policy explain --operation <operation_id>
+          - rexecop operation review --operation <operation_id>
+        connector:
+          operator_summary: A declared connector step failed or returned an unusable result.
+          safe_next_options:
+          - rexecop explain-error <operation_id>
+          - rexecop history --operation <operation_id>
+        target:
+          operator_summary: Target lock, catalog binding or target posture blocked progress.
+          safe_next_options:
+          - rexecop locks list
+          - rexecop operation diff --operation <operation_id>
+        runtime:
+          operator_summary: Runtime queue, worker or recovery state needs operator triage.
+          safe_next_options:
+          - rexecop ops
+          - rexecop runtime status --json
+

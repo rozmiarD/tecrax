@@ -247,8 +247,48 @@ def collect_errors(profile_root: Path | None = None) -> list[str]:
         if token in taxonomy_text:
             errors.append(f"taxonomy:forbidden_future_token:{token}")
     errors.extend(_collect_trigger_errors(profile, intent_ids))
+    errors.extend(_collect_operator_metadata_errors(profile, intent_ids))
 
     return sorted(set(errors))
+
+
+def _collect_operator_metadata_errors(profile: Path, intent_ids: set[str]) -> list[str]:
+    path = profile / "operator_metadata.yaml"
+    if not path.is_file():
+        return ["operator_metadata:missing"]
+    data = _load(path).get("operator_metadata")
+    if not isinstance(data, dict):
+        return ["operator_metadata:missing_mapping"]
+    schema_version = str(data.get("schema_version") or "")
+    if schema_version != "v0.1":
+        return [f"operator_metadata:unsupported_schema_version:{schema_version or 'missing'}"]
+    profile_meta = data.get("profile")
+    if not isinstance(profile_meta, dict) or not str(profile_meta.get("label") or "").strip():
+        return ["operator_metadata.profile.label:required"]
+    intents = data.get("intents")
+    if not isinstance(intents, dict) or not intents:
+        return ["operator_metadata.intents:required"]
+    errors: list[str] = []
+    unknown = sorted(set(intents) - intent_ids)
+    missing = sorted(intent_ids - set(intents))
+    if unknown:
+        errors.append(f"operator_metadata.intents.unknown:{','.join(unknown)}")
+    if missing:
+        errors.append(f"operator_metadata.intents.missing:{','.join(missing)}")
+    for intent_id, entry in sorted(intents.items()):
+        if not isinstance(entry, dict):
+            errors.append(f"{intent_id}:operator_metadata:not_mapping")
+            continue
+        if not str(entry.get("label") or "").strip():
+            errors.append(f"{intent_id}:operator_metadata.label:required")
+        if not str(entry.get("runbook_hint") or "").strip():
+            errors.append(f"{intent_id}:operator_metadata.runbook_hint:required")
+        if not isinstance(entry.get("safe_next_options"), list) or not entry.get("safe_next_options"):
+            errors.append(f"{intent_id}:operator_metadata.safe_next_options:required")
+        failure_mapping = entry.get("failure_mapping")
+        if not isinstance(failure_mapping, dict) or not failure_mapping:
+            errors.append(f"{intent_id}:operator_metadata.failure_mapping:required")
+    return errors
 
 
 def _collect_trigger_errors(profile: Path, intent_ids: set[str]) -> list[str]:
