@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(
-        "Tecrax 0.3.11-alpha profile: read-only observations plus one governed "
+        "Tecrax 0.3.12-alpha profile: read-only observations plus one governed "
         "chrony/NTP apply slice. Live access runs through RExecOp, GovEngine "
         "admission, and operator-owned configuration outside this package."
     )
