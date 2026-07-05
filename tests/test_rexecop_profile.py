@@ -60,7 +60,7 @@ def test_rexecop_profiles_entry_point_registered() -> None:
 
 
 def test_package_version_matches_profile_bundle() -> None:
-    assert tecrax.__version__ == "0.3.13a0"
+    assert tecrax.__version__ == "0.3.14a0"
 
 
 def test_unverified_r2_intents_are_not_claimed_by_profile() -> None:

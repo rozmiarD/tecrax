@@ -3,9 +3,9 @@
 Tecrax is a governed infrastructure-operations profile for RExecOp, using
 GovEngine governance and SCLite artifact truth.
 
-Current source line: `tecrax==0.3.13a0`, depending on
-`govengine==0.16.9`, `sclite-core==1.0.8`, and `rexecop==0.2.18a0`.
-Latest published PyPI baseline: `tecrax==0.3.13a0`; it contains the coordinated
+Current source line: `tecrax==0.3.14a0`, depending on
+`govengine==0.16.9`, `sclite-core==1.0.8`, and `rexecop==0.2.19a0`.
+Latest published PyPI baseline: `tecrax==0.3.14a0`; it contains the coordinated
 B2 dependency floor and read-only policy vector.
 
 This package provides:
@@ -58,7 +58,7 @@ Tecrax profile -> RExecOp plan -> GovEngine admission -> RExecOp execution -> SC
 Install the coordinated published line to register the current domain profile:
 
 ```bash
-pip install "tecrax==0.3.13a0"
+pip install "tecrax==0.3.14a0"
 tecrax status
 ```
 
@@ -200,7 +200,7 @@ profile/planning/supervision/runtime-review contracts and binds its fixture
 receipt through an SCLite artifact descriptor. It has no live runner, host
 inventory, credential path, or infrastructure adapter.
 
-The source `0.3.13-alpha` line combines the profile-owned read-only reaction pack,
+The source `0.3.14-alpha` line combines the profile-owned read-only reaction pack,
 B2 policy vector, and the first governed chrony/NTP apply slice over RExecOp
 `0.2.17a0`, GovEngine `0.16.8`, and SCLite `1.0.8`. It does not add a second
 policy engine, lifecycle runner, or truth layer.

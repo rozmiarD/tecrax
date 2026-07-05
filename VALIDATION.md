@@ -11,11 +11,11 @@ python -m pytest -q
 tecrax fixture-review --service demo-web
 ```
 
-Expected result for source package `0.3.13a0`:
+Expected result for source package `0.3.14a0`:
 
-- `pyproject.toml`, `tecrax.__version__`, README, public status, and validators agree on `0.3.13a0` / `0.3.13-alpha`;
-- latest PyPI publication is `0.3.13a0`, including the coordinated B2 profile vector;
-- dependency truth is `govengine==0.16.9`, `sclite-core==1.0.8`, and `rexecop==0.2.18a0`;
+- `pyproject.toml`, `tecrax.__version__`, README, public status, and validators agree on `0.3.14a0` / `0.3.14-alpha`;
+- latest PyPI publication is `0.3.14a0`, including the coordinated B2 profile vector;
+- dependency truth is `govengine==0.16.9`, `sclite-core==1.0.8`, and `rexecop==0.2.19a0`;
 - RExecOp profile entry point `tecrax:profile_root` resolves to a valid profile bundle;
 - `collect_basic_host_inventory` declares exact `ssh_readonly` command shapes and its
   parser tests use bounded fixture outputs without network access;
