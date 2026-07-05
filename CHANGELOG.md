@@ -4,78 +4,67 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- `ace171f`: reorganize README (badges, intent table, runbook index) and fix
+  Changelog header ordering; docs only, no PyPI release.
+
 ## [0.3.17a0] - 2026-07-05
 
 - Published `tecrax==0.3.17a0` on PyPI aligned to `rexecop==0.2.22a0`,
-  `govengine==0.16.9` and `sclite-core==1.0.8`.
-- Supersedes the publish follow-up repair line `0.3.12a0`–`0.3.16a0`.
+  `govengine==0.16.9` and `sclite-core==1.0.8` (`341e231`).
+- **Profile delta:** none. Active intents, workflows, connectors and validation are
+  unchanged since `0.3.11a0`.
+- **Why republished:** RExecOp G8 publish follow-up (`0.2.17a0`–`0.2.22a0`) ships
+  `rexecop[tecrax]` with an exact `tecrax==…` extra pin. PyPI must expose a matching
+  wheel for `pip install "rexecop[tecrax]==…"` even when Tecrax source is unchanged.
+  These are coordinated stack repair artifacts, not feature releases.
+- **Current supported line:** install `tecrax==0.3.17a0` or `rexecop[tecrax]==0.2.22a0`.
+  Older repair wheels below are archived only.
 
-## [0.3.16a0] - 2026-07-05
+### Publish follow-up repair line (superseded, pin-only)
 
-- Published `tecrax==0.3.16a0` on PyPI aligned to `rexecop==0.2.21a0`,
-  `govengine==0.16.9` and `sclite-core==1.0.8`.
-
-## [0.3.15a0] - 2026-07-05
-
-- Published `tecrax==0.3.15a0` on PyPI aligned to `rexecop==0.2.20a0`,
-  `govengine==0.16.9` and `sclite-core==1.0.8`.
-
-## [0.3.14a0] - 2026-07-05
-
-- Published `tecrax==0.3.14a0` on PyPI aligned to `rexecop==0.2.19a0`,
-  `govengine==0.16.9` and `sclite-core==1.0.8`.
-
-## [0.3.13a0] - 2026-07-05
-
-- Published `tecrax==0.3.13a0` on PyPI aligned to `rexecop==0.2.18a0`,
-  `govengine==0.16.9` and `sclite-core==1.0.8`.
-- Repaired stack pin after `0.3.12a0` shipped with `rexecop==0.2.17a0`.
-
-## [0.3.12a0] - 2026-07-05
-
-- Published `tecrax==0.3.12a0` on PyPI aligned to `rexecop==0.2.17a0`,
-  `govengine==0.16.9` and `sclite-core==1.0.8`.
+| Tecrax | RExecOp extra pin | Commit |
+| --- | --- | --- |
+| `0.3.16a0` | `0.2.21a0` | `48d8e87` |
+| `0.3.15a0` | `0.2.20a0` | `26eab3e` |
+| `0.3.14a0` | `0.2.19a0` | `e7b8260` |
+| `0.3.13a0` | `0.2.18a0` | `e281e88` |
+| `0.3.12a0` | `0.2.17a0` | `b50f1b1` |
 
 ## [0.3.11a0] - 2026-07-04
 
 - Published `tecrax==0.3.11a0` on PyPI aligned to `rexecop==0.2.16a0`,
-  `govengine==0.16.8` and `sclite-core==1.0.8`.
+  `govengine==0.16.8` and `sclite-core==1.0.8` (`9fdc216`).
+- **Profile delta:** none — dependency pin and public-truth markers only.
 - Repaired coordinated stack pin after `rexecop==0.2.15a0` published with a stale
   `tecrax==0.3.9a0` extra.
 
 ## [0.3.10a0] - 2026-07-04
 
 - Published `tecrax==0.3.10a0` on PyPI aligned to `rexecop==0.2.15a0`,
-  `govengine==0.16.8` and `sclite-core==1.0.8`.
+  `govengine==0.16.8` and `sclite-core==1.0.8` (`6ffaa61`).
+- **Profile delta:** none — dependency pin and public-truth markers only.
+
+## [0.3.9a0] - 2026-07-04
+
+- Published `tecrax==0.3.9a0` on PyPI aligned to `govengine==0.16.8`,
+  `rexecop==0.2.14a0` and `sclite-core==1.0.8` (`8e3267e`).
+- `a9e4038`, `d8198ab`: align dependency pins and public-truth markers with
+  GovEngine `0.16.6` / `0.16.8` and RExecOp `0.2.12a0` / `0.2.14a0` before release.
 
 ### Added
 
-- First governed mutating Tecrax slice: `configure_chrony_ntp_server`, limited to a
-  deterministic chrony/NTP server apply path with GovEngine admission, RExecOp
-  execution, SCLite evidence, and operator-owned live wrapper configuration outside
-  the repository.
-- `tecrax_chrony_ntp` connector backend, chrony/NTP mutation facts contract,
-  sanitized fixture environment, active-profile gates, and tests that deny unadmitted
-  apply attempts and reject unsafe subnet scope.
-- Proxmox host readiness, PBS readiness/deployment/hardening/first-backup/restore-proof
-  and external-copy checkpoint runbooks.
-- Admin-tools substrate and CT deployment runbooks.
-- Samba AD DC deployment, baseline, DNS authority checkpoint, user provisioning,
-  logon/GPO pilot and workstation GPO/RDP pilot runbooks.
-- Windows AD pilot endpoint and endpoint update-management pilot runbooks.
-- AdGuard Home, Zabbix VM/Docker deployment, PostgreSQL app backup, first-target
-  adoption, agent/ICMP/SNMP adoption and readonly-summary runbooks.
-- Grafana CT deployment and main infrastructure dashboard runbooks.
-- Wazuh VM deployment and agent baseline runbooks.
-- Basic alerting, BookStack CT deployment, GLPI VM deployment and isolated
-  restore-proof runbooks.
-- Server-room environment sensor integration runbook.
-- Chrony/NTP foundation and mutation runbook for the bounded apply slice.
+- `eefe5d1`: first governed mutating slice `configure_chrony_ntp_server` with
+  `tecrax_chrony_ntp` connector backend, mutation facts contract, active-profile
+  gates and negative apply tests.
+- `10b82f1`: profile-owned operator catalog metadata for all 14 active intents in
+  `operator_metadata.yaml`, validated by `validate_active_profile.py`.
+- Operator runbooks under `docs/runbooks/` (Proxmox/PBS, admin-tools, Samba AD,
+  Windows pilots, AdGuard, Zabbix, Grafana, Wazuh, alerting, BookStack, GLPI,
+  network devices, chrony/NTP); `27358b3` moved them from repo-root layout.
+- `759ab0f`: Synology Zabbix community template runbook.
 
 ### Changed
 
-- Moved public runbooks under `docs/runbooks/` and updated README, operation-catalog
-  and profile intent references to use the new structure.
 - Kept the public documentation boundary explicit: operator-owned live wrappers,
   credentials, target addresses and private topology remain outside the repository.
 
