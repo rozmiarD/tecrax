@@ -1,22 +1,24 @@
-
-## [0.3.17a0] - 2026-07-05
-
-- Published `tecrax==0.3.17a0` aligned to `rexecop==0.2.22a0`.
-
-## [0.3.15a0] - 2026-07-05
-
-- Published `tecrax==0.3.15a0` aligned to `rexecop==0.2.20a0`.
-
 # Changelog
-
-## [0.3.16a0] - 2026-07-05
-
-- Published `tecrax==0.3.16a0` aligned to `rexecop==0.2.21a0`.
-
 
 All notable Tecrax profile changes are documented here.
 
 ## Unreleased
+
+## [0.3.17a0] - 2026-07-05
+
+- Published `tecrax==0.3.17a0` on PyPI aligned to `rexecop==0.2.22a0`,
+  `govengine==0.16.9` and `sclite-core==1.0.8`.
+- Supersedes the publish follow-up repair line `0.3.12a0`–`0.3.16a0`.
+
+## [0.3.16a0] - 2026-07-05
+
+- Published `tecrax==0.3.16a0` on PyPI aligned to `rexecop==0.2.21a0`,
+  `govengine==0.16.9` and `sclite-core==1.0.8`.
+
+## [0.3.15a0] - 2026-07-05
+
+- Published `tecrax==0.3.15a0` on PyPI aligned to `rexecop==0.2.20a0`,
+  `govengine==0.16.9` and `sclite-core==1.0.8`.
 
 ## [0.3.14a0] - 2026-07-05
 
@@ -46,102 +48,43 @@ All notable Tecrax profile changes are documented here.
 - Published `tecrax==0.3.10a0` on PyPI aligned to `rexecop==0.2.15a0`,
   `govengine==0.16.8` and `sclite-core==1.0.8`.
 
-### Done (prior)
+### Added
 
-- Aligned the Tecrax source dependency truth with the published RExecOp
-  `0.2.15a0` stack line while keeping `govengine==0.16.8` and
-  `sclite-core==1.0.8`.
-- Aligned the Tecrax source dependency truth with the published GovEngine
-  `0.16.8` stack line while keeping `sclite-core==1.0.8` and
-  `rexecop==0.2.15a0`.
-- Documented the Proxmox host readiness runbook for the fresh T150 deployment,
-  keeping host update, SMART, ZFS and storage baseline steps operator-owned
-  rather than claiming a generic Proxmox mutation intent.
-- Documented the Proxmox backup and restore-proof path, including PBS
-  readiness, deployment, post-deploy hardening, first-backup, restore-proof and
-  external-copy checkpoints, plus the external CIFS backup and restore proof
-  runbooks.
-- Documented the lightweight admin-tools CT deployment gate as the first
-  low-risk workload for private operator layouts and backup/restore-proof
-  handoff.
-- Documented the Samba AD DC deployment gate, Samba AD baseline, DNS authority
-  checkpoint and AdGuard Home deployment gate, keeping domain authority,
-  filtering DNS and private runtime details separate.
-- Documented the chrony/NTP foundation and mutation runbook as a bounded,
-  operator-owned baseline instead of a generic time-sync surface.
-- Documented the Zabbix VM deployment gate, PostgreSQL app backup, first
-  monitored-target adoption, agent baseline, ICMP adoption and SNMP adoption
-  runbooks.
-- Documented the Grafana CT deployment baseline with the initial Zabbix
-  datasource, dashboards and backup coverage.
-- Documented the Wazuh VM deployment gate, agent baseline and performance
-  tuning notes while keeping enrollment secrets and generated credentials
-  outside Git.
-- Documented the basic alerting baseline, BookStack CT deployment baseline and
-  GLPI VM deployment plus isolated restore-proof runbook.
-- Moved public runbooks under `docs/runbooks/` and updated README,
-  operation-catalog and profile intent references to use the new structure.
-- Documented the GLPI minimal operational baseline, including default-account
-  hygiene, minimal ticket categories, request-source values and the decision
-  that GLPI is the future ticket channel for Zabbix and Wazuh alerts.
-- Documented the Grafana main infrastructure dashboard baseline backed by the
-  existing Zabbix datasource, with Wazuh and GLPI integrations kept as explicit
-  future gates.
-- Documented the server room temperature and humidity sensor integration through
-  bounded Zabbix Agent 2 user parameters, Zabbix items/triggers and Grafana
-  environment panels.
-- Documented the isolated Zabbix PostgreSQL restore proof for the logical dump,
-  including bounded validation counters and cleanup/non-claims.
-- Documented the GLPI compliance-readiness boundary for the minimal operational
-  baseline.
-- Documented the BookStack isolated restore proof from CT backup with bounded
-  validation counters and cleanup/non-claims.
-- Documented the Samba AD application-aware backup, isolated AD restore proof
-  and PBS full OS upgrade retry, including the PBS VM EFI bootloader caveat.
-- Documented the Windows AD pilot endpoint baseline and added a public-safe
-  SSH/PowerShell helper for dry-run/apply preparation of test endpoints without
-  storing private naming, credentials, keys, fingerprints or inventory in Git.
-- Extended the Windows pilot helper and runbook for post-domain Windows Time
-  behavior, including domain-hierarchy sync and Samba AD DC chrony/ntp-signd
-  serving requirements.
-- Documented bounded Samba AD user provisioning and added a dry-run/apply
-  helper that keeps real user lists and temporary passwords outside Git.
-- Documented the first Samba AD domain-user logon and low-impact GPO pilot gate
-  as an L1 runbook before any endpoint rollout or mutating identity intent.
-- Documented the workstation GPO/RDP pilot as an L1 runbook, including separate
-  pilot GPOs, internal-only RDP listener validation and the endpoint
-  update-management gate before broad rollout.
-- Documented the Windows endpoint update-management pilot as an L1 runbook,
-  including GPO/WUfB rings, active hours, restart boundaries and Wake-on-LAN as
-  a later enhancement rather than an active update orchestrator.
+- First governed mutating Tecrax slice: `configure_chrony_ntp_server`, limited to a
+  deterministic chrony/NTP server apply path with GovEngine admission, RExecOp
+  execution, SCLite evidence, and operator-owned live wrapper configuration outside
+  the repository.
+- `tecrax_chrony_ntp` connector backend, chrony/NTP mutation facts contract,
+  sanitized fixture environment, active-profile gates, and tests that deny unadmitted
+  apply attempts and reject unsafe subnet scope.
+- Proxmox host readiness, PBS readiness/deployment/hardening/first-backup/restore-proof
+  and external-copy checkpoint runbooks.
+- Admin-tools substrate and CT deployment runbooks.
+- Samba AD DC deployment, baseline, DNS authority checkpoint, user provisioning,
+  logon/GPO pilot and workstation GPO/RDP pilot runbooks.
+- Windows AD pilot endpoint and endpoint update-management pilot runbooks.
+- AdGuard Home, Zabbix VM/Docker deployment, PostgreSQL app backup, first-target
+  adoption, agent/ICMP/SNMP adoption and readonly-summary runbooks.
+- Grafana CT deployment and main infrastructure dashboard runbooks.
+- Wazuh VM deployment and agent baseline runbooks.
+- Basic alerting, BookStack CT deployment, GLPI VM deployment and isolated
+  restore-proof runbooks.
+- Server-room environment sensor integration runbook.
+- Chrony/NTP foundation and mutation runbook for the bounded apply slice.
 
 ### Changed
 
-- Kept the public documentation boundary explicit across the new runbooks:
-  operator-owned live wrappers, credentials, target addresses and private
-  topology remain outside the repository.
+- Moved public runbooks under `docs/runbooks/` and updated README, operation-catalog
+  and profile intent references to use the new structure.
+- Kept the public documentation boundary explicit: operator-owned live wrappers,
+  credentials, target addresses and private topology remain outside the repository.
 
 ### Deferred
 
-- No active claims were added for arbitrary host management, CMDB sync,
-  automatic discovery, production readiness or a second truth layer.
+- No active claims were added for arbitrary host management, CMDB sync, automatic
+  discovery, production readiness or a second truth layer.
 
-## 0.3.10a0 - 2026-06-29
-
-- Published `tecrax==0.3.10a0` on PyPI with `govengine==0.16.8`,
-  `rexecop==0.2.15a0`, and `sclite-core==1.0.8`.
-- Added the first governed mutating Tecrax slice:
-  `configure_chrony_ntp_server`, limited to a deterministic chrony/NTP server
-  apply path with GovEngine admission, RExecOp execution, SCLite evidence, and
-  operator-owned live wrapper configuration outside the repository.
-- Added the `tecrax_chrony_ntp` connector backend, chrony/NTP mutation facts
-  contract, sanitized fixture environment, active-profile gates, and tests that
-  deny unadmitted apply attempts and reject unsafe subnet scope.
-- Documented the Proxmox chrony/NTP mutation runbook while preserving the
-  existing boundary against credentials, private topology, arbitrary commands,
-  scheduler ownership, or a second truth layer.
-
-## 0.3.8a0 - 2026-06-29
+## [0.3.8a0] - 2026-06-29
 
 - Declared the single supported alpha stack line for the current solo-development
   phase: `tecrax==0.3.8a0`, `rexecop==0.2.11a0`, `govengine==0.16.5`, and
@@ -151,7 +94,7 @@ All notable Tecrax profile changes are documented here.
 - Removed historical tag compatibility selection from CI; source checks now test
   the current `main` stack line only while older PyPI artifacts remain archived.
 
-## 0.3.7a0 - 2026-06-28
+## [0.3.7a0] - 2026-06-28
 
 - `diagnose_monitoring_host` now persists a profile-owned SCLite
   `reaction_observation` envelope in workflow shared state so RExecOp can plan
@@ -168,7 +111,7 @@ All notable Tecrax profile changes are documented here.
   `rexecop>=0.2.8a0,<0.3` without moving event intake, execution, governance,
   scheduler ownership or evidence truth into Tecrax.
 
-## 0.3.6a0 - 2026-06-27
+## [0.3.6a0] - 2026-06-27
 
 - Added stack-quality developer gates for `ruff` and `mypy`, plus the PEP 561
   `py.typed` marker, so Tecrax profile code participates in the same typed
@@ -219,7 +162,7 @@ All notable Tecrax profile changes are documented here.
   `rexecop>=0.2.7a0,<0.3` without adding mutation, credential management,
   scheduler ownership, a second policy engine, or a second truth layer.
 
-## 0.3.5a0 - 2026-06-24
+## [0.3.5a0] - 2026-06-24
 
 - Published the profile after GovEngine `0.16.0` and RExecOp `0.2.6a0` passed
   their public-index install gates.
@@ -238,7 +181,7 @@ All notable Tecrax profile changes are documented here.
   policy-pack semantics. Runtime enforcement remains in RExecOp, governance in
   GovEngine, and canonical evidence/receipt truth in SCLite.
 
-## 0.3.4a0 - 2026-06-23
+## [0.3.4a0] - 2026-06-23
 
 - Added profile-owned target/operation catalog metadata and sanitized operator
   catalog examples.
