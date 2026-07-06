@@ -77,7 +77,7 @@ into Git, runbooks, command history examples or sign-offs.
 Run the helper in dry-run mode against a bounded sample of unresolved alerts:
 
 ```sh
-python scripts/route-glpi-alerts.py \
+.venv/bin/python scripts/route-glpi-alerts.py \
   --events /path/to/normalized-alerts.ndjson \
   --state /var/lib/tecrax/glpi-alert-routing/state.json \
   --dry-run
@@ -96,7 +96,7 @@ Only after dry-run validation, run live mode with operator-owned GLPI API
 credentials in the environment:
 
 ```sh
-python scripts/route-glpi-alerts.py \
+.venv/bin/python scripts/route-glpi-alerts.py \
   --events /path/to/normalized-alerts.ndjson \
   --state /var/lib/tecrax/glpi-alert-routing/state.json \
   --api-url https://glpi.example.invalid/apirest.php

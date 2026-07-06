@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -216,7 +217,9 @@ class TicketState:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self.path.with_suffix(self.path.suffix + ".tmp")
         tmp.write_text(json.dumps(self._data, indent=2, sort_keys=True), encoding="utf-8")
+        os.chmod(tmp, 0o600)
         tmp.replace(self.path)
+        os.chmod(self.path, 0o600)
 
 
 class GlpiClient:
@@ -235,6 +238,7 @@ class GlpiClient:
 
     def create_ticket(self, draft: TicketDraft) -> int:
         session_token = self._init_session()
+        ticket_id: int | None = None
         try:
             response = self._request_json(
                 "POST",
@@ -242,15 +246,23 @@ class GlpiClient:
                 draft.glpi_payload(),
                 session_token=session_token,
             )
+            if not isinstance(response, dict):
+                raise RuntimeError("glpi_ticket_response_not_object")
             ticket_id = response.get("id")
             if not isinstance(ticket_id, int):
                 raise RuntimeError("glpi_ticket_response_missing_id")
             return ticket_id
         finally:
-            self._kill_session(session_token)
+            try:
+                self._kill_session(session_token)
+            except RuntimeError:
+                if ticket_id is None:
+                    raise
 
     def _init_session(self) -> str:
         response = self._request_json("GET", f"{self.api_url}/initSession", None)
+        if not isinstance(response, dict):
+            raise RuntimeError("glpi_init_session_response_not_object")
         session_token = response.get("session_token")
         if not isinstance(session_token, str) or not session_token:
             raise RuntimeError("glpi_init_session_missing_session_token")
@@ -266,7 +278,7 @@ class GlpiClient:
         payload: dict[str, Any] | None,
         *,
         session_token: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> Any:
         body = None if payload is None else json.dumps(payload).encode("utf-8")
         headers = {
             "Content-Type": "application/json",
@@ -283,8 +295,6 @@ class GlpiClient:
             message = exc.read().decode("utf-8", errors="replace")
             raise RuntimeError(f"glpi_http_error:{exc.code}:{_bounded_text(message, 200)}") from exc
         value = json.loads(data or "{}")
-        if not isinstance(value, dict):
-            raise RuntimeError("glpi_response_not_object")
         return value
 
 

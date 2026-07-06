@@ -4,6 +4,8 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Hardened the GLPI alert-ticket routing helper around private duplicate state,
+  live API session cleanup and venv-based operator execution.
 - Added the alert-source hygiene checkpoint before live GLPI routing, including
   a Wazuh alert aggregation helper, routing classes and an operator runbook.
 - Added a public-safe GLPI alert-ticket routing helper and runbook. The helper

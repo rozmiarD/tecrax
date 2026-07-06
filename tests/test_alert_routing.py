@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import stat
 
 from tecrax.alert_routing import (
     AlertEvent,
@@ -99,6 +100,7 @@ def test_route_events_live_marks_duplicates(tmp_path: Path) -> None:
     assert second == [{"dedupe_key": "Zabbix:event-1", "status": "duplicate"}]
     data = json.loads(state_path.read_text(encoding="utf-8"))
     assert data["routed"]["Zabbix:event-1"]["glpi_ticket_id"] == 1001
+    assert stat.S_IMODE(state_path.stat().st_mode) == 0o600
 
 
 def test_load_events_accepts_ndjson(tmp_path: Path) -> None:
