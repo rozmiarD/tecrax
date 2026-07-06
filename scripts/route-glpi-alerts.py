@@ -39,7 +39,7 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit("live mode requires --api-url plus GLPI_APP_TOKEN and GLPI_USER_TOKEN")
         client = GlpiClient(api_url=args.api_url, app_token=app_value, user_token=user_value)
     results = route_events(events, state, client=client, dry_run=dry_run)
-    print(json.dumps(results, indent=2, sort_keys=True))
+    print(json.dumps(results, indent=2, ensure_ascii=False, sort_keys=True))
     return 0
 
 

@@ -54,7 +54,7 @@ Initial ITIL categories:
 - `Prosba`;
 - `Dostep`;
 - `Infrastruktura`;
-- `Bezpieczenstwo`;
+- `Bezpieczeństwo`;
 - `Alerty monitoringu`.
 
 Initial request sources:

@@ -4,6 +4,8 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Updated GLPI alert-ticket drafts and helper output to use Polish diacritics in
+  operator-facing labels, categories and guidance.
 - Hardened the GLPI alert-ticket routing helper around private duplicate state,
   live API session cleanup and venv-based operator execution.
 - Added the alert-source hygiene checkpoint before live GLPI routing, including

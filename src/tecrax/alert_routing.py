@@ -13,8 +13,8 @@ from typing import Any
 POLISH_SEVERITY_LABELS = {
     "disaster": "Awaria krytyczna",
     "high": "Wysoki",
-    "average": "Sredni",
-    "warning": "Ostrzezenie",
+    "average": "Średni",
+    "warning": "Ostrzeżenie",
     "information": "Informacja",
     "not_classified": "Niesklasyfikowane",
 }
@@ -118,7 +118,7 @@ def infer_category(event: AlertEvent) -> str:
         return _bounded_text(event.category, 80)
     text = f"{event.summary} {event.raw_trigger} {event.host}".lower()
     if any(token in text for token in ("wazuh", "security", "auth", "login", "sudo")):
-        return "Bezpieczenstwo"
+        return "Bezpieczeństwo"
     if any(token in text for token in ("disk", "space", "filesystem", "storage", "miejsce")):
         return "Dysk / miejsce"
     if any(token in text for token in ("backup", "pbs", "restore")):
@@ -128,10 +128,10 @@ def infer_category(event: AlertEvent) -> str:
     if any(token in text for token in ("camera", "frigate", "rtsp", "recording")):
         return "Monitoring wizyjny"
     if any(token in text for token in ("ping", "unavailable", "down", "icmp")):
-        return "Dostepnosc"
+        return "Dostępność"
     if any(token in text for token in ("cpu", "memory", "load", "performance")):
-        return "Wydajnosc"
-    return "Uslugi administracyjne"
+        return "Wydajność"
+    return "Usługi administracyjne"
 
 
 def build_ticket_draft(event: AlertEvent) -> TicketDraft:
@@ -152,12 +152,12 @@ def build_ticket_draft(event: AlertEvent) -> TicketDraft:
     title = f"[{source}][{label}] {summary}: {host}"
     content = "\n".join(
         (
-            "System monitoringu wykryl problem wymagajacy uwagi.",
+            "System monitoringu wykrył problem wymagający uwagi.",
             "",
             "Co wykryto:",
             summary,
             "",
-            "Host/usluga:",
+            "Host/usługa:",
             host,
             "",
             "Kategoria:",
@@ -175,15 +175,15 @@ def build_ticket_draft(event: AlertEvent) -> TicketDraft:
             "Sugerowany pierwszy krok:",
             _first_step_hint(category),
             "",
-            "Szczegoly techniczne:",
-            f"- Zrodlo: {source}",
+            "Szczegóły techniczne:",
+            f"- Źródło: {source}",
             f"- Raw severity / level: {_bounded_text(event.raw_severity, 80)}",
             f"- Raw trigger / rule: {raw_trigger}",
             f"- Event ID: {_bounded_text(event.event_id, 120)}",
-            f"- Link do zrodla: {source_url}",
+            f"- Link do źródła: {source_url}",
             "",
             "Uwagi:",
-            "Nie wykonywac dzialan destrukcyjnych bez potwierdzenia operatora.",
+            "Nie wykonywać działań destrukcyjnych bez potwierdzenia operatora.",
         )
     )
 
@@ -279,7 +279,7 @@ class GlpiClient:
         *,
         session_token: str | None = None,
     ) -> Any:
-        body = None if payload is None else json.dumps(payload).encode("utf-8")
+        body = None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8")
         headers = {
             "Content-Type": "application/json",
             "App-Token": self.app_token,
@@ -387,19 +387,19 @@ def _bounded_text(value: object, limit: int) -> str:
 
 def _impact_hint(category: str, severity_key: str) -> str:
     if severity_key in {"disaster", "high"}:
-        return "Problem moze istotnie wplywac na ciaglosc pracy lub bezpieczenstwo uslugi."
+        return "Problem może istotnie wpływać na ciągłość pracy lub bezpieczeństwo usługi."
     if category == "Dysk / miejsce":
-        return "Rosnace zuzycie miejsca moze zatrzymac usluge albo przerwac zapis danych."
-    if category == "Bezpieczenstwo":
-        return "Zdarzenie wymaga weryfikacji, czy nie oznacza proby naruszenia bezpieczenstwa."
-    return "Problem wymaga sprawdzenia, ale nie musi oznaczac natychmiastowej awarii."
+        return "Rosnące zużycie miejsca może zatrzymać usługę albo przerwać zapis danych."
+    if category == "Bezpieczeństwo":
+        return "Zdarzenie wymaga weryfikacji, czy nie oznacza próby naruszenia bezpieczeństwa."
+    return "Problem wymaga sprawdzenia, ale nie musi oznaczać natychmiastowej awarii."
 
 
 def _first_step_hint(category: str) -> str:
     if category == "Dysk / miejsce":
-        return "Sprawdz uzycie wolumenow i potwierdz, czy wzrost jest oczekiwany."
-    if category == "Bezpieczenstwo":
-        return "Zweryfikuj zdarzenie w Wazuh i sprawdz powiazany host/uzytkownika."
-    if category == "Dostepnosc":
-        return "Sprawdz dostepnosc hosta z monitoringu i z sieci administracyjnej."
-    return "Otworz system zrodlowy i potwierdz aktualny stan alertu."
+        return "Sprawdź użycie wolumenów i potwierdź, czy wzrost jest oczekiwany."
+    if category == "Bezpieczeństwo":
+        return "Zweryfikuj zdarzenie w Wazuh i sprawdź powiązany host/użytkownika."
+    if category == "Dostępność":
+        return "Sprawdź dostępność hosta z monitoringu i z sieci administracyjnej."
+    return "Otwórz system źródłowy i potwierdź aktualny stan alertu."

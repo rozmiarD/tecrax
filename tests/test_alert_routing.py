@@ -21,18 +21,18 @@ def test_zabbix_ticket_draft_uses_polish_operator_layer() -> None:
             source="Zabbix",
             event_id="42",
             host="frigate01",
-            summary="Malo miejsca na dysku",
+            summary="Mało miejsca na dysku",
             raw_severity="4",
             raw_trigger="High disk usage on /mnt/monitoring",
             started_at="2026-07-06T10:00:00+02:00",
         )
     )
 
-    assert draft.title == "[Zabbix][Wysoki] Malo miejsca na dysku: frigate01"
+    assert draft.title == "[Zabbix][Wysoki] Mało miejsca na dysku: frigate01"
     assert draft.category == "Dysk / miejsce"
     assert draft.urgency == 4
-    assert "System monitoringu wykryl problem wymagajacy uwagi." in draft.content
-    assert "Nie wykonywac dzialan destrukcyjnych" in draft.content
+    assert "System monitoringu wykrył problem wymagający uwagi." in draft.content
+    assert "Nie wykonywać działań destrukcyjnych" in draft.content
     assert "High disk usage on /mnt/monitoring" in draft.content
 
 
@@ -51,7 +51,7 @@ def test_route_events_dry_run_does_not_mark_state(tmp_path: Path) -> None:
         source="Wazuh",
         event_id="abc",
         host="dc01",
-        summary="Podejrzane zdarzenie bezpieczenstwa",
+        summary="Podejrzane zdarzenie bezpieczeństwa",
         raw_severity="12",
         raw_trigger="authentication failure",
     )
@@ -60,10 +60,10 @@ def test_route_events_dry_run_does_not_mark_state(tmp_path: Path) -> None:
 
     assert result == [
         {
-            "category": "Bezpieczenstwo",
+            "category": "Bezpieczeństwo",
             "dedupe_key": "Wazuh:abc",
             "status": "dry_run",
-            "title": "[Wazuh][Wysoki] Podejrzane zdarzenie bezpieczenstwa: dc01",
+            "title": "[Wazuh][Wysoki] Podejrzane zdarzenie bezpieczeństwa: dc01",
             "urgency": 4,
         }
     ]
@@ -82,7 +82,7 @@ def test_route_events_live_marks_duplicates(tmp_path: Path) -> None:
         source="Zabbix",
         event_id="event-1",
         host="zbx01",
-        summary="Host niedostepny",
+        summary="Host niedostępny",
         raw_severity="3",
         raw_trigger="Unavailable by ICMP",
     )
