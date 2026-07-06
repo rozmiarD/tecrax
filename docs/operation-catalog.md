@@ -226,6 +226,11 @@ basic alerting baseline. It adds local Zabbix and Wazuh alert spools through
 systemd timers without claiming final external notification routing, GLPI ticket
 creation or incident escalation policy.
 
+`docs/runbooks/alert-presentation-language-baseline-runbook.md` documents the
+operator-facing language baseline before GLPI ticket automation. It defines
+Polish severity labels, alert categories, GLPI ticket templates and Grafana
+language rules while keeping upstream Zabbix/Wazuh technical identifiers intact.
+
 `docs/runbooks/frigate-host-monitoring-runbook.md` documents the first
 operator-owned monitoring baseline for an existing Ubuntu Frigate host. It adds
 Zabbix, Wazuh, bounded Frigate listener checks and storage-pressure monitoring
