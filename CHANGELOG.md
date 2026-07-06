@@ -4,6 +4,8 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Added a bounded Zabbix active-problem collector for GLPI shadow routing. It
+  exports normalized alert events without storing API tokens or creating tickets.
 - Updated GLPI alert-ticket drafts and helper output to use Polish diacritics in
   operator-facing labels, categories and guidance.
 - Hardened the GLPI alert-ticket routing helper around private duplicate state,

@@ -246,6 +246,9 @@ operator-owned GLPI alert-ticket routing gate. The supporting
 `scripts/route-glpi-alerts.py` helper accepts normalized Zabbix/Wazuh events,
 renders Polish ticket drafts, applies duplicate suppression and can create GLPI
 tickets only when credentials are supplied from outside Git.
+`scripts/collect-zabbix-problems-for-glpi.py` is the bounded read-only Zabbix
+shadow collector for this gate: it exports active Zabbix problems as normalized
+alert events for dry-run routing before any broad live ticket creation.
 
 `docs/runbooks/frigate-host-monitoring-runbook.md` documents the first
 operator-owned monitoring baseline for an existing Ubuntu Frigate host. It adds

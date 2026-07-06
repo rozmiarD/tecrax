@@ -60,9 +60,25 @@ Use JSON array or NDJSON with one object per alert:
 }
 ```
 
-The helper intentionally expects normalized input. Source-specific collection
-from Zabbix and Wazuh can be owned by existing local collectors or a future
-RExecOp workflow.
+The helper intentionally expects normalized input. Wazuh source-specific
+collection can be owned by existing local collectors or a future RExecOp
+workflow.
+
+For Zabbix shadow routing, use the bounded collector:
+
+```sh
+ZABBIX_API_TOKEN=... \
+.venv/bin/python scripts/collect-zabbix-problems-for-glpi.py \
+  --api-url https://zabbix.example.invalid/api_jsonrpc.php \
+  --source-url-base https://zabbix.example.invalid \
+  --min-severity 2 \
+  --limit 20 \
+  > /path/outside/repo/zabbix-shadow-events.ndjson
+```
+
+The collector reads active Zabbix problems and maps them to normalized alert
+events for this helper. It is read-only, bounded by severity and limit, and must
+be run with the Zabbix API token supplied from operator-owned secret custody.
 
 ## Procedure
 
@@ -111,6 +127,8 @@ duplicate.
 Validate:
 
 - dry-run output is bounded and public-safe;
+- Zabbix shadow event snapshots and dry-run output are stored outside Git with
+  private permissions;
 - first live ticket appears in GLPI;
 - second run does not create a duplicate ticket for the same source event;
 - state file is owned by the service/operator account and is not world-readable;
