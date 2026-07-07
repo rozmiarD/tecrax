@@ -330,6 +330,12 @@ PKI Center bootstrap gate. It creates the on-demand VM substrate and public-safe
 custody boundaries before any production CA material, trust-root distribution or
 service HTTPS migration exists.
 
+`docs/runbooks/pki-certificate-lifecycle-planning-runbook.md` documents the
+planning baseline for future internal certificate requests, SAN/FQDN ownership,
+renewal, revocation, trust-root distribution and private certificate inventory.
+It does not generate CA material, CSRs, issued certificates or trust-store
+changes.
+
 ## Basic Incident Handling Baseline
 
 `docs/runbooks/basic-incident-handling-runbook.md` documents the first

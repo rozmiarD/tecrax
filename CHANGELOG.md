@@ -22,6 +22,9 @@ All notable Tecrax profile changes are documented here.
 - Recorded OpenSSL as the selected PKI Center CA engine while deferring final
   CA policies, issuance, renewal, revocation and autorotation procedure to
   hardening.
+- Added the PKI certificate lifecycle planning runbook for future CSR/SAN/FQDN,
+  issuance, renewal, revocation, trust distribution and private inventory work
+  without generating CA material.
 - Added the GLPI inventory scope runbook, defining a conservative Phase 1
   infrastructure inventory baseline and deferring agents, endpoint discovery
   and network sweeps.
