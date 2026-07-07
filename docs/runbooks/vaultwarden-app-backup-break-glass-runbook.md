@@ -126,9 +126,27 @@ access to:
 - PKI/root recovery path when PKI material exists;
 - emergency contact and authorization notes.
 
-The physical package may be a sealed paper packet, encrypted removable storage
-or another operator-approved offline custody method. Tecrax may document the
-existence and test cadence, but not the secret values.
+Preferred physical model:
+
+- encrypted USB drive used only for break-glass material;
+- USB drive stored offline in a physical safe;
+- recovery access limited to explicitly authorized roles, initially Director
+  and IT administrator;
+- recovery action requires a recorded reason, date and people involved;
+- recovery material is never copied to Tecrax, BookStack, chat, ordinary
+  workstation folders or AI tooling;
+- any printed companion sheet must contain only handling instructions and role
+  names unless the operator deliberately approves a separate sealed-secret
+  packet.
+
+Tecrax may document the existence, owner roles, test cadence and non-secret
+evidence. It must not document the USB passphrase, recovery codes, exported
+vault files, private keys or backup repository credentials.
+
+The offline USB package should be tested through a metadata-only drill first:
+confirm that authorized people can locate the safe, identify the package and
+follow the recovery checklist without exposing any secret values. Full recovery
+tests must use an isolated target and a separately approved scope.
 
 ### 5. Future Promotion Gate
 
