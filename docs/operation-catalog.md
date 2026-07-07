@@ -311,6 +311,13 @@ operator-owned Vaultwarden backup and isolated restore-proof gate. It validates
 VM-level restore mechanics and bounded service health without inspecting,
 exporting or publishing vault contents.
 
+## PKI Center Bootstrap
+
+`docs/runbooks/pki-center-bootstrap-runbook.md` documents the operator-owned
+PKI Center bootstrap gate. It creates the on-demand VM substrate and public-safe
+custody boundaries before any production CA material, trust-root distribution or
+service HTTPS migration exists.
+
 ## Basic Incident Handling Baseline
 
 `docs/runbooks/basic-incident-handling-runbook.md` documents the first

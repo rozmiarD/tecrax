@@ -9,6 +9,9 @@ All notable Tecrax profile changes are documented here.
   restore and Proxmox root-of-trust hardening gates are complete.
 - Tightened the Vaultwarden bootstrap runbook to require HTTPS-only operator
   browser access even before final PKI material is available.
+- Added the PKI Center bootstrap runbook for an on-demand VM substrate, keeping
+  production CA material, trust distribution and final HTTPS migration out of
+  scope until custody and restore gates are defined.
 - Added the GLPI inventory scope runbook, defining a conservative Phase 1
   infrastructure inventory baseline and deferring agents, endpoint discovery
   and network sweeps.
