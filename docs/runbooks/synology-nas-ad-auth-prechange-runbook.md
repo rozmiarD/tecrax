@@ -83,8 +83,7 @@ model and avoids hard-coding long-term access directly to users.
 Recommended pilot group names:
 
 ```text
-GG_<ORG>_NAS_Home_<PilotUser>_RW
-GG_<ORG>_NAS_Home_<PilotUser>_Admin
+GG_<ORG>_NAS_Home_RW
 ```
 
 Meaning:
@@ -92,12 +91,15 @@ Meaning:
 - `GG` - global group;
 - `<ORG>` - organization prefix;
 - `NAS` - resource family;
-- `Home_<PilotUser>` - pilot resource scope;
+- `Home` - user home resource family;
 - `RW` - read/write user access;
-- `Admin` - administrative/support access.
 
-Do not create broad department-wide NAS groups during the first pilot unless
-the access model has been reviewed separately.
+Do not create administrative SMB-access groups for user home data. NAS
+administration belongs to the NAS management plane, such as DSM or an approved
+admin interface, not to per-share home ACL groups.
+
+Do not create broad department-wide NAS groups during the first pass unless the
+access model has been reviewed separately.
 
 ## Pilot Scope
 
@@ -148,7 +150,8 @@ Before changing NAS authentication:
    - current service status.
 6. Confirm that no production file copy, cleanup or delete operation is part of
    the change.
-7. Confirm pilot AD groups exist or prepare their creation in AD.
+7. Confirm the approved home access AD group exists or prepare its creation in
+   AD.
 8. Confirm rollback steps and stop criteria.
 
 Store exports in an operator-owned location outside Git. Public sign-offs may
@@ -159,7 +162,7 @@ include paths and checksums, but must not include secret-bearing exports.
 During the service window:
 
 1. Verify pre-change state is captured.
-2. Create or verify pilot AD groups.
+2. Create or verify the approved home access AD group.
 3. Join Synology to the AD domain as a member/file server only.
 4. Verify the NAS can resolve and enumerate AD users/groups.
 5. Do not migrate local Synology accounts.
