@@ -91,6 +91,7 @@ outside Git. See also [`docs/operation-catalog.md`](docs/operation-catalog.md).
 | Network devices | [`network-device-readonly-runbook.md`](docs/runbooks/network-device-readonly-runbook.md) |
 | Time sync | [`chrony-ntp-server-mutation-runbook.md`](docs/runbooks/chrony-ntp-server-mutation-runbook.md) |
 | Ubuntu host ops | [`ubuntu-host-readonly-runbook.md`](docs/runbooks/ubuntu-host-readonly-runbook.md) |
+| NAS / file services | [`synology-nas-ad-auth-prechange-runbook.md`](docs/runbooks/synology-nas-ad-auth-prechange-runbook.md) |
 
 ## Stack ownership
 

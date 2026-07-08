@@ -4,6 +4,9 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Added the Synology NAS AD-auth pre-change runbook for the planned service
+  window, defining the member-file-server model, one-user pilot scope,
+  AD-group-based access, rollback boundaries and no-delete guardrails.
 - Added the Samba AD delegated domain-join runbook for narrowing routine
   workstation joins from broad transitional rights toward OU-specific ACLs,
   with fallback removal kept behind a live join test.
