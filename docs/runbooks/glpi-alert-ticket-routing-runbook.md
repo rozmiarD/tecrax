@@ -15,6 +15,8 @@ The gate covers:
 - Polish operator-facing ticket title and body;
 - severity mapping for Zabbix severities and Wazuh levels;
 - broad category mapping for the first GLPI routing layer;
+- automatic links to public Tecrax runbooks when a matching category is
+  available;
 - duplicate suppression through a host-local state file;
 - dry-run validation before live ticket creation;
 - GLPI API ticket creation when operator-owned credentials are provided outside
@@ -173,11 +175,18 @@ The helper creates one ticket for a new `source:event_id` pair and records the
 GLPI ticket id in the state file. Re-running the same event is treated as a
 duplicate.
 
+Ticket content may include a `Powiązane runbooki` section. These links are
+triage aids only. They do not prove that the procedure was executed and they do
+not authorize destructive actions, credential changes, service restarts or data
+cleanup.
+
 ### 4. Validate
 
 Validate:
 
 - dry-run output is bounded and public-safe;
+- matching public runbook links appear for categories that have a known Tecrax
+  runbook mapping;
 - Zabbix shadow event snapshots and dry-run output are stored outside Git with
   private permissions;
 - ordinary user endpoints are excluded from host-down live routing unless a

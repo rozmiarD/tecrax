@@ -253,8 +253,9 @@ rules and routing classes without reading credentials or emitting raw payloads.
 `docs/runbooks/glpi-alert-ticket-routing-runbook.md` documents the
 operator-owned GLPI alert-ticket routing gate. The supporting
 `scripts/route-glpi-alerts.py` helper accepts normalized Zabbix/Wazuh events,
-renders Polish ticket drafts, applies duplicate suppression and can create GLPI
-tickets only when credentials are supplied from outside Git.
+renders Polish ticket drafts, attaches public Tecrax runbook links when a
+matching category is available, applies duplicate suppression and can create
+GLPI tickets only when credentials are supplied from outside Git.
 `scripts/collect-zabbix-problems-for-glpi.py` is the bounded read-only Zabbix
 shadow collector for this gate: it exports active Zabbix problems as normalized
 alert events for dry-run routing before any broad live ticket creation.

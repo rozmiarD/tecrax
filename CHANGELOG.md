@@ -4,6 +4,8 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Added automatic public Tecrax runbook links to GLPI alert-ticket drafts when a
+  matching alert category is available.
 - Added the Synology NAS AD-auth pre-change runbook for the planned service
   window, defining the member-file-server model, one-user pilot scope,
   AD-group-based access, rollback boundaries and no-delete guardrails.

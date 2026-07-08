@@ -34,6 +34,27 @@ def test_zabbix_ticket_draft_uses_polish_operator_layer() -> None:
     assert "System monitoringu wykrył problem wymagający uwagi." in draft.content
     assert "Nie wykonywać działań destrukcyjnych" in draft.content
     assert "High disk usage on /mnt/monitoring" in draft.content
+    assert "Powiązane runbooki:" in draft.content
+    assert "zabbix-first-targets-adoption-runbook.md" in draft.content
+    assert "basic-incident-handling-runbook.md" in draft.content
+
+
+def test_ticket_draft_links_category_runbooks_when_available() -> None:
+    draft = build_ticket_draft(
+        AlertEvent(
+            source="Zabbix",
+            event_id="dns-1",
+            host="dc01",
+            summary="DNS service unavailable",
+            raw_severity="3",
+            raw_trigger="Samba domain DNS service is down",
+        )
+    )
+
+    assert draft.category == "DNS / domena"
+    assert "Powiązane runbooki:" in draft.content
+    assert "dns-authority-checkpoint-runbook.md" in draft.content
+    assert "samba-ad-dc-deployment-runbook.md" in draft.content
 
 
 def test_wazuh_level_mapping_keeps_technical_level() -> None:

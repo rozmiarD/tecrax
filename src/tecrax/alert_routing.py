@@ -7,7 +7,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 
 POLISH_SEVERITY_LABELS = {
@@ -33,6 +33,47 @@ ZABBIX_SEVERITY_MAP = {
     "information": "information",
     "not classified": "not_classified",
     "not_classified": "not_classified",
+}
+
+RUNBOOK_BASE_URL = "https://github.com/rozmiarD/tecrax/blob/main/docs/runbooks"
+
+RUNBOOK_REFS_BY_CATEGORY = {
+    "Backup": (
+        ("Proxmox Backup Server - first backup job", "proxmox-backup-server-first-backup-job-runbook.md"),
+        ("Proxmox Backup Server - restore proof", "proxmox-backup-server-restore-proof-runbook.md"),
+    ),
+    "Bezpieczeństwo": (
+        ("Basic incident handling", "basic-incident-handling-runbook.md"),
+        ("Alert source hygiene checkpoint", "alert-source-hygiene-checkpoint-runbook.md"),
+    ),
+    "DNS / domena": (
+        ("DNS authority checkpoint", "dns-authority-checkpoint-runbook.md"),
+        ("Samba AD DC deployment", "samba-ad-dc-deployment-runbook.md"),
+    ),
+    "Dostępność": (
+        ("Host-down routing policy", "host-down-routing-policy-runbook.md"),
+        ("Zabbix first targets adoption", "zabbix-first-targets-adoption-runbook.md"),
+    ),
+    "Dysk / miejsce": (
+        ("Zabbix first targets adoption", "zabbix-first-targets-adoption-runbook.md"),
+        ("Basic incident handling", "basic-incident-handling-runbook.md"),
+    ),
+    "Monitoring wizyjny": (
+        ("Frigate host monitoring", "frigate-host-monitoring-runbook.md"),
+        ("Zabbix first targets adoption", "zabbix-first-targets-adoption-runbook.md"),
+    ),
+    "Sieć": (
+        ("Network device readonly", "network-device-readonly-runbook.md"),
+        ("Host-down routing policy", "host-down-routing-policy-runbook.md"),
+    ),
+    "Usługi administracyjne": (
+        ("Basic incident handling", "basic-incident-handling-runbook.md"),
+        ("GLPI minimal operational baseline", "glpi-minimal-operational-baseline-runbook.md"),
+    ),
+    "Wydajność": (
+        ("Zabbix first targets adoption", "zabbix-first-targets-adoption-runbook.md"),
+        ("Basic incident handling", "basic-incident-handling-runbook.md"),
+    ),
 }
 
 
@@ -73,6 +114,10 @@ class TicketDraft:
                 "priority": self.urgency,
             }
         }
+
+
+class TicketClient(Protocol):
+    def create_ticket(self, draft: TicketDraft) -> int: ...
 
 
 def zabbix_severity_key(value: object) -> str:
@@ -174,6 +219,8 @@ def build_ticket_draft(event: AlertEvent) -> TicketDraft:
             "",
             "Sugerowany pierwszy krok:",
             _first_step_hint(category),
+            "",
+            *_runbook_section(category),
             "",
             "Szczegóły techniczne:",
             f"- Źródło: {source}",
@@ -331,7 +378,7 @@ def route_events(
     events: list[AlertEvent],
     state: TicketState,
     *,
-    client: GlpiClient | None = None,
+    client: TicketClient | None = None,
     dry_run: bool = True,
 ) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
@@ -403,3 +450,13 @@ def _first_step_hint(category: str) -> str:
     if category == "Dostępność":
         return "Sprawdź dostępność hosta z monitoringu i z sieci administracyjnej."
     return "Otwórz system źródłowy i potwierdź aktualny stan alertu."
+
+
+def _runbook_section(category: str) -> tuple[str, ...]:
+    refs = RUNBOOK_REFS_BY_CATEGORY.get(category, ())
+    if not refs:
+        return ()
+    lines = ["Powiązane runbooki:"]
+    for title, filename in refs:
+        lines.append(f"- {title}: {RUNBOOK_BASE_URL}/{filename}")
+    return tuple(lines)
