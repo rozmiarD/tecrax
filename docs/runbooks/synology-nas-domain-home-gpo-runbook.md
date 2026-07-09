@@ -47,6 +47,8 @@ access data, fix the NAS access model or stop the rollout.
 
 - The NAS is joined to the AD domain as a member file server only.
 - The NAS can enumerate AD users and groups.
+- DSM user home service is enabled after any domain join, rejoin, hostname
+  change or domain-member rename.
 - The pilot workstation is domain joined.
 - The pilot ordinary user can log in to the domain.
 - AD DNS and domain time are healthy on the pilot workstation.
@@ -146,6 +148,19 @@ The mapping must:
 - target the staff user OU or approved staff security group;
 - be easy to unlink if it causes a problem.
 
+For GPP Drive Maps, prefer the simplest known-good structure first:
+
+- action: `Update`;
+- no `userName`, `password` or `cpassword` values;
+- persistent mapping enabled if the operational model requires a stable drive
+  letter across normal logon sessions;
+- UNC path points to the supported NAS home share, not to an internal Synology
+  domain-home path.
+
+If a previous local profile has a stale persistent mapping to an old NAS name,
+clean only that endpoint profile mapping as a separate bounded endpoint action.
+Do not compensate by embedding credentials in GPO.
+
 Shared-space drive mappings should be a later gate after ACL review:
 
 ```text
@@ -175,11 +190,24 @@ Expected behavior:
 - no credentials are saved in the GPO or local scripts;
 - no old pilot drive mappings remain.
 
+If Group Policy applies but Drive Maps reports path-not-found, validate the NAS
+home share before editing GPO again:
+
+- DNS resolves the NAS member-server name;
+- SMB port is reachable;
+- DSM user home service is enabled;
+- the logged-in domain user can open `\\<nas-host>\home` interactively.
+
+A domain rejoin or hostname/domain-member rename can reset DSM home-share
+settings. Treat that as a NAS service-state issue, not as evidence that GPO
+should store credentials.
+
 ## Stop Conditions
 
 Stop if:
 
 - the NAS cannot resolve AD identities;
+- DSM user home service is disabled or unclear after domain rejoin/rename;
 - the home share prompts unexpectedly for credentials;
 - a domain user lands in a legacy local Synology home directory;
 - the pilot user can access another user's private home;
