@@ -7,7 +7,7 @@ All notable Tecrax profile changes are documented here.
 ## [0.3.22a0] - 2026-07-10
 
 - **Unpublished source candidate:** aligns the profile package to
-  `rexecop==0.2.25a0`, `govengine==0.16.12rc1`, and `sclite-core==1.0.10rc1`
+  `rexecop==0.2.25a0`, `govengine==0.16.12rc1`, and `sclite-core==1.1.0rc1`
   for the SCLite P0 integrity/lifecycle hardening train.
 - **Publication boundary:** `tecrax==0.3.21a0` remains the latest published PyPI
   package until the candidate artifacts pass the complete local release gates.
