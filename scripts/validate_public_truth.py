@@ -14,12 +14,12 @@ import tecrax  # noqa: E402
 from tecrax.local_fixture import build_local_fixture_review  # noqa: E402
 
 
-EXPECTED_VERSION = '0.3.21a0'
-EXPECTED_RELEASE_LABEL = '0.3.21-alpha'
+EXPECTED_VERSION = '0.3.22a0'
+EXPECTED_RELEASE_LABEL = '0.3.22-alpha'
 PUBLISHED_VERSION = '0.3.21a0'
-EXPECTED_GOVENGINE = 'govengine==0.16.11'
-EXPECTED_SCLITE = 'sclite-core==1.0.9'
-EXPECTED_REXECOP = 'rexecop==0.2.24a0'
+EXPECTED_GOVENGINE = 'govengine==0.16.12rc1'
+EXPECTED_SCLITE = 'sclite-core==1.0.10rc1'
+EXPECTED_REXECOP = 'rexecop==0.2.25a0'
 PUBLIC_DOCS = (
     'README.md',
     'PUBLIC_STATUS.md',
