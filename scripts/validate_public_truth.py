@@ -11,6 +11,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import tecrax  # noqa: E402
+from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 from tecrax.local_fixture import build_local_fixture_review  # noqa: E402
 
 
@@ -63,6 +64,7 @@ def _require(errors: list[str], path: str, expected: str) -> None:
 
 def collect_errors() -> list[str]:
     errors: list[str] = []
+    errors.extend(validate_consumer_imports('tecrax', ROOT))
     project = _pyproject()
     version = str(project['version'])
     govengine_dep = _dependency(project, 'govengine')

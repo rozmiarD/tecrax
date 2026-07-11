@@ -4,6 +4,9 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Enforces Tecrax's production SCLite imports against the versioned
+  wheel-shipped consumer contract through the existing public-truth CI gate.
+
 ## [0.3.22a0] - 2026-07-10
 
 - **Unpublished source candidate:** aligns the profile package to
