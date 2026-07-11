@@ -15,12 +15,12 @@ from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 from tecrax.local_fixture import build_local_fixture_review  # noqa: E402
 
 
-EXPECTED_VERSION = '0.3.22a0'
+EXPECTED_VERSION = '0.4.0rc1'
 EXPECTED_RELEASE_LABEL = '0.3.22-alpha'
 PUBLISHED_VERSION = '0.3.21a0'
-EXPECTED_GOVENGINE = 'govengine==0.16.12rc1'
-EXPECTED_SCLITE = 'sclite-core==1.1.0rc1'
-EXPECTED_REXECOP = 'rexecop==0.2.25a0'
+EXPECTED_GOVENGINE = 'govengine==0.17.0rc1'
+EXPECTED_SCLITE = 'sclite-core==2.0.0rc1'
+EXPECTED_REXECOP = 'rexecop==0.3.0rc1'
 PUBLIC_DOCS = (
     'README.md',
     'PUBLIC_STATUS.md',

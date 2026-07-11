@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — SCLite 2.0 owner migration
+
+- Uses RExecOp's orchestration contract surface for observation and escalation
+  artifacts instead of the removed SCLite stack-specific aliases.
+- Pins the coordinated SCLite 2.0, GovEngine 0.17 and RExecOp 0.3 candidate
+  train.
+
 All notable Tecrax profile changes are documented here.
 
 ## Unreleased
@@ -7,10 +14,10 @@ All notable Tecrax profile changes are documented here.
 - Enforces Tecrax's production SCLite imports against the versioned
   wheel-shipped consumer contract through the existing public-truth CI gate.
 
-## [0.3.22a0] - 2026-07-10
+## [0.4.0rc1] - 2026-07-10
 
 - **Unpublished source candidate:** aligns the profile package to
-  `rexecop==0.2.25a0`, `govengine==0.16.12rc1`, and `sclite-core==1.1.0rc1`
+  `rexecop==0.3.0rc1`, `govengine==0.17.0rc1`, and `sclite-core==2.0.0rc1`
   for the SCLite P0 integrity/lifecycle hardening train.
 - **Publication boundary:** `tecrax==0.3.21a0` remains the latest published PyPI
   package until the candidate artifacts pass the complete local release gates.

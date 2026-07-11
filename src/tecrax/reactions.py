@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 from rexecop.profile.loader import load_profile
 from rexecop.reaction.compiler import compile_reaction_pack
-from sclite import build_observation_envelope
+from rexecop.contracts.orchestration import build_observation_envelope
 
 from tecrax.contracts import validate_facts
 

@@ -9,7 +9,7 @@ from typing import Any
 
 from rexecop.errors import RExecOpValidationError
 from rexecop.profile.loader import load_profile
-from sclite import validate_escalation_proposal
+from rexecop.contracts.orchestration import validate_escalation_proposal
 
 from tecrax.contracts import (
     MONITORING_HOST_DIAGNOSIS_CONTRACT_ID,
