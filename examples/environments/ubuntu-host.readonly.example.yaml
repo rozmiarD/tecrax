@@ -74,6 +74,7 @@ environment:
     zabbix_api:
       enabled: true
       backend: http_api
+      deployment_posture: fixture
       base_url: http://zabbix.example.invalid
       timeout_seconds: 10
       max_response_bytes: 1024
@@ -89,6 +90,7 @@ environment:
     zabbix_api_authenticated:
       enabled: true
       backend: http_api
+      deployment_posture: fixture
       base_url: http://zabbix.example.invalid
       auth:
         secret_ref: zabbix_api_token
@@ -156,6 +158,7 @@ environment:
     portainer_api:
       enabled: true
       backend: http_api
+      deployment_posture: fixture
       base_url_secret_ref: portainer_base_url
       tls:
         ca_file_secret_ref: portainer_ca_file
