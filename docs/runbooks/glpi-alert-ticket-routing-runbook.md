@@ -180,7 +180,28 @@ triage aids only. They do not prove that the procedure was executed and they do
 not authorize destructive actions, credential changes, service restarts or data
 cleanup.
 
-### 4. Validate
+### 4. Prove routing with a synthetic canary
+
+Before routing a real alert, perform one bounded canary with a synthetic event:
+
+1. Use an obviously synthetic summary and a unique canary `event_id`; do not
+   imitate an actual outage or widen the production host allowlist.
+2. Use a dedicated canary state file so the proof cannot alter production
+   duplicate-suppression state.
+3. Dry-run the event and inspect the rendered title, severity, category and
+   public runbook links.
+4. Route the canary once and confirm that exactly one test ticket is created.
+5. Replay the identical event and confirm a `duplicate` result with no second
+   ticket.
+6. Close or archive the clearly marked test ticket according to the local GLPI
+   test-ticket policy. Do not delete it automatically as part of the helper.
+
+Canary failure rolls back by disabling the live routing invocation and
+preserving its bounded logs and state for private diagnosis. It does not justify
+changing upstream monitoring thresholds, disabling source alerts or clearing
+production duplicate state.
+
+### 5. Validate
 
 Validate:
 
@@ -193,6 +214,8 @@ Validate:
   separate endpoint policy explicitly changes that rule;
 - first live ticket appears in GLPI;
 - second run does not create a duplicate ticket for the same source event;
+- the synthetic canary creates exactly one ticket and its replay is suppressed;
+- canary state remains separate from production duplicate-suppression state;
 - state file is owned by the service/operator account and is not world-readable;
 - GLPI web/API remains healthy;
 - Zabbix and Wazuh source collectors continue to run.
@@ -204,6 +227,8 @@ Stop before live ticket creation if:
 - GLPI token custody is not operator-owned;
 - duplicate suppression cannot write state safely;
 - alert volume would flood GLPI;
+- the synthetic canary could be mistaken for a real outage;
+- canary execution would modify production duplicate-suppression state;
 - normalized events contain raw secrets, camera payloads, recordings or protected
   user data;
 - category/severity mapping is ambiguous enough to mislead operators;
@@ -220,6 +245,7 @@ Use `docs/operator-signoff-template.md` and include:
 - dry-run validation summary;
 - first live ticket proof without private ticket contents;
 - duplicate-suppression proof;
+- bounded synthetic-canary proof;
 - rollback/disable path;
 - explicit non-claims.
 

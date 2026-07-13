@@ -15,12 +15,13 @@ The baseline covers:
 - operator administrative access sanity check;
 - a minimal ITIL category baseline;
 - a minimal request-source baseline;
+- one host-level scheduler for GLPI automatic actions;
 - the future alert-routing decision for GLPI tickets;
 - public-safe validation and sign-off.
 
-It does not configure mail ingestion, LDAP/SSO, GLPI endpoint agents, full
-inventory discovery, final alert automation, escalation policy, compliance
-readiness or private PKI/HTTPS hardening.
+It does not configure mail ingestion or SMTP notifications, LDAP/SSO, GLPI
+endpoint agents, full inventory discovery, final alert automation, escalation
+policy, compliance readiness or private PKI/HTTPS hardening.
 
 ## Public and Private Boundary
 
@@ -97,7 +98,32 @@ future monitoring alerts.
 Do not configure automated ticket creation until the final alert channel design
 has an operator-owned credential and duplicate-suppression policy.
 
-### 5. Validate
+### 5. Configure the automatic-action scheduler
+
+Before validation, configure exactly one host-level scheduler for GLPI automatic
+actions:
+
+- inspect existing cron entries, systemd units and GLPI automatic-action modes;
+- stop if another active scheduler already invokes GLPI automatic actions;
+- run GLPI's supported `front/cron.php` entry point as the web-service account,
+  never as `root`;
+- use a systemd service and timer with overlapping execution prevented;
+- place active automatic actions in CLI mode so the scheduler, rather than web
+  traffic, drives them;
+- keep mail-related actions enabled only when their transport is configured;
+  SMTP and e-mail notification delivery may remain explicitly deferred and are
+  not a blocker for the scheduler baseline.
+
+Before changing units or action modes, preserve the current unit definitions and
+record a bounded count of active actions by mode. Rollback disables the new
+timer, restores the previous unit definitions and restores only the action-mode
+changes made in this run.
+
+Run one manual scheduler invocation before enabling the timer. It must return
+success under the web-service account without changing application ownership or
+exposing ticket contents in logs.
+
+### 6. Validate
 
 Validate:
 
@@ -108,6 +134,10 @@ Validate:
 - default installer account is disabled;
 - minimal ITIL categories exist;
 - minimal request sources exist;
+- exactly one GLPI automatic-action scheduler is active;
+- its last manual and timer-driven runs succeed as the web-service account;
+- active automatic actions use CLI mode, with any intentional exception
+  recorded;
 - Zabbix and Wazuh agents remain active on the GLPI host.
 
 ## Stop Conditions
@@ -118,6 +148,8 @@ Stop before sign-off if any of these are true:
 - disabling a default account would lock out the operator;
 - the GLPI web endpoint fails after the baseline;
 - database validation fails;
+- another scheduler already invokes GLPI automatic actions;
+- the scheduler requires `root`, overlaps executions or changes file ownership;
 - category or request-source changes require exposing real ticket contents;
 - final alert automation would require pasting secrets into Git, chat or
   public docs.
@@ -131,6 +163,8 @@ Use `docs/operator-signoff-template.md` and include:
 - run class: `glpi-minimal-operational-baseline`;
 - account-hygiene result without passwords;
 - category/request-source baseline summary;
+- automatic-action scheduler and CLI-mode validation summary;
+- explicit status of deferred SMTP/e-mail notification delivery;
 - alert-channel decision;
 - validation result summary;
 - explicit non-claims.
@@ -138,7 +172,8 @@ Use `docs/operator-signoff-template.md` and include:
 Non-claims:
 
 - no final alert automation;
-- no mail ingestion;
+- no mail ingestion or SMTP/e-mail notification delivery unless separately
+  proven;
 - no LDAP/SSO;
 - no endpoint-agent inventory rollout;
 - no compliance readiness;

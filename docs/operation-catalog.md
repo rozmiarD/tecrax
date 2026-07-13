@@ -67,6 +67,12 @@ remaining operator-owned PBS gates. They are not active backup-health operations
 operator-owned PBS full OS upgrade retry, including package-integrity retry,
 kernel reboot validation and the PBS VM EFI bootloader caveat.
 
+`docs/runbooks/proxmox-backup-server-verify-gc-runbook.md` documents the
+operator-owned scheduled verification and garbage-collection lifecycle. It keeps
+bounded verification separate from deletion-class garbage collection, requires
+immediate approval for the first manual garbage-collection run and does not add
+an active backup-health operation.
+
 `docs/runbooks/proxmox-external-cifs-backup-runbook.md` documents the operator-owned
 external CIFS backup gate for selected Proxmox VM/CT workloads. It complements
 local PBS backup and keeps endpoint, share and credential details outside
