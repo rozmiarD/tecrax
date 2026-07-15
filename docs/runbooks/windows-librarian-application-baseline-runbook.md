@@ -173,3 +173,28 @@ Do not add an executable helper until exact artifacts have been tested and at
 least two successful pilots prove a repeated command shape. Any future helper
 may validate bounded manifests and emit observations; it must not carry secrets,
 invent package commands or become a competing software-deployment engine.
+
+## Governed mutation promotion gate
+
+After one endpoint has been manually converged and accepted as the role's gold
+reference, the repeated package lifecycle may become a candidate for Tecrax's
+first production-grade Windows application-convergence mutation. This is a
+roadmap candidate, not an active intent or deployment authorization.
+
+The candidate must preserve stack ownership:
+
+- Tecrax owns the role intent, bounded package manifest, normalization,
+  detection, validation and domain stop conditions;
+- GovEngine owns admission, target and artifact constraints, approval and
+  residual-risk decisions;
+- RExecOp owns the generic execution lifecycle, connector use, retries,
+  rollback and restart coordination;
+- SCLite receives canonical evidence and receipts through its existing frozen
+  contract surface; the candidate must not require a new SCLite contract.
+
+Promotion requires an explicit host and role allowlist, exact signed or hashed
+artifacts, a no-change dry-run, idempotent detection, pre-state evidence,
+per-package results, bounded partial-failure behavior, rollback proof and a
+separate reboot or logoff gate. Start with one canary endpoint. Do not generalize
+the capability until the gold reference and at least one further endpoint prove
+the same deterministic command shape.

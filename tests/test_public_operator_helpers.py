@@ -78,6 +78,52 @@ def test_windows_helper_embeds_fail_closed_hostname_gate(tmp_path: Path) -> None
     assert "$ExpectedCurrentName = 'CURRENT-LT-001'" in script
 
 
+def test_windows_helper_uses_explicit_ad_dns_and_ntp_client_mode(tmp_path: Path) -> None:
+    identity = tmp_path / "identity"
+    known_hosts = tmp_path / "known_hosts"
+    identity.write_text("fixture", encoding="utf-8")
+    known_hosts.write_text("fixture", encoding="utf-8")
+    capture = tmp_path / "powershell.ps1"
+    fake_ssh = tmp_path / "ssh"
+    fake_ssh.write_text('#!/usr/bin/env bash\ncat > "$CAPTURE"\n', encoding="utf-8")
+    fake_ssh.chmod(0o755)
+    env = os.environ.copy()
+    env["PATH"] = f"{tmp_path}:{env['PATH']}"
+    env["CAPTURE"] = str(capture)
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(ROOT / "scripts/prepare-windows-ad-pilot-endpoint.sh"),
+            "--host",
+            "fixture.invalid",
+            "--user",
+            "operator",
+            "--identity-file",
+            str(identity),
+            "--known-hosts",
+            str(known_hosts),
+            "--dns-server",
+            "ad-dns.example.invalid",
+            "--ntp-server",
+            "ntp.example.invalid",
+            "--domain",
+            "ad.example.invalid",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0
+    script = capture.read_text(encoding="utf-8")
+    assert "$DomainDnsServer = if ($DnsServers.Count -gt 0)" in script
+    assert '$ManualPeer = "$NtpServer,0x8"' in script
+    assert "Resolve-DnsName $Domain -Type SOA @DomainResolve" in script
+    assert "Resolve-DnsName \"_ldap._tcp.dc._msdcs.$Domain\" -Type SRV @DomainResolve" in script
+
+
 def test_samba_csv_and_groups_are_preflighted_before_first_mutation(tmp_path: Path) -> None:
     csv_path = tmp_path / "users.csv"
     csv_path.write_text(

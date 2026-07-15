@@ -11,6 +11,8 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Documented the promotion gate for a future governed Windows role-application
+  convergence intent without claiming package custody or an active mutation.
 - Hardened public deployment helpers so Windows endpoint apply requires an
   exact live-hostname assertion, while Samba AD bulk provisioning validates the
   complete CSV, duplicate/unsafe logins and every target group before the first

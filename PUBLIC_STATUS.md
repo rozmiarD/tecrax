@@ -28,6 +28,10 @@
   mutating intent; it is limited to a managed chrony config file and service restart,
   requires GovEngine admission, and uses operator-owned live wrapper configuration
   outside the repository
+- **Windows application convergence:** a future governed mutation candidate only
+  after an exact-artifact package gate, a manually accepted gold endpoint and a
+  second repeated pilot; no package downloader, installer or Windows application
+  mutation is currently active in the Tecrax profile
 - **Public docs baseline:** the repo now documents the Proxmox/PBS readiness,
   backup/restore-proof, admin-tools CT, Samba AD DC, AdGuard, chrony/NTP,
   Zabbix, Grafana, Wazuh, basic alerting, BookStack and GLPI isolated

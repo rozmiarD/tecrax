@@ -185,6 +185,7 @@ read -r -d '' ps_script <<EOF || true
 \$ExpectedCurrentName = $(ps_quote "$expected_current_name")
 \$InterfaceAlias = $(ps_quote "$interface_alias")
 \$DnsServers = $dns_array
+\$DomainDnsServer = if (\$DnsServers.Count -gt 0) { [string]\$DnsServers[0] } else { '' }
 \$NtpServer = $(ps_quote "$ntp_server")
 \$Domain = $(ps_quote "$domain")
 
@@ -257,7 +258,8 @@ if (-not \$Apply) {
   if (\$NtpServer) {
     Set-Service w32time -StartupType Automatic
     Start-Service w32time -ErrorAction SilentlyContinue
-    w32tm /config /manualpeerlist:\$NtpServer /syncfromflags:manual /reliable:no /update
+    \$ManualPeer = "\$NtpServer,0x8"
+    w32tm /config /manualpeerlist:\$ManualPeer /syncfromflags:manual /reliable:no /update
     Restart-Service w32time
     w32tm /resync /force
   }
@@ -288,8 +290,12 @@ if (\$DomainTime) {
 }
 
 if (\$Domain) {
-  Resolve-DnsName \$Domain -ErrorAction Stop | Format-Table -AutoSize
-  Resolve-DnsName "_ldap._tcp.dc._msdcs.\$Domain" -Type SRV -ErrorAction Stop |
+  \$DomainResolve = @{ ErrorAction = 'Stop' }
+  if (\$DomainDnsServer) {
+    \$DomainResolve['Server'] = \$DomainDnsServer
+  }
+  Resolve-DnsName \$Domain -Type SOA @DomainResolve | Format-Table -AutoSize
+  Resolve-DnsName "_ldap._tcp.dc._msdcs.\$Domain" -Type SRV @DomainResolve |
     Format-Table -AutoSize
 }
 

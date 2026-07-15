@@ -140,8 +140,11 @@ Expected effects:
   `--expected-current-name`;
 - endpoint rename is scheduled if the current name differs from `--target-name`;
 - DNS server list is set on the selected interface if `--dns-server` is passed;
-- Windows Time is configured to use `--ntp-server` if provided;
-- AD DNS root and LDAP SRV lookup are attempted if `--domain` is provided;
+- Windows Time is configured to use `--ntp-server` in explicit client mode
+  (`0x8`) if provided;
+- the domain SOA and LDAP SRV records are queried if `--domain` is provided;
+  when `--dns-server` is also present, the check goes directly to its first
+  configured resolver even during dry-run, without changing endpoint DNS;
 - the helper reports whether a reboot is required.
 
 The rename takes effect only after reboot. Reboot timing remains an operator
