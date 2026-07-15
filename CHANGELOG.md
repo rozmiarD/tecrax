@@ -2,6 +2,13 @@
 
 ## Unreleased — SCLite 2.0 owner migration
 
+- Declares profile-owned operation capability requirements for every active
+  connector and independent outbound network-policy bindings for SSH and HTTP
+  connectors, so RExecOp no longer derives governance requirements or
+  destination allowlists from backend/runtime claims.
+- Keeps the Chrony mutation workflow fail closed at typed execution until the
+  GovEngine approval-attestation contract is implemented; operation admission
+  alone is not execution approval.
 - Uses RExecOp's orchestration contract surface for observation and escalation
   artifacts instead of the removed SCLite stack-specific aliases.
 - Pins the coordinated SCLite 2.0, GovEngine 0.17 and RExecOp 0.3 candidate

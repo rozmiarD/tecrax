@@ -4,6 +4,8 @@ connector:
   capabilities:
     - read_network_device_system_info
     - read_network_device_ssh_status
+  required_capability_descriptors:
+    - connector.shell.readonly
   modes:
     - read_only
     - dry_run

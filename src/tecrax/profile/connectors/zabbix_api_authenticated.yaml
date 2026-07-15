@@ -13,6 +13,17 @@ connector:
     - read_zabbix_agent_unknown_count
     - read_zabbix_agent_available_count
     - read_zabbix_agent_unavailable_count
+  required_capability_descriptors:
+    - connector.http.rest.read
+  network_policy_binding:
+    allowed_network_egress:
+      - outbound_http
+    allowed_network_schemes:
+      - http
+      - https
+    allowed_address_classes:
+      - dns_name
+      - private
   action_shapes:
     read_zabbix_problem_count_not_classified:
       method: POST

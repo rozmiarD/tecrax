@@ -19,6 +19,11 @@ connector:
     - read_dmesg_restrict_state
     - read_reboot_required_marker
     - read_ntp_server_variables
+  required_capability_descriptors:
+    - connector.ssh.readonly
+  network_policy_binding:
+    allowed_network_egress:
+      - outbound_ssh
   modes:
     - read_only
     - dry_run

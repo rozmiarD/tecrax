@@ -70,6 +70,27 @@ def test_chrony_backend_validates_allowed_subnet() -> None:
     assert response.data["error_class"] == "validation_failed"
 
 
+def test_chrony_backend_records_before_after_when_runtime_authorizes_io() -> None:
+    backend = build_chrony_ntp_backend(
+        connector_name="chrony_ntp_server",
+        config={"fixture_only": True, "allowed_subnet": "192.0.2.0/24"},
+        mutating_allowed=True,
+    )
+
+    response = backend.invoke(
+        ConnectorRequest(
+            connector="chrony_ntp_server",
+            action="apply_chrony_ntp_server",
+            target="chrony-host-01",
+            mode="apply",
+        )
+    )
+
+    assert response.success
+    assert response.data["before_state"]["desired_state_applied"] is False
+    assert response.data["after_state"]["desired_state_applied"] is True
+
+
 @patch("rexecop.connectors.fixture_loader.entry_points", side_effect=_entry_points)
 def test_chrony_apply_blocked_before_backend(_entry_points_mock, tmp_path: Path) -> None:
     controller = OperationController(
@@ -91,7 +112,7 @@ def test_chrony_apply_blocked_before_backend(_entry_points_mock, tmp_path: Path)
 
 
 @patch("rexecop.connectors.fixture_loader.entry_points", side_effect=_entry_points)
-def test_chrony_apply_allowed_records_before_after_state(
+def test_chrony_operation_admission_is_not_execution_approval(
     _entry_points_mock,
     tmp_path: Path,
 ) -> None:
@@ -109,18 +130,7 @@ def test_chrony_apply_allowed_records_before_after_state(
     )
     completed = controller.start(operation.id)
 
-    assert completed.state == OperationState.COMPLETED.value
+    assert completed.state == OperationState.FAILED.value
     shared = completed.metadata["shared_state"]
-    mutation = shared["mutation_states"]["apply_chrony_ntp_server"]
-    assert mutation["before_state"]["desired_state_applied"] is False
-    assert mutation["after_state"]["desired_state_applied"] is True
-    assert mutation["after_state"]["contract"] == {
-        "id": "tecrax.chrony_ntp_server_mutation",
-        "version": "1.0",
-    }
-    assert (
-        mutation["after_state"]["schema_ref"]
-        == "schemas/chrony_ntp_server_mutation.v1.schema.json"
-    )
-    assert mutation["after_state"]["coverage"]["state"] == "complete"
-    assert "post_chrony_ntp_state" in shared["connector_results"]
+    assert "mutation_states" not in shared
+    assert "post_chrony_ntp_state" not in shared.get("connector_results", {})

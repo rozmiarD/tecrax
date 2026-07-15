@@ -5,6 +5,8 @@ connector:
     - read_chrony_ntp_server_state
     - apply_chrony_ntp_server
     - rollback_chrony_ntp_server
+  required_capability_descriptors:
+    - connector.plugin.tecrax_chrony_ntp
   modes:
     - read_only
     - dry_run

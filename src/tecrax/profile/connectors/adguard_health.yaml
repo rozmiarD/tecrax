@@ -4,6 +4,8 @@ connector:
   capabilities:
     - read_adguard_dns_resolution
     - read_adguard_login_status
+  required_capability_descriptors:
+    - connector.shell.readonly
   modes:
     - read_only
     - dry_run
