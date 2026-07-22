@@ -27,6 +27,9 @@ All notable Tecrax profile changes are documented here.
   for non-standard TCP record terminators, including same-session continuity,
   least-privilege file access, bounded rotation, duplicate-path and rollback
   gates.
+- Added bounded StoneOS threat-field decoding plus separate general-threat and
+  observed log-only protocol-exception rules, without claiming unobserved block
+  or prevention coverage.
 - Isolated the Chrony mutation fixture's RExecOp `lab_only` posture inside the
   single execution-path test so the normal test process and stable runtime keep
   the default read-only posture.

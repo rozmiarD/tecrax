@@ -243,12 +243,17 @@ stored in:
 - `deploy/wazuh/hillstone-stoneos-decoders.xml`;
 - `deploy/wazuh/hillstone-stoneos-rules.xml`.
 
-They cover only the management-event envelope proven by a real sample. The
-base rule deliberately marks messages as `classification_pending`. Threat-log
-decoding and event-specific promotion remain blocked until a naturally
-occurring, privately retained sample passes `wazuh-logtest`. The files are
-reference deployment artifacts, not an unattended installer; local rule-ID
-availability, backups and pre-restart validation remain mandatory.
+They cover the management-event envelope plus stable fields from naturally
+occurring threat records retained in private custody. Threat events receive a
+general detection rule, while the narrower child rule covers only the observed
+`log-only` protocol-exception shape. It does not claim coverage for block,
+prevention, malware or other unobserved actions. The private natural-sample gate
+must pass `wazuh-logtest`; a post-deployment natural hit may remain explicitly
+pending when no new source event occurs during the bounded observation window.
+
+The files are reference deployment artifacts, not an unattended installer;
+local rule-ID availability, backups, pre-restart validation and regression
+tests for existing management events remain mandatory.
 
 ## Noise and Capacity Gate
 

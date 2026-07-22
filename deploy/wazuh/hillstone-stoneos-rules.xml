@@ -19,4 +19,19 @@
     <description>Hillstone StoneOS administrator logout.</description>
     <group>authentication_success,network_security,</group>
   </rule>
+
+  <rule id="100203" level="7">
+    <if_sid>100200</if_sid>
+    <field name="hillstone.log_type">^Threat$</field>
+    <description>Hillstone StoneOS threat observed: $(hillstone.threat_name).</description>
+    <group>network_security,ids,threat_detected,</group>
+  </rule>
+
+  <rule id="100204" level="5">
+    <if_sid>100203</if_sid>
+    <field name="hillstone.threat_subtype">^Protocol Exception$</field>
+    <field name="hillstone.action">^log-only$</field>
+    <description>Hillstone StoneOS logged protocol exception: $(hillstone.threat_name).</description>
+    <group>network_security,ids,protocol_anomaly,log_only,</group>
+  </rule>
 </group>

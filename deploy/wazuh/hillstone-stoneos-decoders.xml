@@ -1,13 +1,18 @@
-<!--
-  Bounded StoneOS envelope observed during the PH-13C management-event canary.
-  Threat-message coverage requires a separate natural-sample validation gate.
--->
+<!-- Bounded StoneOS envelope and fields proven from private natural samples. -->
 <decoder name="hillstone-stoneos">
   <prematch type="pcre2">[0-9a-fA-F]{8}\s+[A-Za-z-]+@[A-Za-z0-9_-]+:\s+</prematch>
 </decoder>
 
+<decoder name="hillstone-stoneos-threat">
+  <parent>hillstone-stoneos</parent>
+  <prematch type="pcre2">Threat@IPS:</prematch>
+  <regex type="pcre2">([0-9a-fA-F]{8})\s+(Threat)@(IPS):\s+.*?threat name:\s*([^,]+),\s+threat type:\s*([^,]+),\s+threat subtype:\s*([^,]+),\s+App/Protocol:\s*([^,]+),\s+action:\s*([^,]+),\s+defender:\s*([^,]+),\s+Error ID:\s*([^,]+),\s+profile:\s*([^,]+),\s+threat severity:\s*([^,]+),\s+policy id:\s*([^,]+),\s+aggregation attack count:\s*([0-9]+)</regex>
+  <order>id,hillstone.log_type,hillstone.module,hillstone.threat_name,hillstone.threat_type,hillstone.threat_subtype,hillstone.app_protocol,hillstone.action,hillstone.defender,hillstone.error_id,hillstone.profile,hillstone.threat_severity,hillstone.policy_id,hillstone.aggregation_count</order>
+</decoder>
+
 <decoder name="hillstone-stoneos-event">
   <parent>hillstone-stoneos</parent>
+  <prematch type="pcre2">Event@[A-Za-z0-9_-]+:</prematch>
   <regex type="pcre2">([0-9a-fA-F]{8})\s+([A-Za-z-]+)@([A-Za-z0-9_-]+):\s+(.*)$</regex>
   <order>id,hillstone.log_type,hillstone.module,extra_data</order>
 </decoder>
