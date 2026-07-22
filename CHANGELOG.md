@@ -23,6 +23,10 @@ All notable Tecrax profile changes are documented here.
   keeps health monitoring in Zabbix, preserves existing Grafana dashboards,
   excludes bulk traffic/session/NAT/debug logging, and defers TLS, threat-rule
   promotion and GLPI routing to separate proofs.
+- Extended that runbook with a fail-closed rsyslog framing-normalization fallback
+  for non-standard TCP record terminators, including same-session continuity,
+  least-privilege file access, bounded rotation, duplicate-path and rollback
+  gates.
 - Isolated the Chrony mutation fixture's RExecOp `lab_only` posture inside the
   single execution-path test so the normal test process and stable runtime keep
   the default read-only posture.

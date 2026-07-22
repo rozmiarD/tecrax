@@ -130,6 +130,52 @@ edit. Restart only `wazuh-manager`, then prove:
 If the manager does not return healthy, restore its exact backup and restart it.
 Do not continue to the device.
 
+### Framing-normalization fallback
+
+Do not treat an established TCP session as continuous-ingestion proof. If the
+first event after reconnect is processed but later events on the same session
+are not, capture only enough private traffic to determine record boundaries and
+test an extracted record with `wazuh-logtest`. When the record itself decodes
+correctly but the device emits a non-standard terminator such as `LF+NUL`, use a
+parallel normalization canary instead of weakening rules or switching blindly
+to UDP.
+
+The fallback shape is:
+
+1. retain the direct Wazuh listener as rollback;
+2. add a separate rsyslog TCP input bound to the approved internal address and
+   restricted to the exact device source;
+3. configure the observed additional delimiter and emit exactly one
+   LF-terminated, control-character-free line per record;
+4. write to a non-world-readable file readable by the Wazuh service account;
+5. add that exact file as a Wazuh `localfile` with `syslog` format;
+6. keep bounded rotation and prove two or more events on the same TCP session.
+
+For rsyslog `imtcp`, validate the installed version's support for
+`AddtlFrameDelimiter` and `DisableLFDelimiter`. Older releases may require the
+legacy `$AllowedSender TCP, <EXACT_SOURCE>` directive. That directive applies
+globally to rsyslog TCP inputs, so reassess it before adding another TCP input;
+prefer an input-scoped source restriction or a host firewall rule when the
+installed version supports one safely.
+
+Account for rsyslog privilege dropping before selecting file ownership. The
+daemon must be able to traverse the parent directory and write the file, while
+Wazuh needs read access only. Do not make the normalized log world-readable.
+Use bounded `copytruncate` rotation when the receiver keeps the file open, and
+validate the rotation policy without forcing a live rotation during onboarding.
+
+Before promotion, prove all of the following:
+
+- the original and normalization paths are both available for rollback;
+- line count increases after at least two separate events on one connection;
+- normalized output contains no delimiter NUL bytes and ends each record once;
+- Wazuh alert count increases for multiple records, not only after reconnect;
+- existing agent listeners, agent health, indexer and shipper remain healthy;
+- bulk traffic, session, NAT and debug categories remain absent.
+
+Parallel paths may duplicate the first event after a direct-listener reconnect.
+Remove the direct path only after an observation gate and separate approval.
+
 ## Stage 2: Device-Side Canary
 
 Configure exactly one syslog destination:
@@ -264,6 +310,14 @@ Wazuh rollback:
 - validate configuration;
 - restart `wazuh-manager`;
 - prove the original secure agent listener and active-agent state.
+
+Normalization-canary rollback:
+
+- remove only the added device destination on the canary port;
+- remove the matching Wazuh `localfile` block after configuration validation;
+- remove the rsyslog input, bounded output and rotation policy;
+- restore any parent-directory permission changed solely for the receiver;
+- prove the original listener, services and agent state before closing rollback.
 
 Device rollback:
 
