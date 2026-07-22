@@ -1,0 +1,22 @@
+<!-- Local rule IDs are installation-specific; verify availability before use. -->
+<group name="hillstone,network_security_device,syslog,">
+  <rule id="100200" level="5">
+    <decoded_as>hillstone-stoneos</decoded_as>
+    <description>Hillstone StoneOS security-device event received.</description>
+    <group>network_security,device_event,classification_pending,</group>
+  </rule>
+
+  <rule id="100201" level="8">
+    <if_sid>100200</if_sid>
+    <id>^421c0402$</id>
+    <description>Hillstone StoneOS administrator login failure.</description>
+    <group>authentication_failed,network_security,</group>
+  </rule>
+
+  <rule id="100202" level="3">
+    <if_sid>100200</if_sid>
+    <id>^421c0403$</id>
+    <description>Hillstone StoneOS administrator logout.</description>
+    <group>authentication_success,network_security,</group>
+  </rule>
+</group>

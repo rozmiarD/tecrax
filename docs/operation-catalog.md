@@ -288,6 +288,13 @@ It requires aggregate review, local rule backup, narrow level-0 child rules,
 manager restart validation and smoke proof before any Wazuh-to-ticket live
 routing.
 
+`docs/runbooks/network-security-device-syslog-to-wazuh-runbook.md` documents a
+bounded network-security-device event onboarding gate. It separates Wazuh TCP
+transport proof from vendor decoder/rule promotion, starts with a restricted
+security-event set, preserves Zabbix health monitoring and an existing Grafana
+dashboard, and keeps TLS, GLPI routing and broad traffic logging as separate
+gates.
+
 `docs/runbooks/glpi-alert-ticket-routing-runbook.md` documents the
 operator-owned GLPI alert-ticket routing gate. The supporting
 `scripts/route-glpi-alerts.py` helper accepts normalized Zabbix/Wazuh events,

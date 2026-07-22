@@ -1,0 +1,13 @@
+<!--
+  Bounded StoneOS envelope observed during the PH-13C management-event canary.
+  Threat-message coverage requires a separate natural-sample validation gate.
+-->
+<decoder name="hillstone-stoneos">
+  <prematch type="pcre2">[0-9a-fA-F]{8}\s+[A-Za-z-]+@[A-Za-z0-9_-]+:\s+</prematch>
+</decoder>
+
+<decoder name="hillstone-stoneos-event">
+  <parent>hillstone-stoneos</parent>
+  <regex type="pcre2">([0-9a-fA-F]{8})\s+([A-Za-z-]+)@([A-Za-z0-9_-]+):\s+(.*)$</regex>
+  <order>id,hillstone.log_type,hillstone.module,extra_data</order>
+</decoder>
