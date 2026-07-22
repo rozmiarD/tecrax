@@ -115,7 +115,9 @@ def test_chrony_apply_blocked_before_backend(_entry_points_mock, tmp_path: Path)
 def test_chrony_operation_admission_is_not_execution_approval(
     _entry_points_mock,
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv("REXECOP_MUTATION_POSTURE", "lab_only")
     controller = OperationController(
         store=FileStore(tmp_path / ".rexecop"),
         govengine_adapter=StaticGovEngineAdapter(GovEngineDecisionType.ALLOWED),

@@ -35,9 +35,13 @@
 - **Public docs baseline:** the repo now documents the Proxmox/PBS readiness,
   backup/restore-proof, admin-tools CT, Samba AD DC, AdGuard, chrony/NTP,
   Zabbix, Grafana, Wazuh, basic alerting, BookStack application backup,
-  controlled documentation publication and BookStack/GLPI isolated
-  restore-proof runbooks while keeping private addresses, credentials and
-  target mappings out of Git
+  controlled documentation publication, BookStack/GLPI isolated restore proof,
+  and bounded network-security-device syslog onboarding while keeping private
+  addresses, raw security events, credentials and target mappings out of Git
+- **Network security event onboarding:** reference StoneOS decoder and local-rule
+  artifacts cover only the proven management-event envelope; threat-specific
+  promotion, encrypted transport, Grafana visualization and GLPI routing remain
+  separate validation gates
 - **GLPI baseline:** GLPI is documented as the future ticket channel for Zabbix
   and Wazuh alerts, with final ticket-routing automation still outside the
   active profile until an operator-owned credential and suppression policy exist

@@ -18,6 +18,14 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Added a bounded network-security-device syslog-to-Wazuh onboarding runbook
+  plus public-safe StoneOS decoder and local-rule reference artifacts. The gate
+  keeps health monitoring in Zabbix, preserves existing Grafana dashboards,
+  excludes bulk traffic/session/NAT/debug logging, and defers TLS, threat-rule
+  promotion and GLPI routing to separate proofs.
+- Isolated the Chrony mutation fixture's RExecOp `lab_only` posture inside the
+  single execution-path test so the normal test process and stable runtime keep
+  the default read-only posture.
 - Advances the source profile candidate to `0.4.0rc3` with exact pins
   `govengine==1.0.0rc1`, `rexecop==0.3.0rc3` and frozen
   `sclite-core==2.0.0`; profile semantics and activation posture are unchanged.

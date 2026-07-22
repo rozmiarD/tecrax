@@ -27,6 +27,12 @@ Expected result for source candidate `0.4.0rc3`:
   `docs/r2-readonly-status.md`;
 - network device inventory fixtures validate bounded legacy CLI parsing without exposing
   target addresses, usernames, private keys, or operator-specific configuration;
+- the network-security-device syslog runbook and StoneOS Wazuh reference artifacts
+  remain public-safe, exclude private topology and do not claim threat-specific
+  coverage before a separately retained natural sample is validated;
+- the Chrony execution-path fixture enables RExecOp `lab_only` posture only inside
+  its isolated test, while the default stable runtime and remaining test process
+  stay read-only;
 - every profile intent has bounded catalog metadata, and the sanitized target catalog
   projects host and network-device applicability without environment paths or secrets;
 - active-profile gates reject future-product placeholders, undeclared mutating modes,
