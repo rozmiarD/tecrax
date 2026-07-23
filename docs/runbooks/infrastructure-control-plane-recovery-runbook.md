@@ -47,7 +47,9 @@ It does not cover:
 - direct NAS administration, internal NAS inspection or deletion;
 - live import of a network-device configuration;
 - replacement-host PVE/PBS rebuild proof;
-- automatic scheduling, pruning or retention policy.
+- automatic pruning or an implicit retention policy. Recurring capture is
+  allowed only as an explicitly approved, bounded schedule with health
+  monitoring and append-only storage semantics.
 
 ## Public and private boundary
 
@@ -172,7 +174,34 @@ then copy only encrypted artifacts and the bounded manifest off-device.
 Reading a saved or running configuration is sensitive even when password fields
 appear hashed. Never print or attach the raw output to evidence.
 
-### 6. Validate recovery readability
+### 6. Schedule a recurring device-configuration capture
+
+Schedule only an exact, separately approved device export. Do not reuse a
+recurring job as authority to discover or add other devices.
+
+The scheduled mechanism must:
+
+- remain fail closed on the runtime host and exact device identity;
+- capture both running and startup configuration and reject a mismatch;
+- use a non-overlapping lock and a unique run identifier;
+- encrypt before any durable write;
+- copy only encrypted artifacts and a bounded manifest off-host;
+- verify off-host checksums during every run;
+- publish only a minimal health aggregate for monitoring;
+- alert on failure, incomplete artifact shape and stale last success;
+- keep encrypted artifacts append-only without automatic delete or prune.
+
+The monitoring aggregate may expose success, age and artifact/checksum counts.
+It must not expose raw configuration, addresses, credentials, hashes of secret
+values or storage paths. A monitoring problem may enter the normal
+infrastructure ticket-routing path, but a healthy run must not create a ticket.
+
+The recovery private key must not be copied to the scheduler. Perform the
+initial decrypt/read smoke from separate recovery-key custody, then repeat it at
+an explicitly documented interval. Checksum validation on the scheduler does
+not replace decrypt/read validation.
+
+### 7. Validate recovery readability
 
 From the private-key custody workstation, stream each encrypted artifact from
 runtime custody into the decrypt process. Keep plaintext only in process memory.
@@ -184,7 +213,7 @@ error markers. Record only counts and pass/fail status.
 This proves encryption roundtrip and bounded content readability. It is not a
 replacement-host rebuild or live device-import proof.
 
-### 7. Record persistence and delivery status
+### 8. Record persistence and delivery status
 
 Before sign-off, record:
 
@@ -209,6 +238,8 @@ Stop if any of these are true:
 - the destination run identifier already exists;
 - a network prompt or pager is unsupported;
 - a source capture is incomplete or contains an error marker;
+- running and startup configurations differ;
+- a previous scheduled execution still holds the operation lock;
 - off-host checksum equality cannot be proven;
 - success would require NAS deletion or management-plane access;
 - the requested claim requires a replacement rebuild or live import that was
@@ -258,4 +289,5 @@ Explicit non-claims:
 - optional signed or authenticated manifest design during hardening.
 
 Current activation level: `L1 - public-safe runbook` plus a private,
-environment-bound operator helper outside the package.
+environment-bound operator helper family for one-shot and scheduled capture
+outside the package.

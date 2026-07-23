@@ -18,6 +18,12 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Extended the infrastructure control-plane recovery runbook with an explicitly
+  approved recurring network-device configuration capture: exact-device
+  identity, running/startup equality, non-overlapping execution, encryption
+  before durable storage, append-only off-host artifacts, checksum and
+  decrypt/read gates, and minimal backup-health monitoring without automatic
+  prune.
 - Added a bounded network-security-device syslog-to-Wazuh onboarding runbook
   plus public-safe StoneOS decoder and local-rule reference artifacts. The gate
   keeps health monitoring in Zabbix, preserves existing Grafana dashboards,
