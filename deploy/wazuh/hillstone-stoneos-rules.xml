@@ -13,7 +13,7 @@
     <group>authentication_failed,network_security,</group>
   </rule>
 
-  <rule id="100202" level="3">
+  <rule id="100202" level="5">
     <if_sid>100200</if_sid>
     <id>^421c0403$</id>
     <description>Hillstone StoneOS administrator logout.</description>
@@ -33,5 +33,26 @@
     <field name="hillstone.action">^log-only$</field>
     <description>Hillstone StoneOS logged protocol exception: $(hillstone.threat_name).</description>
     <group>network_security,ids,protocol_anomaly,log_only,</group>
+  </rule>
+
+  <rule id="100205" level="5">
+    <if_sid>100200</if_sid>
+    <id>^421c0401$</id>
+    <description>Hillstone StoneOS administrator login succeeded.</description>
+    <group>authentication_success,network_security,audit,</group>
+  </rule>
+
+  <rule id="100206" level="2">
+    <if_sid>100200</if_sid>
+    <id>^421c0407$</id>
+    <description>Hillstone StoneOS administrator connection detail observed.</description>
+    <group>authentication_success,network_security,audit_detail,</group>
+  </rule>
+
+  <rule id="100207" level="7">
+    <if_sid>100200</if_sid>
+    <id>^42080a0d$</id>
+    <description>Hillstone StoneOS running configuration was saved.</description>
+    <group>network_security,audit,configuration_changed,</group>
   </rule>
 </group>

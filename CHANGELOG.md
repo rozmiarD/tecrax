@@ -30,6 +30,12 @@ All notable Tecrax profile changes are documented here.
 - Added bounded StoneOS threat-field decoding plus separate general-threat and
   observed log-only protocol-exception rules, without claiming unobserved block
   or prevention coverage.
+- Added a safe StoneOS management-audit projection for successful and failed
+  administrator login, logout and persistent configuration save. Raw operation
+  commands and configuration differences remain excluded until deterministic
+  redaction can prevent credential-like values from reaching SIEM storage.
+  Successful login and logout remain at the standard Wazuh alert threshold so
+  they are retained as audit evidence.
 - Isolated the Chrony mutation fixture's RExecOp `lab_only` posture inside the
   single execution-path test so the normal test process and stable runtime keep
   the default read-only posture.

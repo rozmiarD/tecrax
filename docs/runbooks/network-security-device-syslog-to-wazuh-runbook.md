@@ -237,6 +237,36 @@ Local rule levels should distinguish:
 Unknown vendor messages must remain visible for review during the canary. Do not
 silence them globally.
 
+### Safe management-audit projection
+
+Do not assume that vendor `Operation` and `Configuration` categories are safe
+to centralize. Some appliances include complete administrator commands,
+configuration value differences or credential-like material in those records.
+Measure and inspect their shape privately before enabling either category.
+
+When the ordinary management-event stream already provides stable identifiers
+for login success, login failure, logout and persistent configuration save,
+prefer explicit rules for those identifiers as the minimum central audit
+surface. Keep login success and logout at the normal alert threshold so they
+remain available as audit evidence, while connection-detail duplicates stay
+below that threshold.
+This preserves accountability without copying command arguments or
+configuration values into the SIEM.
+
+Keep raw `Operation` and `Configuration` forwarding disabled until a
+deterministic metadata-only projection has proven that:
+
+- command arguments and configuration values never reach persistent storage;
+- actor, channel, action class and stable event identifier remain available;
+- unknown or unparseable records fail closed instead of being stored raw;
+- redaction is tested against password, community, token and key-shaped values;
+- rollback restores the original event/threat-only category mask.
+
+On StoneOS, do not press Enter after using `?` on a syntactically complete
+command. The CLI may execute that command after displaying `<cr>`. Cancel or
+leave the context without submitting the completed line, and always verify the
+effective category table after syntax discovery.
+
 For the StoneOS canary, the public-safe decoder and local-rule candidates are
 stored in:
 
@@ -250,6 +280,9 @@ general detection rule, while the narrower child rule covers only the observed
 prevention, malware or other unobserved actions. The private natural-sample gate
 must pass `wazuh-logtest`; a post-deployment natural hit may remain explicitly
 pending when no new source event occurs during the bounded observation window.
+The management rules also classify stable event IDs for successful login,
+failed login, logout and persistent configuration save. A duplicated
+connection-detail record remains below the normal alert threshold.
 
 The files are reference deployment artifacts, not an unattended installer;
 local rule-ID availability, backups, pre-restart validation and regression
