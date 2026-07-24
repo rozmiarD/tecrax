@@ -163,6 +163,25 @@ If the recordings mount is near full:
 - require an operator decision for retention, cleanup, archive or storage
   expansion.
 
+Treat a rotation-managed recordings filesystem as a workload, not as a generic
+office-server volume. A high percentage-used value can be the intended steady
+state when Frigate continuously expires old recordings. Do not suppress the
+whole host and do not keep permanently firing percentage or ordinary HDD
+latency triggers merely to show that steady state.
+
+Prefer narrow workload signals:
+
+- a minimum free-byte safety reserve sustained for a bounded window;
+- filesystem read-only state and inode exhaustion;
+- sustained disk utilization, rather than a generic seek-latency threshold;
+- Frigate HTTP and RTSP availability;
+- host and monitoring-agent availability;
+- actual memory pressure, rather than swap occupancy alone.
+
+Retain exact rollback IDs for every disabled generic trigger and every
+workload-specific replacement. A monitoring change must not alter retention,
+delete recordings, restart the container or hide camera-service outages.
+
 ## Stop Conditions
 
 Stop if:
@@ -186,6 +205,7 @@ Use `../operator-signoff-template.md` and include:
 - Wazuh baseline status;
 - Frigate listener checks;
 - storage pressure summary;
+- generic-trigger overrides and their workload-specific replacements;
 - explicit non-claims.
 
 Non-claims:

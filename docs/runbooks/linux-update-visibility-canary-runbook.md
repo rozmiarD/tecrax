@@ -101,3 +101,20 @@ observed. Do not create security-update or reboot triggers while cache
 freshness, persistence windows and operator action semantics remain unresolved.
 Do not force an active-agent sample by changing item type, injecting a value or
 temporarily changing cadence merely to make a new trigger evaluate.
+
+## Metadata Refresh Policy
+
+The collector remains read-only and must never refresh APT itself. If the cache
+age trigger proves that the host has no effective refresh policy, configure
+metadata refresh as a separate, explicitly approved host operation:
+
+- enable periodic package-list refresh;
+- keep automatic package download, installation and reboot disabled;
+- capture the existing APT policy before the change;
+- run one bounded metadata refresh;
+- prove that the installed package database did not change;
+- validate the collector directly and wait for the next natural active-agent
+  sample at the existing cadence.
+
+Do not inject history, convert the item to a passive check or shorten its
+cadence merely to clear the warning immediately.

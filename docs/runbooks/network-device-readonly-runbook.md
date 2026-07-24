@@ -150,6 +150,13 @@ settings as `hardening_observations`, but it does not remediate them. Hardening
 actions must be separate future intents with explicit policy, validation and
 operator approval.
 
+On vendor CLIs that use `?` for contextual help, never append it to a
+syntactically complete command prefix while configuration mode is active.
+Some firmware treats the prefix as an executable command even when the operator
+intended discovery only. Use vendor documentation or a deliberately incomplete,
+non-mutating token, and immediately compare running state with the captured
+pre-state after any live syntax exploration.
+
 ## Baseline evidence expectations
 
 A successful real run should produce:

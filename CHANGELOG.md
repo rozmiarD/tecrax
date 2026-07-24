@@ -18,6 +18,12 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Clarified workload-aware monitoring hygiene: rotation-managed recording
+  storage uses bounded free-byte and sustained-utilization signals instead of
+  permanently firing percentage, ordinary HDD-latency or swap-occupancy
+  alerts; Linux update visibility keeps metadata refresh separate from the
+  read-only collector; network-device CLI discovery forbids contextual help
+  after a syntactically complete configuration command prefix.
 - Extended the infrastructure control-plane recovery runbook with an explicitly
   approved recurring network-device configuration capture: exact-device
   identity, running/startup equality, non-overlapping execution, encryption
