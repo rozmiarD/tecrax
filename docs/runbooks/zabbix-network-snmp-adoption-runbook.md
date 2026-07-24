@@ -110,6 +110,38 @@ Validate:
 - packet loss is zero;
 - no active Zabbix problems were introduced.
 
+### 7. Add bounded license-lifecycle visibility
+
+When the vendor SNMP surface does not expose module-expiration dates, use a
+separate read-only collector instead of embedding management credentials or
+license payloads in Zabbix.
+
+The collector must:
+
+- verify the exact device identity before every read;
+- use only documented read-only license-summary commands;
+- keep raw license identifiers, customer fields and encoded license payloads
+  in process memory only;
+- persist only normalized module names and absolute expiration dates;
+- select the latest absolute expiration for each required module when the
+  appliance retains historical renewal records;
+- reject missing required modules or non-absolute trial values instead of
+  guessing;
+- expose collector health and data age separately from license expiration.
+
+Run the collector on a bounded schedule appropriate to the lifecycle signal.
+Daily collection is sufficient for thresholds measured in days. In Zabbix,
+create one expiration item per module and use non-overlapping thresholds:
+
+- warning when fewer than 60 but at least 30 days remain;
+- high severity when fewer than 30 days remain;
+- a separate collection-health trigger when the last successful read is stale.
+
+Grafana may visualize these Zabbix items, but must not become the alert source
+of record. Firmware entitlement and the supported upgrade or downgrade path
+still require confirmation from the vendor or authorized partner; license
+telemetry is not approval to upgrade.
+
 ## Stop Conditions
 
 Stop before sign-off if any of these are true:
@@ -120,6 +152,10 @@ Stop before sign-off if any of these are true:
 - Zabbix template conflicts would delete useful existing monitoring;
 - NTP requires firewall policy changes that have not been reviewed;
 - vendor CLI syntax is ambiguous for a mutating command.
+- the collector would persist license identifiers, encoded payloads or customer
+  data;
+- historical license records cannot be deterministically reduced to the
+  current absolute expiration;
 
 ## Sign-Off Shape
 

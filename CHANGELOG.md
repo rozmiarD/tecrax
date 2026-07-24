@@ -18,6 +18,11 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Extended the network SNMP adoption runbook with bounded vendor-license
+  lifecycle visibility: read-only collection, no persistent license
+  identifiers or payloads, deterministic current-expiration selection,
+  separate collector-health signals and non-overlapping 60/30-day Zabbix
+  thresholds while keeping firmware entitlement as a vendor-confirmation gate.
 - Clarified workload-aware monitoring hygiene: rotation-managed recording
   storage uses bounded free-byte and sustained-utilization signals instead of
   permanently firing percentage, ordinary HDD-latency or swap-occupancy
