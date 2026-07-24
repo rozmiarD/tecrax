@@ -18,6 +18,11 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Added a management-plane TLS hardening runbook for network security devices:
+  exact scope isolation, encrypted pre/post backups, active rollback access,
+  tab-only CLI discovery, running-only protocol canaries, negotiated-version
+  smokes from every management path and explicit handling of firmware defaults
+  that do not represent the requested modern protocol set.
 - Extended the network SNMP adoption runbook with bounded vendor-license
   lifecycle visibility: read-only collection, no persistent license
   identifiers or payloads, deterministic current-expiration selection,
