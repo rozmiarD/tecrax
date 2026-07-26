@@ -18,6 +18,11 @@ All notable Tecrax profile changes are documented here.
 
 ## Unreleased
 
+- Extended the Grafana infrastructure-dashboard runbook with a bounded
+  Viewer-scoped service-account bootstrap: expiring runtime-only tokens,
+  secret-safe administrator authentication, certificate verification,
+  dashboard and datasource read smokes, an administrator-denial proof and
+  exact-ID rollback without dashboard, datasource or plugin mutation.
 - Added a management-plane TLS hardening runbook for network security devices:
   exact scope isolation, encrypted pre/post backups, active rollback access,
   tab-only CLI discovery, running-only protocol canaries, negotiated-version

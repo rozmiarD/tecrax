@@ -125,6 +125,36 @@ This failure is also an observability gap when monitoring checks only process
 and container availability. Add a low-noise synthetic dashboard or datasource
 check in a separate approved gate before routing it to a ticketing system.
 
+## Read-only API identity
+
+Use a dedicated Grafana service account when an operator tool needs to inspect
+dashboard inventory or datasource health. Do not reuse an interactive
+administrator session, browser cookie or anonymous access.
+
+The bounded bootstrap must:
+
+- create one uniquely named service account with the organization role
+  `Viewer`;
+- create one expiring token for one declared runtime consumer;
+- keep the administrator credential and generated token outside argv, logs,
+  Git and public evidence;
+- place the token only in the approved runtime secret store with mode `0600`;
+- verify the server certificate through the approved trust path or an exact
+  pre-recorded fingerprint while certificate rollout is incomplete;
+- compare dashboard identity before and after the change;
+- prove read access to dashboard search and the exact datasource health
+  endpoint;
+- prove that an administrator-only endpoint remains denied;
+- record token ownership and expiry without recording its value.
+
+Fail closed if the account name or destination secret already exists. If token
+creation or validation fails, delete only the token and service account created
+by the current run, using their exact IDs. Do not change dashboards,
+datasources, plugins or alert rules as part of this operation.
+
+Token rotation is a separate bounded change. Create and validate the replacement
+before revoking the previous token, then update the runtime consumer atomically.
+
 ## Stop Conditions
 
 Stop before sign-off if any of these are true:
