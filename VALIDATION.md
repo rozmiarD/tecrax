@@ -33,6 +33,14 @@ Expected result for source candidate `0.4.0rc3`:
 - the Chrony regression proves a positive GovEngine plan reaches approved state while
   default RExecOp `stable_read_only` raises before connector I/O; Tecrax is not
   mutation_ready and the registered mutation candidate is not executable by default;
+- focused Chrony tests use a small local executable to prove RExecOp-owned
+  incremental capture enforces the exact `16384`-byte configured default and
+  lower configured/request-policy limits across combined stdout and stderr.
+  Overflow and timeout stay unsuccessful and raw-free; strict overflow evidence
+  contains only limits, per-stream SHA-256 digests, truncation flags and byte
+  counts before RExecOp's StepExecutor projection. This is not live-wrapper,
+  retry, rollback, `lab_only`, permit, consume-once or mutation-readiness
+  qualification, and emitted-byte digests do not claim bytes never emitted;
 - every profile intent has bounded catalog metadata, and the sanitized target catalog
   projects host and network-device applicability without environment paths or secrets;
 - active-profile gates reject future-product placeholders, undeclared mutating modes,

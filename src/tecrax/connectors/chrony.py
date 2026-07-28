@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
-import subprocess
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -10,11 +10,15 @@ from rexecop.connectors import errors as connector_errors
 from rexecop.connectors.base import ConnectorRequest, ConnectorResponse
 from rexecop.connectors.errors import READ_ONLY_MODES
 from rexecop.evidence.redaction import redact_payload, redact_text
+from rexecop.execution import bounded_subprocess as capture_runtime
 from tecrax.contracts import (
     CHRONY_NTP_SERVER_MUTATION_CONTRACT_ID,
     CHRONY_NTP_SERVER_MUTATION_SCHEMA_REF,
     finalize_facts,
 )
+
+# Preserve the existing connector test seam while routing it to bounded capture.
+subprocess = capture_runtime
 
 MANAGED_FILE = "/etc/chrony/conf.d/tecrax-ntp-server.conf"
 MAX_WRAPPER_OUTPUT_BYTES = 16_384
@@ -179,27 +183,82 @@ class ChronyNtpBackend:
             desired.allowed_subnet,
         ]
         timeout = float(self.config.get("timeout_seconds") or 30)
+        controls = request.metadata.get("execution_controls")
+        if "execution_controls" in request.metadata and not isinstance(
+            controls, Mapping
+        ):
+            return self._failure(
+                request,
+                "invalid max_output_bytes",
+                connector_errors.VALIDATION_FAILED,
+            )
+        try:
+            configured_output_bytes = (
+                self.config["max_output_bytes"]
+                if "max_output_bytes" in self.config
+                else MAX_WRAPPER_OUTPUT_BYTES
+            )
+            if isinstance(controls, Mapping) and "max_output_bytes" in controls:
+                max_output_bytes = subprocess.resolve_output_limit(
+                    configured=configured_output_bytes,
+                    policy=controls["max_output_bytes"],
+                )
+            else:
+                max_output_bytes = subprocess.resolve_output_limit(
+                    configured=configured_output_bytes,
+                )
+        except ValueError:
+            return self._failure(
+                request,
+                "invalid max_output_bytes",
+                connector_errors.VALIDATION_FAILED,
+            )
         try:
             completed = subprocess.run(
                 command,
-                check=False,
-                capture_output=True,
-                text=True,
                 timeout=timeout,
+                max_output_bytes=max_output_bytes,
             )
         except subprocess.TimeoutExpired:
             return self._failure(request, "chrony wrapper timeout", connector_errors.TIMEOUT)
-        stdout = completed.stdout[:MAX_WRAPPER_OUTPUT_BYTES]
-        stderr = completed.stderr[:MAX_WRAPPER_OUTPUT_BYTES]
-        if completed.returncode != 0:
+        result = subprocess.normalize_result(
+            completed,
+            max_output_bytes=max_output_bytes,
+        )
+        if result.output_limit_exceeded:
             return self._failure(
                 request,
-                redact_text(stderr.strip()) or "chrony wrapper failed",
+                "chrony wrapper output limit exceeded",
+                capture_runtime.OUTPUT_LIMIT_EXCEEDED,
+                data={
+                    "output_limit_exceeded": True,
+                    "max_output_bytes": max_output_bytes,
+                    "output_digests": {
+                        "stdout": result.stdout.digest,
+                        "stderr": result.stderr.digest,
+                    },
+                    "output_truncated": {
+                        "stdout": result.stdout.truncated,
+                        "stderr": result.stderr.truncated,
+                    },
+                    "output_sizes": {
+                        "stdout_bytes": result.stdout.total_bytes,
+                        "stderr_bytes": result.stderr.total_bytes,
+                        "total_bytes": (
+                            result.stdout.total_bytes + result.stderr.total_bytes
+                        ),
+                    },
+                },
+            )
+        if result.returncode != 0:
+            return self._failure(
+                request,
+                redact_text(result.stderr.text) or "chrony wrapper failed",
                 connector_errors.TRANSIENT,
-                data={"returncode": completed.returncode},
+                data={"returncode": result.returncode},
             )
         try:
-            payload = json.loads(stdout or "{}")
+            payload = json.loads(result.stdout.text)
         except json.JSONDecodeError:
             return self._failure(
                 request,

@@ -59,6 +59,28 @@ The backend validates `allowed_subnet` as a strict IPv4 CIDR and rejects network
 broader than `/24`. In live mode it invokes the wrapper with fixed argv, never a
 rendered shell command.
 
+## Wrapper output boundary
+
+RExecOp owns subprocess execution and incrementally enforces one combined
+stdout-plus-stderr capture limit. The Chrony backend consumes that runtime
+primitive and only owns fixed argv, wrapper JSON validation and Tecrax domain
+defaults. The configured default is exactly `16384` bytes; an exact positive
+integer request policy may lower, but not raise, the configured limit.
+
+Crossing the combined limit is always an unsuccessful
+`output_limit_exceeded` result, even if the wrapper exits zero or emits valid
+JSON. The response is raw-free: it includes only the effective limit,
+per-stream SHA-256 digests, per-stream truncation flags and exact observed
+stdout, stderr and total byte counts. It contains no retained stdout/stderr,
+argv, raw JSON, return code or peak-retention field. A timeout likewise exposes
+no raw or partial output. Successful stderr is not projected.
+
+This boundary does not qualify the private wrapper or a live Chrony target, and
+it does not claim a digest for bytes a terminated child did not emit. It does
+not grant retry or rollback authority; those remain a separate T-204
+qualification. It does not change `lab_only`, mutation readiness, permits,
+consume-once behavior or rollback conformance.
+
 ## Run
 
 Use the sanitized fixture environment only to inspect candidate planning shape without

@@ -31,3 +31,13 @@ describe the exact NTP server state transition declared by the profile. GovEngin
 admission does not override default RExecOp `stable_read_only`, so it remains a
 registered mutation candidate and Tecrax is not mutation_ready; execution, post-state
 validation, rollback, target locking and SCLite evidence are separately unqualified.
+
+The Chrony connector delegates process execution to RExecOp's incrementally
+bounded runtime capture. Its exact configured default is `16384` combined
+stdout-plus-stderr bytes, and an exact positive integer request control can
+only lower that bound. Overflow is an unsuccessful, raw-free result containing
+only the effective limit, per-stream SHA-256 digests, truncation flags and
+observed byte counts; timeout evidence also excludes raw or partial output.
+This proves a local resource boundary, not live wrapper behavior or mutation
+readiness. It does not claim bytes the child did not emit, and retry and
+rollback authority remain separately gated by T-204.
