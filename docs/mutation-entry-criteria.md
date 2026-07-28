@@ -39,5 +39,16 @@ only lower that bound. Overflow is an unsuccessful, raw-free result containing
 only the effective limit, per-stream SHA-256 digests, truncation flags and
 observed byte counts; timeout evidence also excludes raw or partial output.
 This proves a local resource boundary, not live wrapper behavior or mutation
-readiness. It does not claim bytes the child did not emit, and retry and
-rollback authority remain separately gated by T-204.
+readiness. It does not claim bytes the child did not emit.
+
+Automatic retry is disabled for this mixed read/apply mutation candidate:
+F-017 profile alignment is covered by a zero automatic-retry budget without an
+allowlist expansion. A post-I/O `outcome_indeterminate` result requires
+reconciliation, and RExecOp intrinsically blocks manual retry of that
+indeterminate operation independently of the profile budget.
+
+Exact governed rollback remains unqualified and gated on T-205 canonical
+GovEngine approval-attestation and typed recovery-mode integration. None of
+this qualifies rollback execution, exactly-once or idempotency behavior,
+crash/power-loss or worker recovery, a private wrapper, lab or live operation,
+mutation readiness, release or publication.

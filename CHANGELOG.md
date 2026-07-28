@@ -2,14 +2,24 @@
 
 ## Unreleased — SCLite 2.0 owner migration
 
+- Disables automatic retry for the mixed read/apply Chrony mutation candidate
+  by setting its profile retry budget to zero without expanding its allowlist
+  or error blocklist. The focused persisted-plan regression calls RExecOp's
+  actual retry classifier and separately proves its intrinsic
+  `outcome_indeterminate` refusal. This covers F-017 profile alignment only;
+  exact governed rollback remains unqualified and gated on T-205 canonical
+  GovEngine approval-attestation and typed recovery-mode integration. It does
+  not qualify rollback execution, exactly-once or idempotency behavior,
+  crash/power-loss or worker recovery, a private wrapper, lab or live
+  operation, mutation readiness, release or publication.
 - Routes Chrony wrapper execution through RExecOp's runtime-owned incremental
   combined-output capture with an exact `16384`-byte configured default and
   lower exact-integer policy precedence. Overflow now fails before return-code
   or JSON handling and exposes only raw-free per-stream digests, truncation
   flags and observed byte counts; timeout exposes no partial output. Focused
   local-producer and StepExecutor regressions do not qualify a live wrapper,
-  un-emitted bytes, retry/rollback (reserved for T-204), `lab_only`, permits,
-  consume-once behavior or mutation readiness.
+  un-emitted bytes, `lab_only`, permits, consume-once behavior or mutation
+  readiness.
 - Corrected public status for `0.4.0rc3`: Chrony is a registered mutation
   candidate, while default RExecOp `stable_read_only` blocks apply before connector
   I/O and Tecrax is not mutation_ready. This does not change profile or connector

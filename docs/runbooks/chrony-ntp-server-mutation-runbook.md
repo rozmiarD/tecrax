@@ -77,9 +77,27 @@ no raw or partial output. Successful stderr is not projected.
 
 This boundary does not qualify the private wrapper or a live Chrony target, and
 it does not claim a digest for bytes a terminated child did not emit. It does
-not grant retry or rollback authority; those remain a separate T-204
-qualification. It does not change `lab_only`, mutation readiness, permits,
-consume-once behavior or rollback conformance.
+not change `lab_only`, mutation readiness, permits, consume-once behavior or
+rollback conformance.
+
+## Retry and recovery boundary
+
+Automatic retry is disabled for this mixed read/apply mutation candidate. The
+persisted workflow keeps an empty retry allowlist and a zero automatic-retry
+budget; it does not expand Tecrax error classification or override RExecOp's
+domain-neutral retry rules.
+
+After connector I/O, an `outcome_indeterminate` result requires reconciliation
+before any new operation is considered. RExecOp intrinsically blocks manual
+retry of that indeterminate operation, independently of this profile's zero
+automatic-retry budget.
+
+This covers the F-017 profile alignment only. Exact governed rollback remains
+unqualified and gated on T-205 canonical GovEngine approval-attestation and
+typed recovery-mode integration. The declared recovery shape is not a claim of
+rollback execution, exactly-once behavior, idempotency, crash or power-loss
+recovery, worker qualification, live or lab qualification, readiness, release
+or publication.
 
 ## Run
 

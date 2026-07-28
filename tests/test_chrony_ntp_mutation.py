@@ -5,6 +5,7 @@ import json
 import stat
 import subprocess as stdlib_subprocess
 import sys
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
@@ -529,6 +530,68 @@ def test_chrony_apply_blocked_before_backend(_entry_points_mock, tmp_path: Path)
     assert operation.state == OperationState.BLOCKED.value
     with pytest.raises(RExecOpValidationError):
         controller.start(operation.id)
+
+
+@patch("rexecop.connectors.fixture_loader.entry_points", side_effect=_entry_points)
+def test_chrony_retry_policy_uses_runtime_classifier(
+    _entry_points_mock,
+    tmp_path: Path,
+) -> None:
+    controller = OperationController(
+        store=FileStore(tmp_path / ".rexecop"),
+        govengine_adapter=StaticGovEngineAdapter(GovEngineDecisionType.BLOCKED),
+    )
+    operation = controller.plan(
+        profile_path=Path(profile_root()),
+        environment_path=ENVIRONMENT,
+        intent="configure_chrony_ntp_server",
+        target="chrony-host-01",
+        mode="apply",
+    )
+    assert operation.state == OperationState.BLOCKED.value
+
+    persisted_plan = controller.store.load_plan(operation.id)
+    assert persisted_plan.retry_policy_summary == {
+        "max_attempts": 0,
+        "allowed_on": [],
+        "blocked_on": ["policy_denied", "validation_failed"],
+    }
+    for error_class in (
+        "receipt_postcondition_failed",
+        "outcome_indeterminate",
+        "transient_connector_error",
+    ):
+        assert (
+            controller.orchestrator._can_retry(  # noqa: SLF001
+                persisted_plan,
+                error_class=error_class,
+                attempts=1,
+            )
+            is False
+        )
+
+    permissive_control = deepcopy(persisted_plan)
+    permissive_control.retry_policy_summary = {
+        "max_attempts": 1,
+        "allowed_on": [],
+        "blocked_on": [],
+    }
+    assert (
+        controller.orchestrator._can_retry(  # noqa: SLF001
+            permissive_control,
+            error_class="outcome_indeterminate",
+            attempts=1,
+        )
+        is False
+    )
+    assert (
+        controller.orchestrator._can_retry(  # noqa: SLF001
+            permissive_control,
+            error_class="transient_connector_error",
+            attempts=1,
+        )
+        is True
+    )
 
 
 @patch("rexecop.connectors.fixture_loader.entry_points", side_effect=_entry_points)
