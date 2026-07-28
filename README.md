@@ -25,12 +25,12 @@ credentials, embed target topology, or accept arbitrary infrastructure commands.
 
 | Item | Value |
 | --- | --- |
-| Current source candidate | `0.4.0rc3` (`0.3.22-alpha`, not published) |
+| Current source candidate | `0.4.0rc3` (not published) |
 | Maturity | **alpha** — operator evaluation with documented limits |
 | Latest PyPI | [`tecrax==0.3.21a0`](https://pypi.org/project/tecrax/0.3.21a0/) |
 | Source dependencies | `govengine==1.0.0rc1`, `sclite-core==2.0.0`, `rexecop==0.3.0rc3` |
 | Profile entry point | `rexecop.profiles:tecrax` |
-| Active mutating intent | `configure_chrony_ntp_server` only |
+| Registered mutation candidate | `configure_chrony_ntp_server` only; default RExecOp `stable_read_only` blocks apply before connector I/O, so Tecrax is not mutation_ready |
 | Public status | [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) |
 
 Latest published PyPI baseline: `tecrax==0.3.21a0`; it contains the coordinated
@@ -53,9 +53,9 @@ B2 dependency floor and read-only policy vector.
   untrusted SCLite proposal artifacts with `may_execute=false`.
 - **Source-line trigger rules** — bounded `network.host_observed` events map known catalog
   targets to dry-run `collect_basic_host_inventory` planning; unknown hosts escalate.
-- **Governed mutation slice** — `configure_chrony_ntp_server` is the only active apply
-  operation, limited to a managed chrony config file and service restart with GovEngine
-  admission.
+- **Registered mutation candidate** — `configure_chrony_ntp_server` remains profile
+  vocabulary only: default RExecOp `stable_read_only` blocks apply before connector I/O,
+  and Tecrax is not mutation_ready.
 
 ### Active intents (14)
 
@@ -69,10 +69,10 @@ B2 dependency floor and read-only policy vector.
 | Zabbix summaries | `collect_zabbix_problem_summary_readonly`, `collect_zabbix_host_availability_summary_readonly` | read-only bounded counts |
 | Network devices | `collect_network_device_inventory_readonly`, `assess_network_device_management_posture_readonly` | read-only legacy CLI inventory/posture |
 | Diagnosis | `diagnose_monitoring_host` | bounded aggregate over component checks |
-| Mutation | `configure_chrony_ntp_server` | governed chrony/NTP server apply |
+| Mutation candidate | `configure_chrony_ntp_server` | registered chrony/NTP candidate; default `stable_read_only` blocks apply, so Tecrax is not mutation_ready |
 
 Connectors in the active profile: SSH local readonly, Zabbix API, AdGuard, Portainer,
-network-device CLI wrapper, and `tecrax_chrony_ntp` for the mutation slice.
+network-device CLI wrapper, and `tecrax_chrony_ntp` for the registered mutation candidate.
 
 ### Operator runbooks
 
@@ -200,18 +200,20 @@ profile/planning/supervision/runtime-review contracts and binds its fixture
 receipt through an SCLite artifact descriptor. It has no live runner, host
 inventory, credential path, or infrastructure adapter.
 
-The source `0.3.22-alpha` candidate combines the profile-owned read-only reaction pack,
-B2 policy vector, and the first governed chrony/NTP apply slice over RExecOp
-`0.3.0rc3`, GovEngine `1.0.0rc1`, and final SCLite `2.0.0`. It does not add a second
-policy engine, lifecycle runner, or truth layer.
+The source `0.4.0rc3` candidate combines the profile-owned read-only reaction pack,
+B2 policy vector, and a registered chrony/NTP mutation candidate over RExecOp
+`0.3.0rc3`, GovEngine `1.0.0rc1`, and final SCLite `2.0.0`. Default RExecOp
+`stable_read_only` blocks apply before connector I/O, so Tecrax is not mutation_ready;
+this does not add a second policy engine, lifecycle runner, or truth layer.
 
 The Ubuntu environment example uses profile-owned policy semantics, but GovEngine
 compiles and admits the controls and RExecOp enforces them. Tecrax does not claim
 that writing obligations in YAML alone satisfies them.
 
-`configure_chrony_ntp_server` is the only active mutating intent. It is deterministic,
-requires GovEngine admission, uses the `tecrax_chrony_ntp` connector backend, and is
-documented in [`docs/runbooks/chrony-ntp-server-mutation-runbook.md`](docs/runbooks/chrony-ntp-server-mutation-runbook.md).
+`configure_chrony_ntp_server` is a registered mutation candidate. A positive GovEngine
+decision does not override default RExecOp `stable_read_only`, which blocks apply before
+connector I/O; Tecrax is not mutation_ready. Its candidate semantics are documented in
+[`docs/runbooks/chrony-ntp-server-mutation-runbook.md`](docs/runbooks/chrony-ntp-server-mutation-runbook.md).
 
 ## Validation
 

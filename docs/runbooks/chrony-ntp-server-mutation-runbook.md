@@ -1,11 +1,13 @@
 # Chrony NTP server mutation
 
-This runbook covers `configure_chrony_ntp_server`, the first bounded Tecrax
-mutation. It configures one host to serve NTP through chrony for one declared
-IPv4 LAN subnet.
+This runbook describes `configure_chrony_ntp_server`, a registered mutation candidate
+in Tecrax for one host to serve NTP through chrony for one declared IPv4 LAN subnet.
+Default RExecOp `stable_read_only` blocks apply before connector I/O, so Tecrax is not
+mutation_ready.
 
-The operation is deterministic. An LLM may propose or explain the change, but
-the execution path is only:
+The candidate contract is deterministic. An LLM may propose or explain the change, but
+it has no execution authority. If a separately qualified posture ever exists, its path
+would be:
 
 ```text
 Tecrax intent -> RExecOp plan -> GovEngine admission -> Tecrax connector backend
@@ -14,7 +16,7 @@ Tecrax intent -> RExecOp plan -> GovEngine admission -> Tecrax connector backend
 
 ## Scope
 
-The active contract is limited to:
+The registered candidate contract is limited to:
 
 - one managed file: `/etc/chrony/conf.d/tecrax-ntp-server.conf`;
 - one strict IPv4 CIDR with prefix `/24` or narrower;
@@ -32,8 +34,9 @@ shell command.
 - target access uses the `rexecop` account;
 - real target binding, SSH keys and known-hosts files stay outside Git;
 - live execution uses an operator-owned wrapper outside Git;
-- GovEngine admission is required before `apply`;
-- no unattended apply is allowed.
+- GovEngine admission is required before any future `apply` consideration;
+- no unattended apply is allowed; default RExecOp `stable_read_only` still blocks before
+  connector I/O.
 
 The public example uses `fixture_only: true`. A live environment must replace it
 with an operator-owned wrapper command. The wrapper is not a Tecrax public API;
@@ -58,8 +61,8 @@ rendered shell command.
 
 ## Run
 
-Use the sanitized fixture environment to prove planning, admission and evidence
-shape without touching infrastructure:
+Use the sanitized fixture environment only to inspect candidate planning shape without
+touching infrastructure. It does not make Tecrax mutation_ready:
 
 ```bash
 rexecop plan --profile tecrax \
@@ -75,7 +78,7 @@ known-hosts paths or operation identifiers.
 
 ## Validation
 
-The profile validation checks:
+The profile validation checks candidate shape only:
 
 - mutation state exists for `apply_chrony_ntp_server`;
 - post-state reports `desired_state_applied=true`;

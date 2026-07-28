@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import sys
 import tomllib
+import subprocess
 from pathlib import Path
 import re
 
@@ -17,7 +18,6 @@ from tecrax.local_fixture import build_local_fixture_review  # noqa: E402
 
 
 EXPECTED_VERSION = '0.4.0rc3'
-EXPECTED_RELEASE_LABEL = '0.3.22-alpha'
 PUBLISHED_VERSION = '0.3.21a0'
 EXPECTED_GOVENGINE = 'govengine==1.0.0rc1'
 EXPECTED_SCLITE = 'sclite-core==2.0.0'
@@ -71,6 +71,38 @@ def _require(errors: list[str], path: str, expected: str) -> None:
         errors.append(f'{path}:missing:{expected}')
 
 
+def _status_output() -> tuple[int, str]:
+    result = subprocess.run(
+        [sys.executable, '-m', 'tecrax.cli', 'status'],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode, result.stdout
+
+
+def _wheel_smoke_order_errors(workflow: str) -> list[str]:
+    status_step = '      - name: Wheel status-only installed smoke'
+    normal_step = '      - name: Wheel install smoke'
+    normal_install = 'python -m pip install dist/*.whl'
+    normal_check = 'python -m pip check'
+    if workflow.count(status_step) != 1 or workflow.count(normal_step) != 1:
+        return ['ci_wheel_status_smoke_step_count']
+    status_index = workflow.index(status_step)
+    normal_index = workflow.index(normal_step)
+    install_index = workflow.find(normal_install, normal_index)
+    check_index = workflow.find(normal_check, normal_index)
+    if (
+        status_index >= normal_index
+        or install_index < normal_index
+        or check_index < normal_index
+        or install_index > check_index
+    ):
+        return ['ci_wheel_status_smoke_order']
+    return []
+
+
 def collect_errors() -> list[str]:
     errors: list[str] = []
     errors.extend(validate_consumer_imports('tecrax', ROOT))
@@ -98,7 +130,6 @@ def collect_errors() -> list[str]:
         _require(errors, path, EXPECTED_GOVENGINE)
         _require(errors, path, EXPECTED_SCLITE)
         _require(errors, path, EXPECTED_REXECOP)
-    _require(errors, 'PUBLIC_STATUS.md', EXPECTED_RELEASE_LABEL)
     _require(errors, 'README.md', f'Latest published PyPI baseline: `tecrax=={PUBLISHED_VERSION}`')
     _require(errors, 'PUBLIC_STATUS.md', f'`tecrax=={PUBLISHED_VERSION}`')
     _require(errors, 'VALIDATION.md', f'latest PyPI publication is `{PUBLISHED_VERSION}`')
@@ -135,7 +166,13 @@ def collect_errors() -> list[str]:
     _require(errors, '.github/workflows/ci.yml', 'package-dry-run:')
     _require(errors, '.github/workflows/ci.yml', 'rm -rf dist build *.egg-info')
     _require(errors, '.github/workflows/ci.yml', 'python -m twine check dist/*')
+    _require(errors, '.github/workflows/ci.yml', 'Wheel install smoke')
+    _require(errors, '.github/workflows/ci.yml', 'python -m pip install dist/*.whl')
     _require(errors, '.github/workflows/ci.yml', 'python -m pip check')
+    _require(errors, '.github/workflows/ci.yml', 'Wheel status-only installed smoke')
+    _require(errors, '.github/workflows/ci.yml', 'python -m pip install --no-deps dist/*.whl')
+    _require(errors, '.github/workflows/ci.yml', 'env -u PYTHONPATH -u PYTHONHOME')
+    errors.extend(_wheel_smoke_order_errors(_read('.github/workflows/ci.yml')))
     _require(
         errors,
         '.github/workflows/ci.yml',
@@ -178,11 +215,37 @@ def collect_errors() -> list[str]:
         errors.append('fixture_claims_credentials')
     if not review.get('sclite_fixture_receipt_descriptor', {}).get('digest'):
         errors.append('fixture_missing_sclite_descriptor_digest')
-    cli_text = _read('src/tecrax/cli.py')
-    if EXPECTED_RELEASE_LABEL not in cli_text:
-        errors.append(f'src/tecrax/cli.py:missing_current_release_label:{EXPECTED_RELEASE_LABEL}')
-    if '0.2.0-alpha' in cli_text or '0.2.1-alpha' in cli_text:
-        errors.append('src/tecrax/cli.py:stale_cli_status_release_label')
+    status_code, status = _status_output()
+    if status_code != 0:
+        errors.append('cli_status:failed')
+    for marker in (
+        f'Tecrax {tecrax.__version__}',
+        'registered mutation candidate',
+        'stable_read_only',
+        'not mutation_ready',
+    ):
+        if marker not in status:
+            errors.append(f'cli_status:missing:{marker}')
+    if '0.3.22-alpha' in status or 'active apply' in status or 'active mutating' in status:
+        errors.append('cli_status:stale_or_active_mutation_claim')
+
+    mutation_truth_docs = (
+        *PUBLIC_DOCS,
+        'docs/mutation-entry-criteria.md',
+        'docs/runbooks/chrony-ntp-server-mutation-runbook.md',
+    )
+    for path in mutation_truth_docs:
+        normalized = ' '.join(_read(path).lower().split())
+        for marker in (
+            'registered mutation candidate',
+            'stable_read_only',
+            'not mutation_ready',
+        ):
+            if marker not in normalized:
+                errors.append(f'{path}:missing_mutation_truth:{marker}')
+        text = _read(path).lower()
+        if '0.3.22-alpha' in text or 'active apply' in text or 'active mutating' in text:
+            errors.append(f'{path}:stale_or_active_mutation_claim')
 
     for path in PUBLIC_DOCS:
         lowered = _read(path).lower()

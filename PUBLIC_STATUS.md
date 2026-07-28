@@ -1,6 +1,6 @@
 # Tecrax Public Status
 
-- **Source package version:** `0.4.0rc3` (`0.3.22-alpha`) alpha candidate; not published
+- **Source package version:** `0.4.0rc3` alpha candidate; not published
 - **Latest published PyPI package:** `tecrax==0.3.21a0`; it contains the current B2 profile vector
 - **Dependencies:** `govengine==1.0.0rc1`, `sclite-core==2.0.0`, `rexecop==0.3.0rc3`
 - **RExecOp profile:** bundled at `src/tecrax/profile/` via `rexecop.profiles:tecrax`
@@ -24,10 +24,10 @@
 - **Operator catalog metadata:** every bundled intent declares target kinds,
   capabilities, side-effect class, validation and runbook references; RExecOp projects
   applicability from a private target catalog without claiming authorization
-- **Controlled apply slice:** `configure_chrony_ntp_server` is the only active
-  mutating intent; it is limited to a managed chrony config file and service restart,
-  requires GovEngine admission, and uses operator-owned live wrapper configuration
-  outside the repository
+- **Registered mutation candidate:** `configure_chrony_ntp_server` remains a profile
+  candidate; default RExecOp `stable_read_only` blocks apply before connector I/O, so
+  Tecrax is not mutation_ready. A positive GovEngine decision does not change that
+  runtime posture.
 - **Windows application convergence:** a future governed mutation candidate only
   after an exact-artifact package gate, a manually accepted gold endpoint and a
   second repeated pilot; no package downloader, installer or Windows application

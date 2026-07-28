@@ -13,7 +13,7 @@ tecrax fixture-review --service demo-web
 
 Expected result for source candidate `0.4.0rc3`:
 
-- `pyproject.toml`, `tecrax.__version__`, README, public status, and validators agree on `0.4.0rc3` / `0.3.22-alpha`;
+- `pyproject.toml`, `tecrax.__version__`, CLI status, README, public status, and validators agree on `0.4.0rc3`;
 - latest PyPI publication is `0.3.21a0`, including the coordinated B2 profile vector;
 - dependency truth is `govengine==1.0.0rc1`, `sclite-core==2.0.0`, and `rexecop==0.3.0rc3`;
 - RExecOp profile entry point `tecrax:profile_root` resolves to a valid profile bundle;
@@ -30,14 +30,14 @@ Expected result for source candidate `0.4.0rc3`:
 - the network-security-device syslog runbook and StoneOS Wazuh reference artifacts
   remain public-safe, exclude private topology and do not claim threat-specific
   coverage before a separately retained natural sample is validated;
-- the Chrony execution-path fixture enables RExecOp `lab_only` posture only inside
-  its isolated test, while the default stable runtime and remaining test process
-  stay read-only;
+- the Chrony regression proves a positive GovEngine plan reaches approved state while
+  default RExecOp `stable_read_only` raises before connector I/O; Tecrax is not
+  mutation_ready and the registered mutation candidate is not executable by default;
 - every profile intent has bounded catalog metadata, and the sanitized target catalog
   projects host and network-device applicability without environment paths or secrets;
 - active-profile gates reject future-product placeholders, undeclared mutating modes,
   undeclared connector actions and premature VLAN/port-security action names, while
-  admitting only the bounded chrony/NTP apply slice;
+  registering only the bounded chrony/NTP mutation candidate;
 - secret/topology gates scan tracked text files for private IPs, MAC addresses,
   key material, private SSH paths and obvious token/password assignments;
 - fixture review output validates GovEngine profile, planning, supervision, runtime snapshot, review result, and runtime contract proof objects;

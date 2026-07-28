@@ -29,7 +29,7 @@ def test_active_profile_rejects_apply_intent(tmp_path: Path) -> None:
     assert any("non_readonly_modes" in item for item in collect_errors(root))
 
 
-def test_active_profile_allows_only_declared_chrony_apply() -> None:
+def test_active_profile_registers_only_declared_chrony_mutation_candidate() -> None:
     assert not any(
         "configure_chrony_ntp_server" in item for item in collect_errors()
     )

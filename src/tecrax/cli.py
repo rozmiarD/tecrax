@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
+from . import __version__
 from .local_fixture import build_local_fixture_review
 from .reactions import build_monitoring_host_observation
 
@@ -60,9 +61,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(
-        "Tecrax 0.3.22-alpha profile: read-only observations plus one governed "
-        "chrony/NTP apply slice. Live access runs through RExecOp, GovEngine "
-        "admission, and operator-owned configuration outside this package."
+        f"Tecrax {__version__}: configure_chrony_ntp_server is a registered mutation "
+        "candidate. Default RExecOp stable_read_only blocks apply before connector I/O; "
+        "Tecrax is not mutation_ready."
     )
     return 0
 

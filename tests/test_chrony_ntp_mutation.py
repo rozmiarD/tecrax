@@ -8,12 +8,12 @@ import pytest
 from rexecop.adapters.govengine_port.contracts import GovEngineDecisionType
 from rexecop.adapters.govengine_port.static_adapter import StaticGovEngineAdapter
 from rexecop.connectors.base import ConnectorRequest
-from rexecop.errors import RExecOpValidationError
+from rexecop.errors import RExecOpMutationNotCertified, RExecOpValidationError
 from rexecop.operation.controller import OperationController
 from rexecop.operation.state import OperationState
 from rexecop.storage.file_store import FileStore
 from tecrax import profile_root
-from tecrax.connectors.chrony import build_chrony_ntp_backend
+from tecrax.connectors.chrony import ChronyNtpBackend, build_chrony_ntp_backend
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ENVIRONMENT = REPO_ROOT / "examples/environments/chrony-ntp-server.apply.example.yaml"
@@ -109,6 +109,33 @@ def test_chrony_apply_blocked_before_backend(_entry_points_mock, tmp_path: Path)
     assert operation.state == OperationState.BLOCKED.value
     with pytest.raises(RExecOpValidationError):
         controller.start(operation.id)
+
+
+@patch("rexecop.connectors.fixture_loader.entry_points", side_effect=_entry_points)
+def test_chrony_allowed_plan_is_blocked_before_backend_in_stable_read_only(
+    _entry_points_mock,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("REXECOP_MUTATION_POSTURE", raising=False)
+    controller = OperationController(
+        store=FileStore(tmp_path / ".rexecop"),
+        govengine_adapter=StaticGovEngineAdapter(GovEngineDecisionType.ALLOWED),
+    )
+
+    operation = controller.plan(
+        profile_path=Path(profile_root()),
+        environment_path=ENVIRONMENT,
+        intent="configure_chrony_ntp_server",
+        target="chrony-host-01",
+        mode="apply",
+    )
+
+    assert operation.state == OperationState.APPROVED.value
+    with patch.object(ChronyNtpBackend, "invoke", autospec=True) as invoke:
+        with pytest.raises(RExecOpMutationNotCertified):
+            controller.start(operation.id)
+    invoke.assert_not_called()
 
 
 @patch("rexecop.connectors.fixture_loader.entry_points", side_effect=_entry_points)

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import importlib.util
 from pathlib import Path
+
+import pytest
 
 from tecrax import __version__, build_local_fixture_review
 from tecrax.cli import main
@@ -29,9 +32,59 @@ def test_cli_status_keeps_local_fixture_posture(capsys) -> None:
     assert main(['status']) == 0
 
     stdout = capsys.readouterr().out
-    assert '0.3.22-alpha' in stdout
-    assert 'read-only observations' in stdout
-    assert 'one governed chrony/NTP apply slice' in stdout
+    assert f'Tecrax {__version__}' in stdout
+    assert 'registered mutation candidate' in stdout
+    assert 'stable_read_only' in stdout
+    assert 'not mutation_ready' in stdout
+    assert '0.3.22-alpha' not in stdout
+    assert 'active apply' not in stdout
+
+
+def _public_truth_validator():
+    path = ROOT / 'scripts' / 'validate_public_truth.py'
+    spec = importlib.util.spec_from_file_location('tecrax_public_truth', path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.mark.parametrize(
+    'status',
+    (
+        'Tecrax 0.3.22-alpha: active apply mutation_ready\n',
+        'Tecrax 0.4.0rc3: active mutating intent\n',
+    ),
+)
+def test_public_truth_rejects_stale_or_active_status_claim(
+    monkeypatch: pytest.MonkeyPatch,
+    status: str,
+) -> None:
+    validator = _public_truth_validator()
+    monkeypatch.setattr(validator, '_status_output', lambda: (0, status))
+
+    assert any('cli_status' in error for error in validator.collect_errors())
+
+
+def test_public_truth_requires_status_smoke_before_normal_wheel_gate() -> None:
+    validator = _public_truth_validator()
+    ordered = (
+        '      - name: Wheel status-only installed smoke\n'
+        '      - name: Wheel install smoke\n'
+        '        run: python -m pip install dist/*.whl\n'
+        '        run: python -m pip check\n'
+    )
+
+    assert validator._wheel_smoke_order_errors(ordered) == []
+    reversed_order = (
+        '      - name: Wheel install smoke\n'
+        '        run: python -m pip install dist/*.whl\n'
+        '        run: python -m pip check\n'
+        '      - name: Wheel status-only installed smoke\n'
+    )
+    assert validator._wheel_smoke_order_errors(reversed_order) == [
+        'ci_wheel_status_smoke_order'
+    ]
 
 
 def test_version_and_public_truth_validator_agree() -> None:

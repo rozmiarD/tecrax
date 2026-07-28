@@ -2,6 +2,10 @@
 
 ## Unreleased — SCLite 2.0 owner migration
 
+- Corrected public status for `0.4.0rc3`: Chrony is a registered mutation
+  candidate, while default RExecOp `stable_read_only` blocks apply before connector
+  I/O and Tecrax is not mutation_ready. This does not change profile or connector
+  behavior, readiness authority, package versions, pins, or release workflows.
 - Declares profile-owned operation capability requirements for every active
   connector and independent outbound network-policy bindings for SSH and HTTP
   connectors, so RExecOp no longer derives governance requirements or

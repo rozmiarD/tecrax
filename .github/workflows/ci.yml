@@ -65,6 +65,21 @@ jobs:
         run: python -m build
       - name: Check package metadata
         run: python -m twine check dist/*
+      - name: Wheel status-only installed smoke
+        run: |
+          python -m venv /tmp/tecrax-wheel-status
+          /tmp/tecrax-wheel-status/bin/python -m pip install --upgrade pip
+          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main"
+          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "govengine @ git+https://github.com/rozmiarD/GovEngine.git@main"
+          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall -e ./ci-deps/rexecop
+          /tmp/tecrax-wheel-status/bin/python -m pip install --no-deps dist/*.whl
+          mkdir -p /tmp/tecrax-wheel-status-empty
+          (
+            cd /tmp/tecrax-wheel-status-empty
+            env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-status/bin/tecrax status > status.txt
+            env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-status/bin/python -c "from importlib.metadata import version; from pathlib import Path; status = Path('status.txt').read_text(encoding='utf-8'); expected = f'Tecrax {version(\"tecrax\")}: configure_chrony_ntp_server is a registered mutation candidate. Default RExecOp stable_read_only blocks apply before connector I/O; Tecrax is not mutation_ready.\\n'; assert status == expected"
+          )
+
       - name: Wheel install smoke
         run: |
           python -m venv /tmp/tecrax-wheel-smoke
