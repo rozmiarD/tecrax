@@ -6,6 +6,13 @@
   candidate, while default RExecOp `stable_read_only` blocks apply before connector
   I/O and Tecrax is not mutation_ready. This does not change profile or connector
   behavior, readiness authority, package versions, pins, or release workflows.
+- Pins each CI source input to an immutable reviewed snapshot: RExecOp sibling
+  checkout `1a20584ef1fa391f125e108822a7e439879a2e0b`, SCLite
+  `0b90c21569ea908ba7ddb468cd1ab6126342924f`, and GovEngine
+  `0826accff407fdbc10df420803ff49cdd5818870`. Any advance requires explicit
+  review and an exact workflow-coordinate update; source identity is not package
+  compatibility or release qualification. F-001 remains open for the public
+  dependency line.
 - Declares profile-owned operation capability requirements for every active
   connector and independent outbound network-policy bindings for SSH and HTTP
   connectors, so RExecOp no longer derives governance requirements or

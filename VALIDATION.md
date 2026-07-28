@@ -42,5 +42,17 @@ Expected result for source candidate `0.4.0rc3`:
   key material, private SSH paths and obvious token/password assignments;
 - fixture review output validates GovEngine profile, planning, supervision, runtime snapshot, review result, and runtime contract proof objects;
 - SCLite is used only for local artifact descriptors;
+- CI resolves its external source inputs as ten immutable reviewed snapshots: two
+  `rozmiarD/RExecOP` sibling checkouts at
+  `1a20584ef1fa391f125e108822a7e439879a2e0b`, four `sclite-core` source
+  installs at `0b90c21569ea908ba7ddb468cd1ab6126342924f`, and four
+  `govengine` source installs at `0826accff407fdbc10df420803ff49cdd5818870`.
+  The public-truth validator parses the workflow and compares this closed
+  coordinate multiset by job and named step; a ref advance is an explicit new
+  reviewed snapshot, not an implicit branch update;
+- source identity only binds a CI input to a reviewed commit. It is not evidence
+  of package compatibility, a resolvable public dependency line, or release
+  qualification. F-001 remains open: the current Tecrax public dependency graph
+  cannot yet be cleanly installed from the public index;
 - non-claims remain explicit for arbitrary mutation, credential management, carrier
   adapters, scheduler/storage, and production readiness.

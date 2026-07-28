@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+from collections import Counter
+import shlex
 import sys
 import tomllib
 import subprocess
 from pathlib import Path
 import re
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'src'
@@ -47,6 +51,39 @@ ACTION_REF = re.compile(
     re.MULTILINE,
 )
 FULL_SHA = re.compile(r'^[0-9a-f]{40}$')
+GIT_CLONE = re.compile(r'\bgit\s+clone\b')
+GITHUB_VCS_FRAGMENT = re.compile(
+    r'(?:git\+(?:https|ssh)://|(?:https?|ssh)://|git@)github\.com[/:]'
+)
+GITHUB_PIP_SOURCE = re.compile(
+    r'(?P<distribution>[A-Za-z0-9][A-Za-z0-9_.-]*)\s*@\s*'
+    r'git\+(?:https|ssh)://(?:git@)?github\.com[/:]'
+    r'(?P<owner>[A-Za-z0-9_.-]+)/(?P<repository>[A-Za-z0-9_.-]+)(?:\.git)?'
+    r'(?:@(?P<reference>.*))?'
+)
+
+REXECOP_SOURCE_SHA = '1a20584ef1fa391f125e108822a7e439879a2e0b'
+SCLITE_SOURCE_SHA = '0b90c21569ea908ba7ddb468cd1ab6126342924f'
+GOVENGINE_SOURCE_SHA = '0826accff407fdbc10df420803ff49cdd5818870'
+SourceCoordinate = tuple[str, str, str, str, str]
+EXPECTED_CI_SOURCE_COORDINATES: Counter[SourceCoordinate] = Counter(
+    {
+        ('test', 'Check out RExecOP', 'checkout', 'rozmiarD/RExecOP:ci-deps/rexecop', REXECOP_SOURCE_SHA): 1,
+        ('package-dry-run', 'Check out RExecOP', 'checkout', 'rozmiarD/RExecOP:ci-deps/rexecop', REXECOP_SOURCE_SHA): 1,
+        ('test', 'Install source dependencies', 'distribution', 'sclite-core', SCLITE_SOURCE_SHA): 1,
+        ('test', 'Install source dependencies', 'distribution', 'govengine', GOVENGINE_SOURCE_SHA): 1,
+        ('package-dry-run', 'Install source dependencies and build tooling', 'distribution', 'sclite-core', SCLITE_SOURCE_SHA): 1,
+        ('package-dry-run', 'Install source dependencies and build tooling', 'distribution', 'govengine', GOVENGINE_SOURCE_SHA): 1,
+        ('package-dry-run', 'Wheel status-only installed smoke', 'distribution', 'sclite-core', SCLITE_SOURCE_SHA): 1,
+        ('package-dry-run', 'Wheel status-only installed smoke', 'distribution', 'govengine', GOVENGINE_SOURCE_SHA): 1,
+        ('package-dry-run', 'Wheel install smoke', 'distribution', 'sclite-core', SCLITE_SOURCE_SHA): 1,
+        ('package-dry-run', 'Wheel install smoke', 'distribution', 'govengine', GOVENGINE_SOURCE_SHA): 1,
+    }
+)
+EXPECTED_DISTRIBUTION_REPOSITORIES = {
+    'sclite-core': 'rozmiarD/SCLite',
+    'govengine': 'rozmiarD/GovEngine',
+}
 
 
 def _read(path: str) -> str:
@@ -101,6 +138,125 @@ def _wheel_smoke_order_errors(workflow: str) -> list[str]:
     ):
         return ['ci_wheel_status_smoke_order']
     return []
+
+
+def _wheel_smoke_gate_count_errors(workflow: str) -> list[str]:
+    if workflow.count('python -m pip install --no-deps dist/*.whl') != 1:
+        return ['ci_wheel_status_smoke_gate_count']
+    if workflow.count('python -m pip install dist/*.whl') != 1:
+        return ['ci_wheel_normal_install_count']
+    if workflow.count('python -m pip check') != 1:
+        return ['ci_wheel_normal_pip_check_count']
+    return []
+
+
+def _is_supported_python_pip_install(argv: list[str]) -> bool:
+    if len(argv) < 4 or argv[1:4] != ['-m', 'pip', 'install']:
+        return False
+    executable = argv[0]
+    return executable in {'python', 'python3'} or executable.endswith('/python')
+
+
+def _ci_source_errors(workflow: object) -> list[str]:
+    if not isinstance(workflow, dict):
+        return ['ci_source_workflow_not_mapping']
+    jobs = workflow.get('jobs')
+    if not isinstance(jobs, dict):
+        return ['ci_source_jobs_not_mapping']
+
+    errors: list[str] = []
+    observed: list[SourceCoordinate] = []
+    for job_name, job in jobs.items():
+        if not isinstance(job_name, str) or not isinstance(job, dict):
+            errors.append('ci_source_job_not_mapping')
+            continue
+        steps = job.get('steps')
+        if not isinstance(steps, list):
+            errors.append(f'ci_source_steps_not_list:{job_name}')
+            continue
+        for step in steps:
+            if not isinstance(step, dict):
+                errors.append(f'ci_source_step_not_mapping:{job_name}')
+                continue
+            step_name = step.get('name')
+            name = step_name if isinstance(step_name, str) else '<unnamed>'
+            uses = step.get('uses')
+            if isinstance(uses, str) and uses.partition('@')[0] == 'actions/checkout':
+                checkout_options = step.get('with', {})
+                if not isinstance(checkout_options, dict):
+                    errors.append(f'ci_source_checkout_with_not_mapping:{job_name}:{name}')
+                elif 'repository' in checkout_options or 'path' in checkout_options:
+                    repository = checkout_options.get('repository')
+                    path = checkout_options.get('path')
+                    reference = checkout_options.get('ref')
+                    if not all(isinstance(value, str) for value in (repository, path, reference)):
+                        errors.append(f'ci_source_checkout_invalid:{job_name}:{name}')
+                    else:
+                        observed.append(
+                            (job_name, name, 'checkout', f'{repository}:{path}', reference)
+                        )
+                        if not FULL_SHA.fullmatch(reference):
+                            errors.append(f'ci_source_ref_not_full_sha:{job_name}:{name}')
+
+            run = step.get('run')
+            if not isinstance(run, str):
+                continue
+            for line in run.splitlines():
+                try:
+                    argv = shlex.split(line, comments=True)
+                except ValueError:
+                    errors.append(f'ci_source_shell_tokenization_failed:{job_name}:{name}')
+                    argv = []
+                if GIT_CLONE.search(line):
+                    errors.append(f'ci_source_git_clone:{job_name}:{name}')
+
+                if _is_supported_python_pip_install(argv):
+                    for argument in argv[4:]:
+                        source = GITHUB_PIP_SOURCE.fullmatch(argument)
+                        if source is None:
+                            if GITHUB_VCS_FRAGMENT.search(argument):
+                                errors.append(
+                                    f'ci_source_unrecognized_github_vcs:{job_name}:{name}'
+                                )
+                            continue
+                        reference = source.group('reference')
+                        distribution = source.group('distribution').lower()
+                        repository = (
+                            f'{source.group("owner")}/'
+                            f'{source.group("repository").removesuffix(".git")}'
+                        )
+                        if EXPECTED_DISTRIBUTION_REPOSITORIES.get(distribution) != repository:
+                            errors.append(
+                                f'ci_source_distribution_repository_mismatch:{job_name}:{name}'
+                            )
+                        if reference is None:
+                            errors.append(f'ci_source_ref_missing:{job_name}:{name}')
+                            continue
+                        observed.append(
+                            (
+                                job_name,
+                                name,
+                                'distribution',
+                                distribution,
+                                reference,
+                            )
+                        )
+                        if not FULL_SHA.fullmatch(reference):
+                            errors.append(f'ci_source_ref_not_full_sha:{job_name}:{name}')
+                elif GITHUB_VCS_FRAGMENT.search(line):
+                    errors.append(f'ci_source_unrecognized_github_vcs:{job_name}:{name}')
+
+    if Counter(observed) != EXPECTED_CI_SOURCE_COORDINATES:
+        errors.append('ci_source_coordinates_mismatch')
+    return errors
+
+
+def _ci_source_workflow_errors(workflow: str) -> list[str]:
+    try:
+        parsed = yaml.safe_load(workflow)
+    except yaml.YAMLError:
+        return ['ci_source_yaml_invalid']
+    return _ci_source_errors(parsed)
 
 
 def collect_errors() -> list[str]:
@@ -172,22 +328,10 @@ def collect_errors() -> list[str]:
     _require(errors, '.github/workflows/ci.yml', 'Wheel status-only installed smoke')
     _require(errors, '.github/workflows/ci.yml', 'python -m pip install --no-deps dist/*.whl')
     _require(errors, '.github/workflows/ci.yml', 'env -u PYTHONPATH -u PYTHONHOME')
-    errors.extend(_wheel_smoke_order_errors(_read('.github/workflows/ci.yml')))
-    _require(
-        errors,
-        '.github/workflows/ci.yml',
-        'git clone --depth 1 --branch main https://github.com/rozmiarD/RExecOP.git',
-    )
-    _require(
-        errors,
-        '.github/workflows/ci.yml',
-        'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main',
-    )
-    _require(
-        errors,
-        '.github/workflows/ci.yml',
-        'govengine @ git+https://github.com/rozmiarD/GovEngine.git@main',
-    )
+    ci_workflow = _read('.github/workflows/ci.yml')
+    errors.extend(_wheel_smoke_order_errors(ci_workflow))
+    errors.extend(_wheel_smoke_gate_count_errors(ci_workflow))
+    errors.extend(_ci_source_workflow_errors(ci_workflow))
     _require(errors, '.github/workflows/ci.yml', 'pip install -e ./ci-deps/rexecop')
     for workflow in sorted((ROOT / '.github' / 'workflows').glob('*.yml')):
         for action, reference in ACTION_REF.findall(
