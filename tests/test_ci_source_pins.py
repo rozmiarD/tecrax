@@ -23,10 +23,71 @@ def _workflow() -> str:
     return (ROOT / '.github' / 'workflows' / 'ci.yml').read_text(encoding='utf-8')
 
 
+EXACT_VERSION_ASSERTION_BLOCK = (
+    '          expected_versions = {\n'
+    "              'tecrax': '0.4.0rc3',\n"
+    "              'rexecop': '1.0.0rc1',\n"
+    "              'govengine': '1.0.0rc1',\n"
+    "              'sclite-core': '2.0.0',\n"
+    '          }\n'
+    '          for distribution_name, expected_version in expected_versions.items():\n'
+    '              assert version(distribution_name) == expected_version\n'
+)
+EXACT_ORIGIN_ASSERTION_BLOCK = (
+    '          for origin in origins.values():\n'
+    '              assert origin.is_relative_to(Path(sys.prefix).resolve())\n'
+    "              assert 'site-packages' in origin.parts\n"
+)
+STATUS_GOVENGINE_INSTALL = (
+    '          /tmp/tecrax-wheel-status/bin/python -m pip install '
+    '--force-reinstall "govengine @ git+https://github.com/rozmiarD/'
+    'GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"\n'
+)
+STATUS_SCLITE_INSTALL = (
+    '          /tmp/tecrax-wheel-status/bin/python -m pip install '
+    '--force-reinstall "sclite-core @ git+https://github.com/rozmiarD/'
+    'SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"\n'
+)
+STATUS_REXECOP_INSTALL = (
+    '          /tmp/tecrax-wheel-status/bin/python -m pip install '
+    '-e ./ci-deps/rexecop\n'
+)
+
+
+def _replace_once(workflow: str, old: str, new: str) -> str:
+    assert workflow.count(old) == 1
+    return workflow.replace(old, new, 1)
+
+
+def _comment_block(workflow: str, block: str) -> str:
+    commented = '\n'.join(
+        f'{line[: len(line) - len(line.lstrip())]}# {line.lstrip()}'
+        for line in block.rstrip('\n').splitlines()
+    )
+    return _replace_once(workflow, block, f'{commented}\n')
+
+
+def _insert_exit_before_normal_pip_check(workflow: str) -> str:
+    pip_check = (
+        '            env -u PYTHONPATH -u PYTHONHOME '
+        '/tmp/tecrax-wheel-smoke/bin/python -m pip check\n'
+    )
+    return _replace_once(workflow, pip_check, f'            exit 0\n{pip_check}')
+
+
+def _insert_python_early_success(workflow: str) -> str:
+    assertion_start = '          expected_versions = {\n'
+    return _replace_once(
+        workflow,
+        assertion_start,
+        f'          raise SystemExit(0)\n{assertion_start}',
+    )
+
+
 def test_ci_source_coordinates_are_the_reviewed_immutable_snapshots() -> None:
     validator = _validator()
 
-    assert sum(validator.EXPECTED_CI_SOURCE_COORDINATES.values()) == 10
+    assert sum(validator.EXPECTED_CI_SOURCE_COORDINATES.values()) == 8
     assert validator._ci_source_workflow_errors(_workflow()) == []
 
 
@@ -67,7 +128,7 @@ def test_ci_source_test_install_argv_contract_is_exact() -> None:
             'ruff>=0.14,<1',
             'mypy>=1.18,<2',
         ),
-        ('python', '-m', 'pip', 'install', '--no-deps', '-e', '.'),
+        ('python', '-m', 'pip', 'install', '-e', '.'),
     )
 
 
@@ -81,12 +142,12 @@ def test_ci_source_test_provenance_is_exact() -> None:
     'mutation',
     (
         lambda workflow: workflow.replace(
-            'python -m pip install --no-deps -e .',
             'python -m pip install -e .',
+            'python -m pip install --no-deps -e .',
             1,
         ),
         lambda workflow: workflow.replace(
-            'python -m pip install --no-deps -e .',
+            'python -m pip install -e .',
             "python -m pip install -e '.[dev]'",
             1,
         ),
@@ -98,7 +159,7 @@ def test_ci_source_test_provenance_is_exact() -> None:
             1,
         ),
     ),
-    ids=('resolver-aware-editable', 'dev-extra-resolver', 'wrong-order'),
+    ids=('no-deps-editable', 'dev-extra-resolver', 'wrong-order'),
 )
 def test_ci_source_test_install_validator_fails_closed(mutation: Mutation) -> None:
     validator = _validator()
@@ -132,8 +193,8 @@ def test_ci_source_test_install_validator_rejects_extra_install(
 ) -> None:
     validator = _validator()
     workflow = _workflow().replace(
-        '          python -m pip install --no-deps -e .\n',
-        '          python -m pip install --no-deps -e .\n'
+        '          python -m pip install -e .\n',
+        '          python -m pip install -e .\n'
         f'          {extra_install}\n',
         1,
     )
@@ -154,6 +215,7 @@ def test_ci_source_installer_classifier_rejects_pip_prefixed_words() -> None:
     (
         "assert version('rexecop') == '1.0.0rc1'",
         "govengine_direct_url['vcs_info']['commit_id']",
+        "sclite_direct_url['vcs_info']['commit_id']",
         "TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION == 'v0.2'",
         "Path(tecrax.__file__).resolve().is_relative_to(Path('src').resolve())",
     ),
@@ -166,9 +228,12 @@ def test_ci_source_test_provenance_validator_fails_closed(old: str) -> None:
     ) != []
 
 
-def test_ci_installed_graph_records_only_the_known_production_pin_conflict() -> None:
+def test_ci_installed_graph_requires_a_clean_public_dependency_graph() -> None:
     validator = _validator()
 
+    assert validator.EXPECTED_WHEEL_INSTALL_SMOKE_SHA256 == (
+        '80176013e2c86d1f1c8bbd4d4dc963b4bc3a1166909dfe317b363af39e01edf7'
+    )
     assert validator._wheel_installed_graph_errors(_workflow()) == []
 
 
@@ -176,6 +241,59 @@ def test_ci_installed_source_function_binds_exact_plugin_posture() -> None:
     validator = _validator()
 
     assert validator._wheel_source_function_errors(_workflow()) == []
+
+
+def test_ci_status_smoke_binds_exact_source_provenance() -> None:
+    validator = _validator()
+
+    assert validator.EXPECTED_WHEEL_STATUS_SOURCE_SHA256 == (
+        '3d7a33f2126d7e318fa2d06bd564c7335329154a4678a1679b2fd77be3d881df'
+    )
+    assert validator._wheel_status_source_provenance_errors(_workflow()) == []
+
+
+@pytest.mark.parametrize(
+    'mutation',
+    (
+        lambda workflow: _replace_once(
+            workflow,
+            STATUS_GOVENGINE_INSTALL + STATUS_SCLITE_INSTALL,
+            STATUS_SCLITE_INSTALL + STATUS_GOVENGINE_INSTALL,
+        ),
+        lambda workflow: _replace_once(workflow, STATUS_SCLITE_INSTALL, ''),
+        lambda workflow: _replace_once(workflow, STATUS_REXECOP_INSTALL, ''),
+    ),
+    ids=('sclite-before-govengine', 'missing-final-sclite', 'missing-rexecop'),
+)
+def test_ci_status_source_install_order_fails_closed(mutation: Mutation) -> None:
+    validator = _validator()
+
+    assert validator._wheel_status_source_provenance_errors(
+        mutation(_workflow())
+    ) != []
+
+
+@pytest.mark.parametrize(
+    'old',
+    (
+        f".strip() == '{_validator().REXECOP_SOURCE_SHA}'",
+        f"('govengine', '{_validator().GOVENGINE_SOURCE_SHA}')",
+        f"('sclite-core', '{_validator().SCLITE_SOURCE_SHA}')",
+        "direct_url['vcs_info']['commit_id'] == expected_sha",
+        "assert 'site-packages' in Path(tecrax.__file__).resolve().parts",
+    ),
+)
+def test_ci_status_source_provenance_validator_fails_closed(old: str) -> None:
+    validator = _validator()
+    workflow = _workflow()
+    status_start = workflow.index('      - name: Wheel status-only installed smoke')
+    mutated = workflow[:status_start] + workflow[status_start:].replace(
+        old, 'removed-status-source-proof', 1
+    )
+
+    assert validator._wheel_status_source_provenance_errors(
+        mutated
+    ) != []
 
 
 @pytest.mark.parametrize(
@@ -198,34 +316,83 @@ def test_ci_installed_source_function_validator_fails_closed(old: str) -> None:
 @pytest.mark.parametrize(
     'mutation',
     (
-        lambda workflow: workflow.replace(' dist/*.whl --no-deps', ' dist/*.whl', 1),
         lambda workflow: workflow.replace(
-            'if [ "$pip_check_status" -eq 0 ]; then',
-            'if [ "$pip_check_status" -eq 1 ]; then',
+            '/tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl',
+            '/tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl --no-deps',
             1,
         ),
         lambda workflow: workflow.replace(
-            'rexecop==0.3.0rc3',
-            'rexecop>=0.3.0rc3',
+            'env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-smoke/bin/python -m pip check',
+            'set +e\n            pip_check_output="$(/tmp/tecrax-wheel-smoke/bin/python -m pip check 2>&1)"\n            expected_conflict="accepted"',
             1,
         ),
         lambda workflow: workflow.replace(
-            'if [ "$pip_check_output" != "$expected_conflict" ]; then',
-            'if [ -z "$pip_check_output" ]; then',
+            "'rexecop': '1.0.0rc1'",
+            "'rexecop': '0.3.0rc3'",
             1,
         ),
+        lambda workflow: workflow.replace(
+            "assert 'site-packages' in origin.parts",
+            'removed-origin-proof',
+            1,
+        ),
+        lambda workflow: workflow.replace(
+            'env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-smoke/bin/python -m pip check\n',
+            '',
+            1,
+        ),
+        lambda workflow: _replace_once(
+            workflow,
+            '            env -u PYTHONPATH -u PYTHONHOME '
+            '/tmp/tecrax-wheel-smoke/bin/python -m pip check\n',
+            '            # env -u PYTHONPATH -u PYTHONHOME '
+            '/tmp/tecrax-wheel-smoke/bin/python -m pip check\n',
+        ),
+        lambda workflow: _replace_once(
+            workflow, EXACT_VERSION_ASSERTION_BLOCK, ''
+        ),
+        lambda workflow: _comment_block(
+            workflow, EXACT_VERSION_ASSERTION_BLOCK
+        ),
+        lambda workflow: _comment_block(
+            workflow, EXACT_ORIGIN_ASSERTION_BLOCK
+        ),
+        _insert_exit_before_normal_pip_check,
+        _insert_python_early_success,
     ),
     ids=(
-        'resolver-substitution',
-        'unexpected-success-accepted',
-        'wrong-conflict',
-        'additional-conflicts-accepted',
+        'normal-wheel-no-deps',
+        'expected-conflict-waiver',
+        'wrong-installed-version',
+        'missing-origin-proof',
+        'missing-pip-check',
+        'commented-pip-check',
+        'removed-version-loop',
+        'commented-version-loop',
+        'commented-origin-assertions',
+        'early-shell-success',
+        'early-python-success',
     ),
 )
 def test_ci_installed_graph_validator_fails_closed(mutation: Mutation) -> None:
     validator = _validator()
 
     assert validator._wheel_installed_graph_errors(mutation(_workflow())) != []
+
+
+def test_public_truth_collect_errors_rejects_early_shell_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    validator = _validator()
+    workflow = _insert_exit_before_normal_pip_check(_workflow())
+    original_read = validator._read
+    monkeypatch.setattr(
+        validator,
+        '_read',
+        lambda path: workflow if path == '.github/workflows/ci.yml' else original_read(path),
+    )
+
+    assert 'ci_wheel_installed_graph_fingerprint_mismatch' in validator.collect_errors()
 
 
 Mutation = Callable[[str], str]

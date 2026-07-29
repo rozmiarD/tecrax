@@ -15,7 +15,7 @@ Expected result for source candidate `0.4.0rc3`:
 
 - `pyproject.toml`, `tecrax.__version__`, CLI status, README, public status, and validators agree on `0.4.0rc3`;
 - latest PyPI publication is `0.3.21a0`, including the coordinated B2 profile vector;
-- dependency truth is `govengine==1.0.0rc1`, `sclite-core==2.0.0`, and `rexecop==0.3.0rc3`;
+- dependency truth is `govengine==1.0.0rc1`, `sclite-core==2.0.0`, and `rexecop==1.0.0rc1`;
 - RExecOp profile entry point `tecrax:profile_root` resolves to a valid profile bundle;
 - `collect_basic_host_inventory` declares exact `ssh_readonly` command shapes and its
   parser tests use bounded fixture outputs without network access;
@@ -69,10 +69,10 @@ Expected result for source candidate `0.4.0rc3`:
   key material, private SSH paths and obvious token/password assignments;
 - fixture review output validates GovEngine profile, planning, supervision, runtime snapshot, review result, and runtime contract proof objects;
 - SCLite is used only for local artifact descriptors;
-- CI resolves its external source inputs as ten immutable reviewed snapshots: two
+- CI resolves its external source inputs as eight immutable reviewed snapshots: two
   `rozmiarD/RExecOP` sibling checkouts at
-  `346e371989bcdb9663db51775123d9580eb0ec38`, four `sclite-core` source
-  installs at `0b90c21569ea908ba7ddb468cd1ab6126342924f`, and four
+  `346e371989bcdb9663db51775123d9580eb0ec38`, three `sclite-core` source
+  installs at `0b90c21569ea908ba7ddb468cd1ab6126342924f`, and three
   `govengine` source installs at `9a78650a0e39524dcbf07d98f5fb71f89093fc66`.
   The public-truth validator parses the workflow and compares this closed
   coordinate multiset by job and named step; a ref advance is an explicit new
@@ -80,15 +80,19 @@ Expected result for source candidate `0.4.0rc3`:
 - source identity only binds a CI input to a reviewed commit. It is not evidence
   of package compatibility, a resolvable public dependency line, or release
   qualification. The test job installs exact SCLite and GovEngine sources, editable
-  RExecOp, explicit pytest/Ruff/mypy tools and then Tecrax editable with `--no-deps`.
+  RExecOp, explicit pytest/Ruff/mypy tools and then Tecrax editable with normal
+  dependency resolution.
   It verifies the RExecOp checkout SHA, `1.0.0rc1` import origin, GovEngine VCS
-  provenance and v0.2 surface, and Tecrax editable source origin. Resolver-aware
-  Tecrax editable installation is forbidden. The wheel functional smoke separately
-  installs the exact source candidates without resolver substitution. Its
-  installed-graph gate must fail for
-  exactly one known conflict: Tecrax `0.4.0rc3` requires `rexecop==0.3.0rc3` while
-  the source-pinned candidate is `rexecop==1.0.0rc1`; unexpected success or any
-  other conflict fails CI. F-001 remains open until a separately authorized pin and
-  release decision makes the public dependency graph resolvable;
+  provenance and v0.2 surface, SCLite VCS provenance, and Tecrax editable source
+  origin. A separate source-pinned installed smoke uses the candidate wheel with
+  no dependency substitution, verifies the three exact source coordinates and then
+  exercises only the governed plugin posture available at those source heads. The
+  normal wheel gate starts from a clean environment, resolves all dependencies from
+  the public index, requires `pip check` success, verifies Tecrax `0.4.0rc3`, RExecOp
+  `1.0.0rc1`, GovEngine `1.0.0rc1` and SCLite Core `2.0.0` plus their installed
+  origins, and runs status from an empty directory without ambient `PYTHONPATH`.
+  Public RExecOp `1.0.0rc1` predates the latest same-version source-head T-205
+  remediation, so the normal gate does not claim that governed source-only surface,
+  mutation readiness, release or publication;
 - non-claims remain explicit for arbitrary mutation, credential management, carrier
   adapters, scheduler/storage, and production readiness.

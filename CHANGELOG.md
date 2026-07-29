@@ -2,6 +2,13 @@
 
 ## Unreleased — SCLite 2.0 owner migration
 
+- Aligns the production dependency to the available exact
+  `rexecop==1.0.0rc1` line. The candidate wheel now installs through ordinary
+  public-index resolution, passes `pip check`, verifies exact installed versions
+  and site-packages origins, and runs status from an empty directory. Public RExecOp
+  `1.0.0rc1` predates the latest same-version source-head T-205 remediation, so this
+  does not claim that governed source-only surface, mutation readiness, publication,
+  release or release-train authorization.
 - Declares explicit Chrony plugin execution postures and selects the
   `fixture_only/no_network` shape in the public example. A source-pinned T-205
   regression uses real GovEngine v0.2 policy, approval, signature and revocation
@@ -17,13 +24,11 @@
 - Advances immutable CI source coordinates to RExecOp
   `346e371989bcdb9663db51775123d9580eb0ec38` and GovEngine
   `9a78650a0e39524dcbf07d98f5fb71f89093fc66`, retaining SCLite
-  `0b90c21569ea908ba7ddb468cd1ab6126342924f`. Candidate-wheel functional smoke is
-  source-pinned, while a separate fail-closed `pip check` gate requires exactly the
-  unresolved Tecrax `rexecop==0.3.0rc3` versus installed `1.0.0rc1` conflict. The
-  source test job installs explicit dev tools and Tecrax editable with `--no-deps`,
-  then verifies exact checkout, VCS, version, v0.2 and import origins. Resolver-aware
-  Tecrax installation is rejected. The production pin is unchanged; unexpected graph
-  success or any other conflict fails.
+  `0b90c21569ea908ba7ddb468cd1ab6126342924f`. Candidate-wheel governed functional
+  smoke remains source-pinned and checks exact checkout, VCS, version, v0.2 and import
+  origins. The source test job uses resolver-aware Tecrax editable installation while
+  retaining the same provenance checks. A separate normal candidate-wheel gate uses
+  the public dependency index and may not substitute those current source heads.
 - Disables automatic retry for the mixed read/apply Chrony mutation candidate
   by setting its profile retry budget to zero without expanding its allowlist
   or error blocklist. The focused persisted-plan regression calls RExecOp's
@@ -46,8 +51,8 @@
   behavior, readiness authority, package versions, pins, or release workflows.
 - Pins each CI source input to an immutable reviewed snapshot. Any advance requires
   explicit review and an exact workflow-coordinate update; source identity is not
-  package compatibility or release qualification. F-001 remains open for the public
-  dependency line.
+  package compatibility or release qualification. The separately authorized F-001
+  production dependency-line remediation is recorded above.
 - Declares profile-owned operation capability requirements for every active
   connector and independent outbound network-policy bindings for SSH and HTTP
   connectors, so RExecOp no longer derives governance requirements or
@@ -114,7 +119,7 @@ All notable Tecrax profile changes are documented here.
   single execution-path test so the normal test process and stable runtime keep
   the default read-only posture.
 - Advances the source profile candidate to `0.4.0rc3` with exact pins
-  `govengine==1.0.0rc1`, `rexecop==0.3.0rc3` and frozen
+  `govengine==1.0.0rc1`, `rexecop==1.0.0rc1` and frozen
   `sclite-core==2.0.0`; profile semantics and activation posture are unchanged.
 - Pins every Tecrax GitHub Action to a reviewed full commit SHA and makes the
   existing public-truth gate reject future moving action refs.

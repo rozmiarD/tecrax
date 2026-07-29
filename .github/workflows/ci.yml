@@ -37,7 +37,7 @@ jobs:
           python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"
           python -m pip install -e ./ci-deps/rexecop
           python -m pip install "pytest>=8,<9" "ruff>=0.14,<1" "mypy>=1.18,<2"
-          python -m pip install --no-deps -e .
+          python -m pip install -e .
       - name: Verify source candidate provenance
         run: |
           python - <<'PY'
@@ -61,6 +61,10 @@ jobs:
               distribution('govengine').read_text('direct_url.json') or '{}'
           )
           assert govengine_direct_url['vcs_info']['commit_id'] == '9a78650a0e39524dcbf07d98f5fb71f89093fc66'
+          sclite_direct_url = json.loads(
+              distribution('sclite-core').read_text('direct_url.json') or '{}'
+          )
+          assert sclite_direct_url['vcs_info']['commit_id'] == '0b90c21569ea908ba7ddb468cd1ab6126342924f'
           assert TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION == 'v0.2'
           assert version('tecrax') == '0.4.0rc3'
           assert Path(tecrax.__file__).resolve().is_relative_to(Path('src').resolve())
@@ -105,10 +109,37 @@ jobs:
         run: |
           python -m venv /tmp/tecrax-wheel-status
           /tmp/tecrax-wheel-status/bin/python -m pip install --upgrade pip
-          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"
           /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "govengine @ git+https://github.com/rozmiarD/GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"
+          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"
           /tmp/tecrax-wheel-status/bin/python -m pip install -e ./ci-deps/rexecop
           /tmp/tecrax-wheel-status/bin/python -m pip install --no-deps dist/*.whl
+          env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-status/bin/python - <<'PY'
+          import json
+          import subprocess
+          from importlib.metadata import distribution, version
+          from pathlib import Path
+
+          import rexecop
+          import tecrax
+
+          rexecop_root = Path('ci-deps/rexecop').resolve()
+          assert subprocess.check_output(
+              ['git', '-C', str(rexecop_root), 'rev-parse', 'HEAD'],
+              text=True,
+          ).strip() == '346e371989bcdb9663db51775123d9580eb0ec38'
+          assert version('rexecop') == '1.0.0rc1'
+          assert Path(rexecop.__file__).resolve().is_relative_to(rexecop_root / 'src')
+          for distribution_name, expected_sha in (
+              ('govengine', '9a78650a0e39524dcbf07d98f5fb71f89093fc66'),
+              ('sclite-core', '0b90c21569ea908ba7ddb468cd1ab6126342924f'),
+          ):
+              direct_url = json.loads(
+                  distribution(distribution_name).read_text('direct_url.json') or '{}'
+              )
+              assert direct_url['vcs_info']['commit_id'] == expected_sha
+          assert version('tecrax') == '0.4.0rc3'
+          assert 'site-packages' in Path(tecrax.__file__).resolve().parts
+          PY
           mkdir -p /tmp/tecrax-wheel-status-empty
           (
             cd /tmp/tecrax-wheel-status-empty
@@ -156,21 +187,49 @@ jobs:
         run: |
           python -m venv /tmp/tecrax-wheel-smoke
           /tmp/tecrax-wheel-smoke/bin/python -m pip install --upgrade pip
-          /tmp/tecrax-wheel-smoke/bin/python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"
-          /tmp/tecrax-wheel-smoke/bin/python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"
-          /tmp/tecrax-wheel-smoke/bin/python -m pip install -e ./ci-deps/rexecop
-          /tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl --no-deps
-          set +e
-          pip_check_output="$(/tmp/tecrax-wheel-smoke/bin/python -m pip check 2>&1)"
-          pip_check_status=$?
-          set -e
-          expected_conflict='tecrax 0.4.0rc3 has requirement rexecop==0.3.0rc3, but you have rexecop 1.0.0rc1.'
-          if [ "$pip_check_status" -eq 0 ]; then
-            echo "expected the unresolved Tecrax/RExecOp pin mismatch"
-            exit 1
-          fi
-          if [ "$pip_check_output" != "$expected_conflict" ]; then
-            echo "unexpected installed dependency conflict: $pip_check_output"
-            exit 1
-          fi
-          /tmp/tecrax-wheel-smoke/bin/python -c "import importlib.metadata as md, tecrax; assert md.version('tecrax') == tecrax.__version__"
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl
+          mkdir -p /tmp/tecrax-wheel-smoke-empty
+          (
+            cd /tmp/tecrax-wheel-smoke-empty
+            env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-smoke/bin/python -m pip check
+            env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-smoke/bin/python - <<'PY'
+          import subprocess
+          import sys
+          from importlib.metadata import version
+          from pathlib import Path
+
+          import govengine
+          import rexecop
+          import sclite
+          import tecrax
+
+          expected_versions = {
+              'tecrax': '0.4.0rc3',
+              'rexecop': '1.0.0rc1',
+              'govengine': '1.0.0rc1',
+              'sclite-core': '2.0.0',
+          }
+          for distribution_name, expected_version in expected_versions.items():
+              assert version(distribution_name) == expected_version
+          origins = {
+              'tecrax': Path(tecrax.__file__).resolve(),
+              'rexecop': Path(rexecop.__file__).resolve(),
+              'govengine': Path(govengine.__file__).resolve(),
+              'sclite': Path(sclite.__file__).resolve(),
+          }
+          for origin in origins.values():
+              assert origin.is_relative_to(Path(sys.prefix).resolve())
+              assert 'site-packages' in origin.parts
+          status = subprocess.run(
+              [str(Path(sys.executable).with_name('tecrax')), 'status'],
+              check=True,
+              capture_output=True,
+              text=True,
+          ).stdout
+          assert status == (
+              'Tecrax 0.4.0rc3: configure_chrony_ntp_server is a registered '
+              'mutation candidate. Default RExecOp stable_read_only blocks apply '
+              'before connector I/O; Tecrax is not mutation_ready.\n'
+          )
+          PY
+          )

@@ -100,5 +100,73 @@ def test_version_and_public_truth_validator_agree() -> None:
         'public_truth_ok:tecrax==0.4.0rc3:'
         'govengine==1.0.0rc1:'
         'sclite-core==2.0.0:'
-        'rexecop==0.3.0rc3'
+        'rexecop==1.0.0rc1'
     )
+
+
+@pytest.mark.parametrize(
+    'dependency',
+    (
+        'rexecop==0.3.0rc3',
+        'rexecop>=1.0.0rc1',
+        'rexecop~=1.0.0rc1',
+    ),
+    ids=('old-pin', 'minimum-range', 'compatible-range'),
+)
+def test_public_truth_rejects_old_or_ranged_rexecop_dependency(
+    monkeypatch: pytest.MonkeyPatch,
+    dependency: str,
+) -> None:
+    validator = _public_truth_validator()
+    project = validator._pyproject()
+    project['dependencies'] = [
+        dependency if str(item).startswith('rexecop') else item
+        for item in project['dependencies']
+    ]
+    monkeypatch.setattr(validator, '_pyproject', lambda: project)
+
+    assert any(
+        error.startswith('rexecop_dependency_mismatch:')
+        for error in validator.collect_errors()
+    )
+
+
+@pytest.mark.parametrize(
+    ('path', 'drift', 'expected_error'),
+    (
+        (
+            'README.md',
+            'rexecop==0.3.0rc3',
+            'README.md:old_rexecop_production_truth',
+        ),
+        (
+            'PUBLIC_STATUS.md',
+            'rexecop>=1.0.0rc1',
+            'PUBLIC_STATUS.md:ranged_rexecop_production_truth',
+        ),
+        (
+            'VALIDATION.md',
+            'rexecop~=1.0.0rc1',
+            'VALIDATION.md:ranged_rexecop_production_truth',
+        ),
+    ),
+)
+def test_public_truth_rejects_old_or_ranged_rexecop_doc_truth(
+    monkeypatch: pytest.MonkeyPatch,
+    path: str,
+    drift: str,
+    expected_error: str,
+) -> None:
+    validator = _public_truth_validator()
+    original_read = validator._read
+    monkeypatch.setattr(
+        validator,
+        '_read',
+        lambda candidate: (
+            f'{original_read(candidate)}\n{drift}\n'
+            if candidate == path
+            else original_read(candidate)
+        ),
+    )
+
+    assert expected_error in validator._rexecop_truth_drift_errors()

@@ -132,9 +132,10 @@ attempt, plugin factory or connector I/O.
 This does not qualify exactly-once I/O, crash or power-loss recovery, worker
 recovery, restart or multiprocess fixture continuity, the operator wrapper,
 subprocess or network isolation, a live Chrony target, mutation readiness, release
-or publication. The production package still
-pins `rexecop==0.3.0rc3`; source-pinned RExecOp `1.0.0rc1` qualification is not an
-installed-graph compatibility claim.
+or publication. The production package pins the exact public
+`rexecop==1.0.0rc1` artifact and the normal installed graph is resolvable, but that
+artifact predates the latest same-version source-head T-205 remediation. Public
+installed-graph success therefore does not claim the governed source-only surface.
 
 ## Run
 

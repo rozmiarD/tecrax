@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from hashlib import sha256
 import shlex
 import sys
 import tomllib
@@ -25,11 +26,18 @@ EXPECTED_VERSION = '0.4.0rc3'
 PUBLISHED_VERSION = '0.3.21a0'
 EXPECTED_GOVENGINE = 'govengine==1.0.0rc1'
 EXPECTED_SCLITE = 'sclite-core==2.0.0'
-EXPECTED_REXECOP = 'rexecop==0.3.0rc3'
+EXPECTED_REXECOP = 'rexecop==1.0.0rc1'
+OLD_REXECOP_PIN = 'rexecop==0.3.0rc3'
 PUBLIC_DOCS = (
     'README.md',
     'PUBLIC_STATUS.md',
     'VALIDATION.md',
+)
+CURRENT_REXECOP_TRUTH_PATHS = (
+    'pyproject.toml',
+    *PUBLIC_DOCS,
+    'docs/mutation-entry-criteria.md',
+    'docs/runbooks/chrony-ntp-server-mutation-runbook.md',
 )
 CONTROL_PLANE_RECOVERY_RUNBOOK = (
     'docs/runbooks/infrastructure-control-plane-recovery-runbook.md'
@@ -63,10 +71,20 @@ GITHUB_PIP_SOURCE = re.compile(
     r'(?P<owner>[A-Za-z0-9_.-]+)/(?P<repository>[A-Za-z0-9_.-]+)(?:\.git)?'
     r'(?:@(?P<reference>.*))?'
 )
+REXECOP_RANGE = re.compile(
+    r'\brexecop(?:\[[^\]]+\])?\s*(?:~=|>=|<=|!=|>|<)',
+    re.IGNORECASE,
+)
 
 REXECOP_SOURCE_SHA = '346e371989bcdb9663db51775123d9580eb0ec38'
 SCLITE_SOURCE_SHA = '0b90c21569ea908ba7ddb468cd1ab6126342924f'
 GOVENGINE_SOURCE_SHA = '9a78650a0e39524dcbf07d98f5fb71f89093fc66'
+EXPECTED_WHEEL_INSTALL_SMOKE_SHA256 = (
+    '80176013e2c86d1f1c8bbd4d4dc963b4bc3a1166909dfe317b363af39e01edf7'
+)
+EXPECTED_WHEEL_STATUS_SOURCE_SHA256 = (
+    '3d7a33f2126d7e318fa2d06bd564c7335329154a4678a1679b2fd77be3d881df'
+)
 PipInstallArgv = tuple[str, ...]
 EXPECTED_TEST_SOURCE_PIP_INSTALL_ARGV: tuple[PipInstallArgv, ...] = (
     ('python', '-m', 'pip', 'install', '--upgrade', 'pip'),
@@ -96,11 +114,7 @@ EXPECTED_TEST_SOURCE_PIP_INSTALL_ARGV: tuple[PipInstallArgv, ...] = (
         'ruff>=0.14,<1',
         'mypy>=1.18,<2',
     ),
-    ('python', '-m', 'pip', 'install', '--no-deps', '-e', '.'),
-)
-EXPECTED_PIP_CHECK_CONFLICT = (
-    'tecrax 0.4.0rc3 has requirement rexecop==0.3.0rc3, '
-    'but you have rexecop 1.0.0rc1.'
+    ('python', '-m', 'pip', 'install', '-e', '.'),
 )
 SourceCoordinate = tuple[str, str, str, str, str]
 EXPECTED_CI_SOURCE_COORDINATES: Counter[SourceCoordinate] = Counter(
@@ -113,8 +127,6 @@ EXPECTED_CI_SOURCE_COORDINATES: Counter[SourceCoordinate] = Counter(
         ('package-dry-run', 'Install source dependencies and build tooling', 'distribution', 'govengine', GOVENGINE_SOURCE_SHA): 1,
         ('package-dry-run', 'Wheel status-only installed smoke', 'distribution', 'sclite-core', SCLITE_SOURCE_SHA): 1,
         ('package-dry-run', 'Wheel status-only installed smoke', 'distribution', 'govengine', GOVENGINE_SOURCE_SHA): 1,
-        ('package-dry-run', 'Wheel install smoke', 'distribution', 'sclite-core', SCLITE_SOURCE_SHA): 1,
-        ('package-dry-run', 'Wheel install smoke', 'distribution', 'govengine', GOVENGINE_SOURCE_SHA): 1,
     }
 )
 EXPECTED_DISTRIBUTION_REPOSITORIES = {
@@ -143,6 +155,17 @@ def _dependency(project: dict, name: str) -> str:
 def _require(errors: list[str], path: str, expected: str) -> None:
     if expected not in _read(path):
         errors.append(f'{path}:missing:{expected}')
+
+
+def _rexecop_truth_drift_errors() -> list[str]:
+    errors: list[str] = []
+    for path in CURRENT_REXECOP_TRUTH_PATHS:
+        text = _read(path)
+        if OLD_REXECOP_PIN in text:
+            errors.append(f'{path}:old_rexecop_production_truth')
+        if REXECOP_RANGE.search(text):
+            errors.append(f'{path}:ranged_rexecop_production_truth')
+    return errors
 
 
 def _status_output() -> tuple[int, str]:
@@ -188,22 +211,149 @@ def _wheel_smoke_gate_count_errors(workflow: str) -> list[str]:
 
 
 def _wheel_installed_graph_errors(workflow: str) -> list[str]:
-    marker = '      - name: Wheel install smoke'
-    if workflow.count(marker) != 1:
+    try:
+        parsed = yaml.safe_load(workflow)
+    except yaml.YAMLError:
+        return ['ci_wheel_installed_graph_yaml_invalid']
+    if not isinstance(parsed, dict):
         return ['ci_wheel_installed_graph_step_count']
-    step = workflow[workflow.index(marker) :]
-    expected = (
-        '/tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl --no-deps',
-        'pip_check_output="$(/tmp/tecrax-wheel-smoke/bin/python -m pip check 2>&1)"',
-        f"expected_conflict='{EXPECTED_PIP_CHECK_CONFLICT}'",
-        'if [ "$pip_check_status" -eq 0 ]; then',
-        'if [ "$pip_check_output" != "$expected_conflict" ]; then',
+    jobs = parsed.get('jobs')
+    package_job = jobs.get('package-dry-run') if isinstance(jobs, dict) else None
+    steps = package_job.get('steps') if isinstance(package_job, dict) else None
+    if not isinstance(steps, list):
+        return ['ci_wheel_installed_graph_step_count']
+    matches = [
+        step.get('run')
+        for step in steps
+        if isinstance(step, dict) and step.get('name') == 'Wheel install smoke'
+    ]
+    if len(matches) != 1 or not isinstance(matches[0], str):
+        return ['ci_wheel_installed_graph_step_count']
+    step_run = matches[0]
+    if sha256(step_run.encode('utf-8')).hexdigest() != EXPECTED_WHEEL_INSTALL_SMOKE_SHA256:
+        return ['ci_wheel_installed_graph_fingerprint_mismatch']
+
+    active_lines = tuple(
+        line.rstrip()
+        for line in step_run.splitlines()
+        if line.strip() and not line.lstrip().startswith('#')
     )
-    if any(step.count(fragment) != 1 for fragment in expected):
+    expected_lines = (
+        '/tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl',
+        '  cd /tmp/tecrax-wheel-smoke-empty',
+        '  env -u PYTHONPATH -u PYTHONHOME '
+        '/tmp/tecrax-wheel-smoke/bin/python -m pip check',
+        "  env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-smoke/bin/python - <<'PY'",
+        'PY',
+    )
+    if any(active_lines.count(line) != 1 for line in expected_lines):
         return ['ci_wheel_installed_graph_gate_mismatch']
-    positions = [step.index(fragment) for fragment in expected]
+
+    version_block = (
+        'expected_versions = {',
+        "    'tecrax': '0.4.0rc3',",
+        "    'rexecop': '1.0.0rc1',",
+        "    'govengine': '1.0.0rc1',",
+        "    'sclite-core': '2.0.0',",
+        '}',
+        'for distribution_name, expected_version in expected_versions.items():',
+        '    assert version(distribution_name) == expected_version',
+    )
+    origin_block = (
+        'origins = {',
+        "    'tecrax': Path(tecrax.__file__).resolve(),",
+        "    'rexecop': Path(rexecop.__file__).resolve(),",
+        "    'govengine': Path(govengine.__file__).resolve(),",
+        "    'sclite': Path(sclite.__file__).resolve(),",
+        '}',
+        'for origin in origins.values():',
+        '    assert origin.is_relative_to(Path(sys.prefix).resolve())',
+        "    assert 'site-packages' in origin.parts",
+    )
+
+    def has_block(block: tuple[str, ...]) -> bool:
+        width = len(block)
+        return any(
+            active_lines[index : index + width] == block
+            for index in range(len(active_lines) - width + 1)
+        )
+
+    if not has_block(version_block) or not has_block(origin_block):
+        return ['ci_wheel_installed_graph_python_assertion_mismatch']
+
+    active_step = '\n'.join(active_lines)
+    forbidden = (
+        '--no-deps',
+        'expected_conflict',
+        'pip_check_output',
+        'pip_check_status',
+        'set +e',
+        'ci-deps/',
+        'git+https://github.com/',
+    )
+    if any(fragment in active_step for fragment in forbidden):
+        return ['ci_wheel_installed_graph_forbidden_waiver']
+    positions = [active_lines.index(line) for line in expected_lines]
     if positions != sorted(positions):
         return ['ci_wheel_installed_graph_gate_order']
+    return []
+
+
+def _wheel_status_source_provenance_errors(workflow: str) -> list[str]:
+    try:
+        parsed = yaml.safe_load(workflow)
+    except yaml.YAMLError:
+        return ['ci_wheel_status_source_provenance_yaml_invalid']
+    if not isinstance(parsed, dict):
+        return ['ci_wheel_status_source_provenance_step_count']
+    jobs = parsed.get('jobs')
+    package_job = jobs.get('package-dry-run') if isinstance(jobs, dict) else None
+    steps = package_job.get('steps') if isinstance(package_job, dict) else None
+    if not isinstance(steps, list):
+        return ['ci_wheel_status_source_provenance_step_count']
+    matches = [
+        step.get('run')
+        for step in steps
+        if isinstance(step, dict)
+        and step.get('name') == 'Wheel status-only installed smoke'
+    ]
+    if len(matches) != 1 or not isinstance(matches[0], str):
+        return ['ci_wheel_status_source_provenance_step_count']
+    step_run = matches[0]
+    if sha256(step_run.encode('utf-8')).hexdigest() != EXPECTED_WHEEL_STATUS_SOURCE_SHA256:
+        return ['ci_wheel_status_source_provenance_fingerprint_mismatch']
+
+    active_lines = tuple(
+        line.rstrip()
+        for line in step_run.splitlines()
+        if line.strip() and not line.lstrip().startswith('#')
+    )
+    install_lines = (
+        '/tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall '
+        f'"govengine @ git+https://github.com/rozmiarD/GovEngine.git@{GOVENGINE_SOURCE_SHA}"',
+        '/tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall '
+        f'"sclite-core @ git+https://github.com/rozmiarD/SCLite.git@{SCLITE_SOURCE_SHA}"',
+        '/tmp/tecrax-wheel-status/bin/python -m pip install -e ./ci-deps/rexecop',
+    )
+    if any(active_lines.count(line) != 1 for line in install_lines):
+        return ['ci_wheel_status_source_install_mismatch']
+    positions = [active_lines.index(line) for line in install_lines]
+    if positions != sorted(positions):
+        return ['ci_wheel_status_source_install_order']
+
+    active_step = '\n'.join(active_lines)
+    expected = (
+        f".strip() == '{REXECOP_SOURCE_SHA}'",
+        "assert version('rexecop') == '1.0.0rc1'",
+        "Path(rexecop.__file__).resolve().is_relative_to(rexecop_root / 'src')",
+        f"('govengine', '{GOVENGINE_SOURCE_SHA}')",
+        f"('sclite-core', '{SCLITE_SOURCE_SHA}')",
+        "direct_url['vcs_info']['commit_id'] == expected_sha",
+        "assert version('tecrax') == '0.4.0rc3'",
+        "assert 'site-packages' in Path(tecrax.__file__).resolve().parts",
+    )
+    if any(active_step.count(fragment) != 1 for fragment in expected):
+        return ['ci_wheel_status_source_provenance_mismatch']
     return []
 
 
@@ -262,6 +412,7 @@ def _test_source_provenance_errors(workflow: str) -> list[str]:
         "assert version('rexecop') == '1.0.0rc1'",
         "Path(rexecop.__file__).resolve().is_relative_to(rexecop_root / 'src')",
         f"govengine_direct_url['vcs_info']['commit_id'] == '{GOVENGINE_SOURCE_SHA}'",
+        f"sclite_direct_url['vcs_info']['commit_id'] == '{SCLITE_SOURCE_SHA}'",
         "TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION == 'v0.2'",
         "assert version('tecrax') == '0.4.0rc3'",
         "Path(tecrax.__file__).resolve().is_relative_to(Path('src').resolve())",
@@ -401,6 +552,7 @@ def _ci_source_workflow_errors(workflow: str) -> list[str]:
 def collect_errors() -> list[str]:
     errors: list[str] = []
     errors.extend(validate_consumer_imports('tecrax', ROOT))
+    errors.extend(_rexecop_truth_drift_errors())
     project = _pyproject()
     version = str(project['version'])
     govengine_dep = _dependency(project, 'govengine')
@@ -471,6 +623,7 @@ def collect_errors() -> list[str]:
     errors.extend(_wheel_smoke_order_errors(ci_workflow))
     errors.extend(_wheel_smoke_gate_count_errors(ci_workflow))
     errors.extend(_wheel_installed_graph_errors(ci_workflow))
+    errors.extend(_wheel_status_source_provenance_errors(ci_workflow))
     errors.extend(_wheel_source_function_errors(ci_workflow))
     errors.extend(_test_source_install_errors(ci_workflow))
     errors.extend(_test_source_provenance_errors(ci_workflow))

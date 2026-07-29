@@ -65,5 +65,7 @@ operator wrapper, subprocess or network isolation, live or lab infrastructure,
 exactly-once I/O, restart or multiprocess continuity, crash/power-loss or worker
 recovery, release or publication. The registry is not SCLite truth, a receipt store
 or RExecOp lifecycle persistence. The
-production package pin remains `rexecop==0.3.0rc3`, so installed-only compatibility
-with the source-pinned RExecOp `1.0.0rc1` candidate remains a separate release gate.
+production package now pins the exact public `rexecop==1.0.0rc1` artifact and its
+normal installed graph is resolvable. That public artifact predates the latest
+same-version source-head T-205 remediation, so installed-graph success does not claim
+the source-only governed surface, mutation readiness, release or publication.

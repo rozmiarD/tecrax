@@ -24,7 +24,7 @@ classifiers = [
 dependencies = [
   "govengine==1.0.0rc1",
   "sclite-core==2.0.0",
-  "rexecop==0.3.0rc3",
+  "rexecop==1.0.0rc1",
 ]
 
 [project.entry-points."rexecop.profiles"]
