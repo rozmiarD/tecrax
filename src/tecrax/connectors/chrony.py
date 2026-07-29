@@ -4,6 +4,7 @@ import ipaddress
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
+from threading import RLock
 from typing import Any
 
 from rexecop.connectors import errors as connector_errors
@@ -22,6 +23,15 @@ subprocess = capture_runtime
 
 MANAGED_FILE = "/etc/chrony/conf.d/tecrax-ntp-server.conf"
 MAX_WRAPPER_OUTPUT_BYTES = 16_384
+_FIXTURE_STATE_LOCK = RLock()
+_FIXTURE_STATE: dict[tuple[str, str, str], bool] = {}
+
+
+def _reset_fixture_state_registry() -> None:
+    """Clear process-local fixture state for deterministic test isolation."""
+
+    with _FIXTURE_STATE_LOCK:
+        _FIXTURE_STATE.clear()
 
 
 def build_chrony_ntp_backend(**kwargs: Any) -> "ChronyNtpBackend":
@@ -58,7 +68,6 @@ class ChronyNtpBackend:
         self.connector_name = connector_name
         self.config = config
         self.mutating_allowed = mutating_allowed
-        self._fixture_applied = bool(config.get("fixture_initially_applied"))
 
     def invoke(self, request: ConnectorRequest) -> ConnectorResponse:
         if request.connector != self.connector_name:
@@ -88,7 +97,9 @@ class ChronyNtpBackend:
         desired: DesiredChronyState,
     ) -> ConnectorResponse:
         if self._fixture_only:
-            data = self._fixture_state(desired, applied=self._fixture_applied)
+            with _FIXTURE_STATE_LOCK:
+                applied = self._fixture_applied(request, desired)
+                data = self._fixture_state(desired, applied=applied)
             return self._success(request, data)
         return self._wrapper(request, desired, "read-state")
 
@@ -110,12 +121,11 @@ class ChronyNtpBackend:
                 connector_errors.POLICY_DENIED,
             )
         if self._fixture_only:
-            before = self._fixture_state(
+            before, after = self._transition_fixture_state(
+                request,
                 desired,
-                applied=self._fixture_applied,
+                applied=True,
             )
-            after = self._fixture_state(desired, applied=True)
-            self._fixture_applied = True
             return self._success(
                 request,
                 {
@@ -144,9 +154,11 @@ class ChronyNtpBackend:
                 connector_errors.POLICY_DENIED,
             )
         if self._fixture_only:
-            before = self._fixture_state(desired, applied=self._fixture_applied)
-            after = self._fixture_state(desired, applied=False)
-            self._fixture_applied = False
+            before, after = self._transition_fixture_state(
+                request,
+                desired,
+                applied=False,
+            )
             return self._success(
                 request,
                 {
@@ -160,6 +172,45 @@ class ChronyNtpBackend:
     @property
     def _fixture_only(self) -> bool:
         return self.config.get("fixture_only") is True
+
+    @property
+    def _fixture_default(self) -> bool:
+        return bool(self.config.get("fixture_initially_applied"))
+
+    def _fixture_key(
+        self,
+        request: ConnectorRequest,
+        desired: DesiredChronyState,
+    ) -> tuple[str, str, str]:
+        return (self.connector_name, request.target, desired.allowed_subnet)
+
+    def _fixture_applied(
+        self,
+        request: ConnectorRequest,
+        desired: DesiredChronyState,
+    ) -> bool:
+        return _FIXTURE_STATE.get(
+            self._fixture_key(request, desired),
+            self._fixture_default,
+        )
+
+    def _transition_fixture_state(
+        self,
+        request: ConnectorRequest,
+        desired: DesiredChronyState,
+        *,
+        applied: bool,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        key = self._fixture_key(request, desired)
+        with _FIXTURE_STATE_LOCK:
+            current = self._fixture_applied(request, desired)
+            before = self._fixture_state(desired, applied=current)
+            after = self._fixture_state(desired, applied=applied)
+            if applied == self._fixture_default:
+                _FIXTURE_STATE.pop(key, None)
+            else:
+                _FIXTURE_STATE[key] = applied
+            return before, after
 
     def _wrapper(
         self,

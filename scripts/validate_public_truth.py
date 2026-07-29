@@ -51,6 +51,8 @@ ACTION_REF = re.compile(
     re.MULTILINE,
 )
 FULL_SHA = re.compile(r'^[0-9a-f]{40}$')
+PIP_EXECUTABLE = re.compile(r'^pip(?:\d+(?:\.\d+)*)?$')
+PYTHON_EXECUTABLE = re.compile(r'^python(?:\d+(?:\.\d+)*)?$')
 GIT_CLONE = re.compile(r'\bgit\s+clone\b')
 GITHUB_VCS_FRAGMENT = re.compile(
     r'(?:git\+(?:https|ssh)://|(?:https?|ssh)://|git@)github\.com[/:]'
@@ -62,9 +64,44 @@ GITHUB_PIP_SOURCE = re.compile(
     r'(?:@(?P<reference>.*))?'
 )
 
-REXECOP_SOURCE_SHA = '1a20584ef1fa391f125e108822a7e439879a2e0b'
+REXECOP_SOURCE_SHA = '346e371989bcdb9663db51775123d9580eb0ec38'
 SCLITE_SOURCE_SHA = '0b90c21569ea908ba7ddb468cd1ab6126342924f'
-GOVENGINE_SOURCE_SHA = '0826accff407fdbc10df420803ff49cdd5818870'
+GOVENGINE_SOURCE_SHA = '9a78650a0e39524dcbf07d98f5fb71f89093fc66'
+PipInstallArgv = tuple[str, ...]
+EXPECTED_TEST_SOURCE_PIP_INSTALL_ARGV: tuple[PipInstallArgv, ...] = (
+    ('python', '-m', 'pip', 'install', '--upgrade', 'pip'),
+    (
+        'python',
+        '-m',
+        'pip',
+        'install',
+        'sclite-core @ '
+        f'git+https://github.com/rozmiarD/SCLite.git@{SCLITE_SOURCE_SHA}',
+    ),
+    (
+        'python',
+        '-m',
+        'pip',
+        'install',
+        'govengine @ '
+        f'git+https://github.com/rozmiarD/GovEngine.git@{GOVENGINE_SOURCE_SHA}',
+    ),
+    ('python', '-m', 'pip', 'install', '-e', './ci-deps/rexecop'),
+    (
+        'python',
+        '-m',
+        'pip',
+        'install',
+        'pytest>=8,<9',
+        'ruff>=0.14,<1',
+        'mypy>=1.18,<2',
+    ),
+    ('python', '-m', 'pip', 'install', '--no-deps', '-e', '.'),
+)
+EXPECTED_PIP_CHECK_CONFLICT = (
+    'tecrax 0.4.0rc3 has requirement rexecop==0.3.0rc3, '
+    'but you have rexecop 1.0.0rc1.'
+)
 SourceCoordinate = tuple[str, str, str, str, str]
 EXPECTED_CI_SOURCE_COORDINATES: Counter[SourceCoordinate] = Counter(
     {
@@ -150,11 +187,113 @@ def _wheel_smoke_gate_count_errors(workflow: str) -> list[str]:
     return []
 
 
-def _is_supported_python_pip_install(argv: list[str]) -> bool:
+def _wheel_installed_graph_errors(workflow: str) -> list[str]:
+    marker = '      - name: Wheel install smoke'
+    if workflow.count(marker) != 1:
+        return ['ci_wheel_installed_graph_step_count']
+    step = workflow[workflow.index(marker) :]
+    expected = (
+        '/tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl --no-deps',
+        'pip_check_output="$(/tmp/tecrax-wheel-smoke/bin/python -m pip check 2>&1)"',
+        f"expected_conflict='{EXPECTED_PIP_CHECK_CONFLICT}'",
+        'if [ "$pip_check_status" -eq 0 ]; then',
+        'if [ "$pip_check_output" != "$expected_conflict" ]; then',
+    )
+    if any(step.count(fragment) != 1 for fragment in expected):
+        return ['ci_wheel_installed_graph_gate_mismatch']
+    positions = [step.index(fragment) for fragment in expected]
+    if positions != sorted(positions):
+        return ['ci_wheel_installed_graph_gate_order']
+    return []
+
+
+def _wheel_source_function_errors(workflow: str) -> list[str]:
+    marker = '      - name: Source-pinned installed plugin posture smoke'
+    if workflow.count(marker) != 1:
+        return ['ci_wheel_source_function_step_count']
+    start = workflow.index(marker)
+    end = workflow.index('      - name: Wheel install smoke', start)
+    step = workflow[start:end]
+    expected = (
+        'from govengine.typed_execution_governed_admission import '
+        'TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION',
+        "assert 'site-packages' in Path(tecrax.__file__).as_posix()",
+        "'backend': 'tecrax_chrony_ntp'",
+        "'execution_posture': 'fixture_only'",
+        "assert descriptor['live_backend_posture'] == 'fixture_only'",
+        "assert descriptor['egress_class'] == 'no_network'",
+    )
+    if any(step.count(fragment) != 1 for fragment in expected):
+        return ['ci_wheel_source_function_gate_mismatch']
+    return []
+
+
+def _test_source_install_errors(workflow: str) -> list[str]:
+    marker = '      - name: Install source dependencies\n'
+    provenance = '      - name: Verify source candidate provenance\n'
+    if workflow.count(marker) != 1 or workflow.count(provenance) != 1:
+        return ['ci_test_source_install_step_count']
+    start = workflow.index(marker)
+    end = workflow.index(provenance, start)
+    step = workflow[start:end]
+    observed: list[PipInstallArgv] = []
+    for line in step.splitlines():
+        try:
+            argv = shlex.split(line, comments=True)
+        except ValueError:
+            return ['ci_test_source_install_tokenization_failed']
+        if _is_pip_install_invocation(argv):
+            observed.append(tuple(argv))
+    if tuple(observed) != EXPECTED_TEST_SOURCE_PIP_INSTALL_ARGV:
+        return ['ci_test_source_install_argv_mismatch']
+    return []
+
+
+def _test_source_provenance_errors(workflow: str) -> list[str]:
+    marker = '      - name: Verify source candidate provenance'
+    end_marker = '      - name: Validate public truth'
+    if workflow.count(marker) != 1 or workflow.count(end_marker) != 1:
+        return ['ci_test_source_provenance_step_count']
+    start = workflow.index(marker)
+    end = workflow.index(end_marker, start)
+    step = workflow[start:end]
+    expected = (
+        f".strip() == '{REXECOP_SOURCE_SHA}'",
+        "assert version('rexecop') == '1.0.0rc1'",
+        "Path(rexecop.__file__).resolve().is_relative_to(rexecop_root / 'src')",
+        f"govengine_direct_url['vcs_info']['commit_id'] == '{GOVENGINE_SOURCE_SHA}'",
+        "TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION == 'v0.2'",
+        "assert version('tecrax') == '0.4.0rc3'",
+        "Path(tecrax.__file__).resolve().is_relative_to(Path('src').resolve())",
+    )
+    if any(step.count(fragment) != 1 for fragment in expected):
+        return ['ci_test_source_provenance_mismatch']
+    return []
+
+
+def _is_canonical_python_pip_install(argv: list[str]) -> bool:
     if len(argv) < 4 or argv[1:4] != ['-m', 'pip', 'install']:
         return False
     executable = argv[0]
     return executable in {'python', 'python3'} or executable.endswith('/python')
+
+
+def _is_pip_install_invocation(argv: list[str]) -> bool:
+    if not argv:
+        return False
+    executable = argv[0].rsplit('/', 1)[-1]
+    if PIP_EXECUTABLE.fullmatch(executable):
+        subcommand_tokens = argv[1:]
+    elif PYTHON_EXECUTABLE.fullmatch(executable) and argv[1:3] == ['-m', 'pip']:
+        subcommand_tokens = argv[3:]
+    else:
+        return False
+    for token in subcommand_tokens:
+        if token == 'install':
+            return True
+        if not token.startswith('-'):
+            return False
+    return False
 
 
 def _ci_source_errors(workflow: object) -> list[str]:
@@ -210,7 +349,7 @@ def _ci_source_errors(workflow: object) -> list[str]:
                 if GIT_CLONE.search(line):
                     errors.append(f'ci_source_git_clone:{job_name}:{name}')
 
-                if _is_supported_python_pip_install(argv):
+                if _is_canonical_python_pip_install(argv):
                     for argument in argv[4:]:
                         source = GITHUB_PIP_SOURCE.fullmatch(argument)
                         if source is None:
@@ -331,6 +470,10 @@ def collect_errors() -> list[str]:
     ci_workflow = _read('.github/workflows/ci.yml')
     errors.extend(_wheel_smoke_order_errors(ci_workflow))
     errors.extend(_wheel_smoke_gate_count_errors(ci_workflow))
+    errors.extend(_wheel_installed_graph_errors(ci_workflow))
+    errors.extend(_wheel_source_function_errors(ci_workflow))
+    errors.extend(_test_source_install_errors(ci_workflow))
+    errors.extend(_test_source_provenance_errors(ci_workflow))
     errors.extend(_ci_source_workflow_errors(ci_workflow))
     _require(errors, '.github/workflows/ci.yml', 'pip install -e ./ci-deps/rexecop')
     for workflow in sorted((ROOT / '.github' / 'workflows').glob('*.yml')):

@@ -30,9 +30,28 @@ Expected result for source candidate `0.4.0rc3`:
 - the network-security-device syslog runbook and StoneOS Wazuh reference artifacts
   remain public-safe, exclude private topology and do not claim threat-specific
   coverage before a separately retained natural sample is validated;
-- the Chrony regression proves a positive GovEngine plan reaches approved state while
-  default RExecOp `stable_read_only` raises before connector I/O; Tecrax is not
-  mutation_ready and the registered mutation candidate is not executable by default;
+- the Chrony profile declares only the explicit plugin postures
+  `fixture_only -> fixture_only/no_network` and
+  `operator_wrapper -> live_backend/local_subprocess`. The public fixture selects
+  `fixture_only`, requires `fixture_only: true` and contains no wrapper command;
+- the source-pinned Chrony governance regression uses the actual GovEngine v0.2
+  evaluator, approval attestation, signature and revocation path plus RExecOp's
+  attempt/lease/claim/permit lifecycle and the real Tecrax fixture backend. A
+  successful fixture apply followed by a deterministic post-I/O failure creates a
+  separately approved recovery child with fresh authority, restores fixture state,
+  emits a conformant receipt and replays without new authority, claim, attempt,
+  factory or connector I/O. Pre-read, apply, post-read and recovery each use a fresh
+  backend created by the actual plugin factory. Tecrax preserves fixture continuity
+  in a lock-guarded, process-local boolean registry keyed by connector, target and
+  normalized subnet; returning to the configured default removes the entry. Tests
+  prove fresh-instance persistence, target/subnet isolation and exactly one changed
+  result under concurrent same-key apply. This registry is non-durable fixture state,
+  not SCLite truth or RExecOp lifecycle persistence. The authority-owned policy and
+  signed decision bind the exact singleton backend `tecrax_chrony_ntp` and egress
+  `no_network`; the legacy environment policy remains control-free because that
+  layer cannot enforce typed backend/egress controls;
+- default RExecOp `stable_read_only` still raises before connector I/O. Tecrax is not
+  mutation_ready, and the registered mutation candidate is not executable by default;
 - focused Chrony tests use a small local executable to prove RExecOp-owned
   incremental capture enforces the exact `16384`-byte configured default and
   lower configured/request-policy limits across combined stdout and stderr.
@@ -52,15 +71,24 @@ Expected result for source candidate `0.4.0rc3`:
 - SCLite is used only for local artifact descriptors;
 - CI resolves its external source inputs as ten immutable reviewed snapshots: two
   `rozmiarD/RExecOP` sibling checkouts at
-  `1a20584ef1fa391f125e108822a7e439879a2e0b`, four `sclite-core` source
+  `346e371989bcdb9663db51775123d9580eb0ec38`, four `sclite-core` source
   installs at `0b90c21569ea908ba7ddb468cd1ab6126342924f`, and four
-  `govengine` source installs at `0826accff407fdbc10df420803ff49cdd5818870`.
+  `govengine` source installs at `9a78650a0e39524dcbf07d98f5fb71f89093fc66`.
   The public-truth validator parses the workflow and compares this closed
   coordinate multiset by job and named step; a ref advance is an explicit new
   reviewed snapshot, not an implicit branch update;
 - source identity only binds a CI input to a reviewed commit. It is not evidence
   of package compatibility, a resolvable public dependency line, or release
-  qualification. F-001 remains open: the current Tecrax public dependency graph
-  cannot yet be cleanly installed from the public index;
+  qualification. The test job installs exact SCLite and GovEngine sources, editable
+  RExecOp, explicit pytest/Ruff/mypy tools and then Tecrax editable with `--no-deps`.
+  It verifies the RExecOp checkout SHA, `1.0.0rc1` import origin, GovEngine VCS
+  provenance and v0.2 surface, and Tecrax editable source origin. Resolver-aware
+  Tecrax editable installation is forbidden. The wheel functional smoke separately
+  installs the exact source candidates without resolver substitution. Its
+  installed-graph gate must fail for
+  exactly one known conflict: Tecrax `0.4.0rc3` requires `rexecop==0.3.0rc3` while
+  the source-pinned candidate is `rexecop==1.0.0rc1`; unexpected success or any
+  other conflict fails CI. F-001 remains open until a separately authorized pin and
+  release decision makes the public dependency graph resolvable;
 - non-claims remain explicit for arbitrary mutation, credential management, carrier
   adapters, scheduler/storage, and production readiness.

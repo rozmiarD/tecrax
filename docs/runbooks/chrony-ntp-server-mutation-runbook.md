@@ -38,10 +38,32 @@ shell command.
 - no unattended apply is allowed; default RExecOp `stable_read_only` still blocks before
   connector I/O.
 
-The public example uses `fixture_only: true`. A live environment must replace it
-with an operator-owned wrapper command. The wrapper is not a Tecrax public API;
-it is local operator infrastructure that must implement only the fixed actions
-declared by the `chrony_ntp_server` connector.
+The public example explicitly selects `execution_posture: fixture_only`, requires
+`fixture_only: true` and contains no `wrapper_command`. A future live environment
+must explicitly select `operator_wrapper`, set `fixture_only: false` and provide an
+operator-owned wrapper command. The wrapper is not a Tecrax public API; it is local
+operator infrastructure that must implement only the fixed actions declared by the
+`chrony_ntp_server` connector.
+
+The profile declares exactly two plugin postures:
+
+- `fixture_only -> fixture_only/no_network`;
+- `operator_wrapper -> live_backend/local_subprocess`.
+
+RExecOp binds the selected posture into the typed execution spec and capability
+descriptor. GovEngine remains the only policy/admission owner; Tecrax does not infer
+posture from backend behavior or implement a second policy decision.
+
+Fixture-only state is a private process-local simulation primitive. Each plugin
+factory call creates a fresh `ChronyNtpBackend`; continuity comes from one lock-guarded
+boolean registry keyed by connector name, request target and normalized subnet. Apply
+and rollback transition before/after state atomically, and returning to the configured
+`fixture_initially_applied` default removes the entry. Live wrapper execution never
+reads or writes this registry.
+
+The registry is not durable across process restart, is not multiprocess coordination,
+does not survive crash or power loss, and is not SCLite truth, a receipt store or
+RExecOp operation persistence. It must never be used to claim live target state.
 
 ## Deterministic action contract
 
@@ -92,12 +114,27 @@ before any new operation is considered. RExecOp intrinsically blocks manual
 retry of that indeterminate operation, independently of this profile's zero
 automatic-retry budget.
 
-This covers the F-017 profile alignment only. Exact governed rollback remains
-unqualified and gated on T-205 canonical GovEngine approval-attestation and
-typed recovery-mode integration. The declared recovery shape is not a claim of
-rollback execution, exactly-once behavior, idempotency, crash or power-loss
-recovery, worker qualification, live or lab qualification, readiness, release
-or publication.
+The source-pinned T-205 regression qualifies one deterministic local fixture path.
+It uses GovEngine v0.2 policy compilation, approval attestation, signature and
+revocation checks, then RExecOp's ordinary attempt, lease, atomic claim, permit and
+pre-I/O lifecycle. The authority-owned policy and signed decision bind exactly
+`tecrax_chrony_ntp` and `no_network`; the legacy environment policy deliberately
+carries no typed controls because its connector gate cannot enforce them.
+
+Pre-read, apply, post-read and recovery use four distinct backends returned by the
+actual factory. After a real fixture apply, the test injects one deterministic
+post-I/O failure. An explicitly approved recovery child receives distinct attempt,
+lease, decision, nonce and permit authority, invokes the real fixture rollback,
+restores process-local fixture state and emits a conformant receipt. Repeating the
+rollback returns the same child without a fifth backend, new authority, claim,
+attempt, plugin factory or connector I/O.
+
+This does not qualify exactly-once I/O, crash or power-loss recovery, worker
+recovery, restart or multiprocess fixture continuity, the operator wrapper,
+subprocess or network isolation, a live Chrony target, mutation readiness, release
+or publication. The production package still
+pins `rexecop==0.3.0rc3`; source-pinned RExecOp `1.0.0rc1` qualification is not an
+installed-graph compatibility claim.
 
 ## Run
 

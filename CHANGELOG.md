@@ -2,16 +2,36 @@
 
 ## Unreleased — SCLite 2.0 owner migration
 
+- Declares explicit Chrony plugin execution postures and selects the
+  `fixture_only/no_network` shape in the public example. A source-pinned T-205
+  regression uses real GovEngine v0.2 policy, approval, signature and revocation
+  evaluation plus RExecOp lifecycle and the real Tecrax fixture backend to prove
+  governed apply, deterministic post-I/O failure, a fresh approved recovery child,
+  restored fixture state, conformant receipt and idempotent replay without new
+  authority or I/O. Each of pre-read, apply, post-read and recovery uses a distinct
+  backend created by the real factory. Fixture continuity is a private, lock-guarded,
+  process-local boolean registry isolated by connector, target and normalized subnet;
+  it is not durable, multiprocess, SCLite truth or RExecOp lifecycle persistence.
+  This does not qualify the operator wrapper, live infrastructure, exactly-once,
+  restart or crash recovery, mutation readiness, release or publication.
+- Advances immutable CI source coordinates to RExecOp
+  `346e371989bcdb9663db51775123d9580eb0ec38` and GovEngine
+  `9a78650a0e39524dcbf07d98f5fb71f89093fc66`, retaining SCLite
+  `0b90c21569ea908ba7ddb468cd1ab6126342924f`. Candidate-wheel functional smoke is
+  source-pinned, while a separate fail-closed `pip check` gate requires exactly the
+  unresolved Tecrax `rexecop==0.3.0rc3` versus installed `1.0.0rc1` conflict. The
+  source test job installs explicit dev tools and Tecrax editable with `--no-deps`,
+  then verifies exact checkout, VCS, version, v0.2 and import origins. Resolver-aware
+  Tecrax installation is rejected. The production pin is unchanged; unexpected graph
+  success or any other conflict fails.
 - Disables automatic retry for the mixed read/apply Chrony mutation candidate
   by setting its profile retry budget to zero without expanding its allowlist
   or error blocklist. The focused persisted-plan regression calls RExecOp's
   actual retry classifier and separately proves its intrinsic
-  `outcome_indeterminate` refusal. This covers F-017 profile alignment only;
-  exact governed rollback remains unqualified and gated on T-205 canonical
-  GovEngine approval-attestation and typed recovery-mode integration. It does
-  not qualify rollback execution, exactly-once or idempotency behavior,
-  crash/power-loss or worker recovery, a private wrapper, lab or live
-  operation, mutation readiness, release or publication.
+  `outcome_indeterminate` refusal. This covers F-017 profile alignment only; the
+  separate fixture-only T-205 proof above does not extend this retry policy or
+  qualify exactly-once, crash/power-loss or worker recovery, a private wrapper,
+  lab or live operation, mutation readiness, release or publication.
 - Routes Chrony wrapper execution through RExecOp's runtime-owned incremental
   combined-output capture with an exact `16384`-byte configured default and
   lower exact-integer policy precedence. Overflow now fails before return-code
@@ -24,20 +44,18 @@
   candidate, while default RExecOp `stable_read_only` blocks apply before connector
   I/O and Tecrax is not mutation_ready. This does not change profile or connector
   behavior, readiness authority, package versions, pins, or release workflows.
-- Pins each CI source input to an immutable reviewed snapshot: RExecOp sibling
-  checkout `1a20584ef1fa391f125e108822a7e439879a2e0b`, SCLite
-  `0b90c21569ea908ba7ddb468cd1ab6126342924f`, and GovEngine
-  `0826accff407fdbc10df420803ff49cdd5818870`. Any advance requires explicit
-  review and an exact workflow-coordinate update; source identity is not package
-  compatibility or release qualification. F-001 remains open for the public
+- Pins each CI source input to an immutable reviewed snapshot. Any advance requires
+  explicit review and an exact workflow-coordinate update; source identity is not
+  package compatibility or release qualification. F-001 remains open for the public
   dependency line.
 - Declares profile-owned operation capability requirements for every active
   connector and independent outbound network-policy bindings for SSH and HTTP
   connectors, so RExecOp no longer derives governance requirements or
   destination allowlists from backend/runtime claims.
-- Keeps the Chrony mutation workflow fail closed at typed execution until the
-  GovEngine approval-attestation contract is implemented; operation admission
-  alone is not execution approval.
+- Keeps the production-installed Chrony line fail closed at typed execution until a
+  separately authorized dependency-pin and release decision consumes the delivered
+  GovEngine approval-attestation contract. The source-pinned fixture proof does not
+  turn operation admission alone into execution approval.
 - Uses RExecOp's orchestration contract surface for observation and escalation
   artifacts instead of the removed SCLite stack-specific aliases.
 - Pins the coordinated SCLite 2.0, GovEngine 1.0 and RExecOp 0.3 candidate

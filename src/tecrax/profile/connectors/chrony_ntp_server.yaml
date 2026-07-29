@@ -7,6 +7,13 @@ connector:
     - rollback_chrony_ntp_server
   required_capability_descriptors:
     - connector.plugin.tecrax_chrony_ntp
+  execution_postures:
+    fixture_only:
+      live_backend_posture: fixture_only
+      allowed_network_egress: no_network
+    operator_wrapper:
+      live_backend_posture: live_backend
+      allowed_network_egress: local_subprocess
   modes:
     - read_only
     - dry_run

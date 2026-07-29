@@ -12,6 +12,7 @@ environment:
     chrony_ntp_server:
       enabled: true
       backend: tecrax_chrony_ntp
+      execution_posture: fixture_only
       fixture_only: true
       allowed_subnet: 192.0.2.0/24
       timeout_seconds: 30

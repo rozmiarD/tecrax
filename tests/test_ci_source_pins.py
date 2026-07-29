@@ -30,6 +30,204 @@ def test_ci_source_coordinates_are_the_reviewed_immutable_snapshots() -> None:
     assert validator._ci_source_workflow_errors(_workflow()) == []
 
 
+def test_ci_source_test_install_is_ordered_and_resolver_safe() -> None:
+    validator = _validator()
+
+    assert validator._test_source_install_errors(_workflow()) == []
+
+
+def test_ci_source_test_install_argv_contract_is_exact() -> None:
+    validator = _validator()
+
+    assert validator.EXPECTED_TEST_SOURCE_PIP_INSTALL_ARGV == (
+        ('python', '-m', 'pip', 'install', '--upgrade', 'pip'),
+        (
+            'python',
+            '-m',
+            'pip',
+            'install',
+            'sclite-core @ '
+            f'git+https://github.com/rozmiarD/SCLite.git@{validator.SCLITE_SOURCE_SHA}',
+        ),
+        (
+            'python',
+            '-m',
+            'pip',
+            'install',
+            'govengine @ '
+            f'git+https://github.com/rozmiarD/GovEngine.git@{validator.GOVENGINE_SOURCE_SHA}',
+        ),
+        ('python', '-m', 'pip', 'install', '-e', './ci-deps/rexecop'),
+        (
+            'python',
+            '-m',
+            'pip',
+            'install',
+            'pytest>=8,<9',
+            'ruff>=0.14,<1',
+            'mypy>=1.18,<2',
+        ),
+        ('python', '-m', 'pip', 'install', '--no-deps', '-e', '.'),
+    )
+
+
+def test_ci_source_test_provenance_is_exact() -> None:
+    validator = _validator()
+
+    assert validator._test_source_provenance_errors(_workflow()) == []
+
+
+@pytest.mark.parametrize(
+    'mutation',
+    (
+        lambda workflow: workflow.replace(
+            'python -m pip install --no-deps -e .',
+            'python -m pip install -e .',
+            1,
+        ),
+        lambda workflow: workflow.replace(
+            'python -m pip install --no-deps -e .',
+            "python -m pip install -e '.[dev]'",
+            1,
+        ),
+        lambda workflow: workflow.replace(
+            '          python -m pip install -e ./ci-deps/rexecop\n'
+            '          python -m pip install "pytest>=8,<9" "ruff>=0.14,<1" "mypy>=1.18,<2"\n',
+            '          python -m pip install "pytest>=8,<9" "ruff>=0.14,<1" "mypy>=1.18,<2"\n'
+            '          python -m pip install -e ./ci-deps/rexecop\n',
+            1,
+        ),
+    ),
+    ids=('resolver-aware-editable', 'dev-extra-resolver', 'wrong-order'),
+)
+def test_ci_source_test_install_validator_fails_closed(mutation: Mutation) -> None:
+    validator = _validator()
+
+    assert validator._test_source_install_errors(mutation(_workflow())) != []
+
+
+@pytest.mark.parametrize(
+    'extra_install',
+    (
+        'python -m pip install -e ./',
+        'python -m pip install .',
+        'python -m pip install --editable .[dev]',
+        'pip install .',
+        'pip3 install .',
+        '/opt/hostedtoolcache/Python/3.12.0/x64/bin/pip install .',
+        'python -m pip --disable-pip-version-check install .',
+    ),
+    ids=(
+        'extra-editable-slash',
+        'extra-dot',
+        'extra-dev-editable',
+        'direct-pip',
+        'direct-pip3',
+        'path-pip',
+        'python-pip-global-option',
+    ),
+)
+def test_ci_source_test_install_validator_rejects_extra_install(
+    extra_install: str,
+) -> None:
+    validator = _validator()
+    workflow = _workflow().replace(
+        '          python -m pip install --no-deps -e .\n',
+        '          python -m pip install --no-deps -e .\n'
+        f'          {extra_install}\n',
+        1,
+    )
+
+    assert validator._test_source_install_errors(workflow) == [
+        'ci_test_source_install_argv_mismatch'
+    ]
+
+
+def test_ci_source_installer_classifier_rejects_pip_prefixed_words() -> None:
+    validator = _validator()
+
+    assert validator._is_pip_install_invocation(['pipeline', 'install', '.']) is False
+
+
+@pytest.mark.parametrize(
+    'old',
+    (
+        "assert version('rexecop') == '1.0.0rc1'",
+        "govengine_direct_url['vcs_info']['commit_id']",
+        "TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION == 'v0.2'",
+        "Path(tecrax.__file__).resolve().is_relative_to(Path('src').resolve())",
+    ),
+)
+def test_ci_source_test_provenance_validator_fails_closed(old: str) -> None:
+    validator = _validator()
+
+    assert validator._test_source_provenance_errors(
+        _workflow().replace(old, 'removed-provenance-proof', 1)
+    ) != []
+
+
+def test_ci_installed_graph_records_only_the_known_production_pin_conflict() -> None:
+    validator = _validator()
+
+    assert validator._wheel_installed_graph_errors(_workflow()) == []
+
+
+def test_ci_installed_source_function_binds_exact_plugin_posture() -> None:
+    validator = _validator()
+
+    assert validator._wheel_source_function_errors(_workflow()) == []
+
+
+@pytest.mark.parametrize(
+    'old',
+    (
+        'Source-pinned installed plugin posture smoke',
+        "assert 'site-packages' in Path(tecrax.__file__).as_posix()",
+        "'backend': 'tecrax_chrony_ntp'",
+        "assert descriptor['egress_class'] == 'no_network'",
+    ),
+)
+def test_ci_installed_source_function_validator_fails_closed(old: str) -> None:
+    validator = _validator()
+
+    assert validator._wheel_source_function_errors(
+        _workflow().replace(old, 'removed-source-function-proof', 1)
+    ) != []
+
+
+@pytest.mark.parametrize(
+    'mutation',
+    (
+        lambda workflow: workflow.replace(' dist/*.whl --no-deps', ' dist/*.whl', 1),
+        lambda workflow: workflow.replace(
+            'if [ "$pip_check_status" -eq 0 ]; then',
+            'if [ "$pip_check_status" -eq 1 ]; then',
+            1,
+        ),
+        lambda workflow: workflow.replace(
+            'rexecop==0.3.0rc3',
+            'rexecop>=0.3.0rc3',
+            1,
+        ),
+        lambda workflow: workflow.replace(
+            'if [ "$pip_check_output" != "$expected_conflict" ]; then',
+            'if [ -z "$pip_check_output" ]; then',
+            1,
+        ),
+    ),
+    ids=(
+        'resolver-substitution',
+        'unexpected-success-accepted',
+        'wrong-conflict',
+        'additional-conflicts-accepted',
+    ),
+)
+def test_ci_installed_graph_validator_fails_closed(mutation: Mutation) -> None:
+    validator = _validator()
+
+    assert validator._wheel_installed_graph_errors(mutation(_workflow())) != []
+
+
 Mutation = Callable[[str], str]
 
 
