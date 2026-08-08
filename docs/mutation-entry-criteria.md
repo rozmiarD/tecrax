@@ -65,7 +65,8 @@ operator wrapper, subprocess or network isolation, live or lab infrastructure,
 exactly-once I/O, restart or multiprocess continuity, crash/power-loss or worker
 recovery, release or publication. The registry is not SCLite truth, a receipt store
 or RExecOp lifecycle persistence. The
-production package now pins the exact public `rexecop==1.0.0rc1` artifact and its
-normal installed graph is resolvable. That public artifact predates the latest
-same-version source-head T-205 remediation, so installed-graph success does not claim
-the source-only governed surface, mutation readiness, release or publication.
+current source package metadata pins `rexecop==1.0.0rc2`, and the candidate graph is
+qualified against the exact non-editable RExecOp source snapshot with unconditional
+`pip check`. RExecOp `1.0.0rc2` is not yet published; public-index resolution is
+mandatory before Tecrax publication. Candidate-graph success does not claim mutation
+readiness, release or publication.

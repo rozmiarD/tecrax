@@ -7,9 +7,9 @@ exports those orchestration-specific builders.
 [![CI](https://github.com/rozmiarD/tecrax/actions/workflows/ci.yml/badge.svg)](https://github.com/rozmiarD/tecrax/actions/workflows/ci.yml)
 [![Source candidate: tecrax 0.4.0rc3](https://img.shields.io/badge/source%20candidate-tecrax%200.4.0rc3-blueviolet.svg)](pyproject.toml)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: GovEngine ==1.0.0rc1](https://img.shields.io/badge/dependency-GovEngine%20%3D%3D1.0.0rc1-informational.svg)](https://github.com/rozmiarD/GovEngine)
-[![Dependency: RExecOp ==1.0.0rc1](https://img.shields.io/badge/dependency-RExecOp%20%3D%3D1.0.0rc1-informational.svg)](https://github.com/rozmiarD/RExecOP)
-[![Dependency: SCLite ==2.0.0](https://img.shields.io/badge/dependency-SCLite%20%3D%3D2.0.0-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: GovEngine ==1.0.0rc2](https://img.shields.io/badge/dependency-GovEngine%20%3D%3D1.0.0rc2-informational.svg)](https://github.com/rozmiarD/GovEngine)
+[![Dependency: RExecOp ==1.0.0rc2](https://img.shields.io/badge/dependency-RExecOp%20%3D%3D1.0.0rc2-informational.svg)](https://github.com/rozmiarD/RExecOP)
+[![Dependency: SCLite ==2.0.1](https://img.shields.io/badge/dependency-SCLite%20%3D%3D2.0.1-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![Status: alpha](https://img.shields.io/badge/status-alpha-green.svg)](#status)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
@@ -28,7 +28,7 @@ credentials, embed target topology, or accept arbitrary infrastructure commands.
 | Current source candidate | `0.4.0rc3` (not published) |
 | Maturity | **alpha** — operator evaluation with documented limits |
 | Latest PyPI | [`tecrax==0.3.21a0`](https://pypi.org/project/tecrax/0.3.21a0/) |
-| Source dependencies | `govengine==1.0.0rc1`, `sclite-core==2.0.0`, `rexecop==1.0.0rc1` |
+| Source dependencies | `govengine==1.0.0rc2`, `sclite-core==2.0.1`, `rexecop==1.0.0rc2` |
 | Profile entry point | `rexecop.profiles:tecrax` |
 | Registered mutation candidate | `configure_chrony_ntp_server` only; default RExecOp `stable_read_only` blocks apply before connector I/O, so Tecrax is not mutation_ready |
 | Public status | [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) |
@@ -36,11 +36,12 @@ credentials, embed target topology, or accept arbitrary infrastructure commands.
 Latest published PyPI baseline: `tecrax==0.3.21a0`; it contains the coordinated
 B2 dependency floor and read-only policy vector.
 
-The `0.4.0rc3` candidate wheel has a publicly resolvable exact dependency graph.
-The public RExecOp `1.0.0rc1` artifact predates the latest same-version source-head
-T-205 remediation, so a normal public-index install does not prove that governed
-source-only surface. This is not publication, release, mutation-readiness or
-release-train authorization.
+The `0.4.0rc3` candidate wheel is qualified against exact GovEngine, SCLite and
+RExecOp source snapshots, with an unconditional `pip check` over the resulting
+non-editable installed graph. Tecrax `0.4.0rc3` is also not published. RExecOp
+`1.0.0rc2` is not yet published; public-index resolution is mandatory before Tecrax
+publication. This is not publication, release, mutation-readiness or release-train
+authorization.
 
 ## What Tecrax provides
 
@@ -208,7 +209,7 @@ inventory, credential path, or infrastructure adapter.
 
 The source `0.4.0rc3` candidate combines the profile-owned read-only reaction pack,
 B2 policy vector, and a registered chrony/NTP mutation candidate over RExecOp
-`1.0.0rc1`, GovEngine `1.0.0rc1`, and final SCLite `2.0.0`. Default RExecOp
+`1.0.0rc2`, GovEngine `1.0.0rc2`, and SCLite `2.0.1`. Default RExecOp
 `stable_read_only` blocks apply before connector I/O, so Tecrax is not mutation_ready;
 this does not add a second policy engine, lifecycle runner, or truth layer.
 

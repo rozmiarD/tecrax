@@ -26,9 +26,9 @@ def _workflow() -> str:
 EXACT_VERSION_ASSERTION_BLOCK = (
     '          expected_versions = {\n'
     "              'tecrax': '0.4.0rc3',\n"
-    "              'rexecop': '1.0.0rc1',\n"
-    "              'govengine': '1.0.0rc1',\n"
-    "              'sclite-core': '2.0.0',\n"
+    "              'rexecop': '1.0.0rc2',\n"
+    "              'govengine': '1.0.0rc2',\n"
+    "              'sclite-core': '2.0.1',\n"
     '          }\n'
     '          for distribution_name, expected_version in expected_versions.items():\n'
     '              assert version(distribution_name) == expected_version\n'
@@ -41,16 +41,34 @@ EXACT_ORIGIN_ASSERTION_BLOCK = (
 STATUS_GOVENGINE_INSTALL = (
     '          /tmp/tecrax-wheel-status/bin/python -m pip install '
     '--force-reinstall "govengine @ git+https://github.com/rozmiarD/'
-    'GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"\n'
+    'GovEngine.git@e65ad22ec25d74bbbb4969bd614981a8ed5e47c8"\n'
 )
 STATUS_SCLITE_INSTALL = (
     '          /tmp/tecrax-wheel-status/bin/python -m pip install '
     '--force-reinstall "sclite-core @ git+https://github.com/rozmiarD/'
-    'SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"\n'
+    'SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98"\n'
 )
 STATUS_REXECOP_INSTALL = (
     '          /tmp/tecrax-wheel-status/bin/python -m pip install '
     '-e ./ci-deps/rexecop\n'
+)
+NORMAL_GOVENGINE_INSTALL = (
+    '          /tmp/tecrax-wheel-smoke/bin/python -m pip install '
+    '--force-reinstall "govengine @ git+https://github.com/rozmiarD/'
+    'GovEngine.git@e65ad22ec25d74bbbb4969bd614981a8ed5e47c8"\n'
+)
+NORMAL_SCLITE_INSTALL = (
+    '          /tmp/tecrax-wheel-smoke/bin/python -m pip install '
+    '--force-reinstall "sclite-core @ git+https://github.com/rozmiarD/'
+    'SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98"\n'
+)
+NORMAL_REXECOP_INSTALL = (
+    '          /tmp/tecrax-wheel-smoke/bin/python -m pip install '
+    './ci-deps/rexecop\n'
+)
+NORMAL_TECRAX_INSTALL = (
+    '          /tmp/tecrax-wheel-smoke/bin/python -m pip install '
+    '--no-deps dist/*.whl\n'
 )
 
 
@@ -87,7 +105,7 @@ def _insert_python_early_success(workflow: str) -> str:
 def test_ci_source_coordinates_are_the_reviewed_immutable_snapshots() -> None:
     validator = _validator()
 
-    assert sum(validator.EXPECTED_CI_SOURCE_COORDINATES.values()) == 8
+    assert sum(validator.EXPECTED_CI_SOURCE_COORDINATES.values()) == 10
     assert validator._ci_source_workflow_errors(_workflow()) == []
 
 
@@ -213,7 +231,7 @@ def test_ci_source_installer_classifier_rejects_pip_prefixed_words() -> None:
 @pytest.mark.parametrize(
     'old',
     (
-        "assert version('rexecop') == '1.0.0rc1'",
+        "assert version('rexecop') == '1.0.0rc2'",
         "govengine_direct_url['vcs_info']['commit_id']",
         "sclite_direct_url['vcs_info']['commit_id']",
         "TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION == 'v0.2'",
@@ -228,11 +246,11 @@ def test_ci_source_test_provenance_validator_fails_closed(old: str) -> None:
     ) != []
 
 
-def test_ci_installed_graph_requires_a_clean_public_dependency_graph() -> None:
+def test_ci_installed_graph_requires_a_clean_exact_source_candidate_graph() -> None:
     validator = _validator()
 
     assert validator.EXPECTED_WHEEL_INSTALL_SMOKE_SHA256 == (
-        '80176013e2c86d1f1c8bbd4d4dc963b4bc3a1166909dfe317b363af39e01edf7'
+        '3f7e376b61ec8473f1cf22f3abd9680ded2de0279de41cb25ed988aab1a0acf8'
     )
     assert validator._wheel_installed_graph_errors(_workflow()) == []
 
@@ -247,7 +265,7 @@ def test_ci_status_smoke_binds_exact_source_provenance() -> None:
     validator = _validator()
 
     assert validator.EXPECTED_WHEEL_STATUS_SOURCE_SHA256 == (
-        '3d7a33f2126d7e318fa2d06bd564c7335329154a4678a1679b2fd77be3d881df'
+        '1a17cb418e6686fbd6c557fba98ed9aa0cc25941c74b57a915b15e9b4dfa24be'
     )
     assert validator._wheel_status_source_provenance_errors(_workflow()) == []
 
@@ -316,9 +334,13 @@ def test_ci_installed_source_function_validator_fails_closed(old: str) -> None:
 @pytest.mark.parametrize(
     'mutation',
     (
+        lambda workflow: _replace_once(workflow, NORMAL_GOVENGINE_INSTALL, ''),
+        lambda workflow: _replace_once(workflow, NORMAL_SCLITE_INSTALL, ''),
+        lambda workflow: _replace_once(workflow, NORMAL_REXECOP_INSTALL, ''),
+        lambda workflow: _replace_once(workflow, NORMAL_TECRAX_INSTALL, ''),
         lambda workflow: workflow.replace(
+            '/tmp/tecrax-wheel-smoke/bin/python -m pip install --no-deps dist/*.whl',
             '/tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl',
-            '/tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl --no-deps',
             1,
         ),
         lambda workflow: workflow.replace(
@@ -327,8 +349,8 @@ def test_ci_installed_source_function_validator_fails_closed(old: str) -> None:
             1,
         ),
         lambda workflow: workflow.replace(
+            "'rexecop': '1.0.0rc2'",
             "'rexecop': '1.0.0rc1'",
-            "'rexecop': '0.3.0rc3'",
             1,
         ),
         lambda workflow: workflow.replace(
@@ -361,7 +383,11 @@ def test_ci_installed_source_function_validator_fails_closed(old: str) -> None:
         _insert_python_early_success,
     ),
     ids=(
-        'normal-wheel-no-deps',
+        'missing-exact-govengine-install',
+        'missing-exact-sclite-install',
+        'missing-noneditable-rexecop-install',
+        'missing-tecrax-wheel-install',
+        'normal-wheel-index-resolution',
         'expected-conflict-waiver',
         'wrong-installed-version',
         'missing-origin-proof',
@@ -526,9 +552,9 @@ def test_ci_source_validator_rejects_invalid_yaml() -> None:
 @pytest.mark.parametrize(
     'line',
     (
-        '          echo "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"',
-        '          # sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f',
-        '          python -c "print(\'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f\')"',
+        '          echo "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98"',
+        '          # sclite-core @ git+https://github.com/rozmiarD/SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98',
+        '          python -c "print(\'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98\')"',
     ),
     ids=('echo', 'comment', 'python-c'),
 )

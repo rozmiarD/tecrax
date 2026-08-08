@@ -22,9 +22,9 @@ classifiers = [
   "Topic :: System :: Systems Administration",
 ]
 dependencies = [
-  "govengine==1.0.0rc1",
-  "sclite-core==2.0.0",
-  "rexecop==1.0.0rc1",
+  "govengine==1.0.0rc2",
+  "sclite-core==2.0.1",
+  "rexecop==1.0.0rc2",
 ]
 
 [project.entry-points."rexecop.profiles"]

@@ -2,13 +2,12 @@
 
 ## Unreleased — SCLite 2.0 owner migration
 
-- Aligns the production dependency to the available exact
-  `rexecop==1.0.0rc1` line. The candidate wheel now installs through ordinary
-  public-index resolution, passes `pip check`, verifies exact installed versions
-  and site-packages origins, and runs status from an empty directory. Public RExecOp
-  `1.0.0rc1` predates the latest same-version source-head T-205 remediation, so this
-  does not claim that governed source-only surface, mutation readiness, publication,
-  release or release-train authorization.
+- Aligns the source candidate to `rexecop==1.0.0rc2`, `govengine==1.0.0rc2` and
+  `sclite-core==2.0.1`. The candidate wheel gate installs exact source snapshots,
+  requires unconditional `pip check`, verifies versions, provenance and installed
+  origins, and runs status from an empty directory. Public-index resolution remains
+  mandatory after RExecOp rc2 publication and before Tecrax publication; this is not
+  mutation readiness, release or release-train authorization.
 - Declares explicit Chrony plugin execution postures and selects the
   `fixture_only/no_network` shape in the public example. A source-pinned T-205
   regression uses real GovEngine v0.2 policy, approval, signature and revocation
@@ -22,13 +21,13 @@
   This does not qualify the operator wrapper, live infrastructure, exactly-once,
   restart or crash recovery, mutation readiness, release or publication.
 - Advances immutable CI source coordinates to RExecOp
-  `346e371989bcdb9663db51775123d9580eb0ec38` and GovEngine
-  `9a78650a0e39524dcbf07d98f5fb71f89093fc66`, retaining SCLite
-  `0b90c21569ea908ba7ddb468cd1ab6126342924f`. Candidate-wheel governed functional
+  `8a8609150388866a21afddca5bf773cd6ec120cd`, GovEngine
+  `e65ad22ec25d74bbbb4969bd614981a8ed5e47c8`, and SCLite
+  `c065d7a157665351054bacc7b5e3ae12b7cc9d98`. Candidate-wheel governed functional
   smoke remains source-pinned and checks exact checkout, VCS, version, v0.2 and import
   origins. The source test job uses resolver-aware Tecrax editable installation while
-  retaining the same provenance checks. A separate normal candidate-wheel gate uses
-  the public dependency index and may not substitute those current source heads.
+  retaining the same provenance checks. A separate non-editable candidate-wheel gate
+  uses those same exact sources and may not substitute another dependency graph.
 - Disables automatic retry for the mixed read/apply Chrony mutation candidate
   by setting its profile retry budget to zero without expanding its allowlist
   or error blocklist. The focused persisted-plan regression calls RExecOp's

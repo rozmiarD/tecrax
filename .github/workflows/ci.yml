@@ -26,15 +26,15 @@ jobs:
         with:
           repository: rozmiarD/RExecOP
           path: ci-deps/rexecop
-          ref: 346e371989bcdb9663db51775123d9580eb0ec38
+          ref: 8a8609150388866a21afddca5bf773cd6ec120cd
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install source dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"
-          python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"
+          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98"
+          python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@e65ad22ec25d74bbbb4969bd614981a8ed5e47c8"
           python -m pip install -e ./ci-deps/rexecop
           python -m pip install "pytest>=8,<9" "ruff>=0.14,<1" "mypy>=1.18,<2"
           python -m pip install -e .
@@ -54,17 +54,17 @@ jobs:
           assert subprocess.check_output(
               ['git', '-C', str(rexecop_root), 'rev-parse', 'HEAD'],
               text=True,
-          ).strip() == '346e371989bcdb9663db51775123d9580eb0ec38'
-          assert version('rexecop') == '1.0.0rc1'
+          ).strip() == '8a8609150388866a21afddca5bf773cd6ec120cd'
+          assert version('rexecop') == '1.0.0rc2'
           assert Path(rexecop.__file__).resolve().is_relative_to(rexecop_root / 'src')
           govengine_direct_url = json.loads(
               distribution('govengine').read_text('direct_url.json') or '{}'
           )
-          assert govengine_direct_url['vcs_info']['commit_id'] == '9a78650a0e39524dcbf07d98f5fb71f89093fc66'
+          assert govengine_direct_url['vcs_info']['commit_id'] == 'e65ad22ec25d74bbbb4969bd614981a8ed5e47c8'
           sclite_direct_url = json.loads(
               distribution('sclite-core').read_text('direct_url.json') or '{}'
           )
-          assert sclite_direct_url['vcs_info']['commit_id'] == '0b90c21569ea908ba7ddb468cd1ab6126342924f'
+          assert sclite_direct_url['vcs_info']['commit_id'] == 'c065d7a157665351054bacc7b5e3ae12b7cc9d98'
           assert TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION == 'v0.2'
           assert version('tecrax') == '0.4.0rc3'
           assert Path(tecrax.__file__).resolve().is_relative_to(Path('src').resolve())
@@ -90,15 +90,15 @@ jobs:
         with:
           repository: rozmiarD/RExecOP
           path: ci-deps/rexecop
-          ref: 346e371989bcdb9663db51775123d9580eb0ec38
+          ref: 8a8609150388866a21afddca5bf773cd6ec120cd
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: '3.12'
       - name: Install source dependencies and build tooling
         run: |
           python -m pip install --upgrade pip build twine
-          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"
-          python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"
+          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98"
+          python -m pip install "govengine @ git+https://github.com/rozmiarD/GovEngine.git@e65ad22ec25d74bbbb4969bd614981a8ed5e47c8"
       - name: Clean build artifacts
         run: rm -rf dist build *.egg-info
       - name: Build package
@@ -109,8 +109,8 @@ jobs:
         run: |
           python -m venv /tmp/tecrax-wheel-status
           /tmp/tecrax-wheel-status/bin/python -m pip install --upgrade pip
-          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "govengine @ git+https://github.com/rozmiarD/GovEngine.git@9a78650a0e39524dcbf07d98f5fb71f89093fc66"
-          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@0b90c21569ea908ba7ddb468cd1ab6126342924f"
+          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "govengine @ git+https://github.com/rozmiarD/GovEngine.git@e65ad22ec25d74bbbb4969bd614981a8ed5e47c8"
+          /tmp/tecrax-wheel-status/bin/python -m pip install --force-reinstall "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98"
           /tmp/tecrax-wheel-status/bin/python -m pip install -e ./ci-deps/rexecop
           /tmp/tecrax-wheel-status/bin/python -m pip install --no-deps dist/*.whl
           env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-status/bin/python - <<'PY'
@@ -126,12 +126,12 @@ jobs:
           assert subprocess.check_output(
               ['git', '-C', str(rexecop_root), 'rev-parse', 'HEAD'],
               text=True,
-          ).strip() == '346e371989bcdb9663db51775123d9580eb0ec38'
-          assert version('rexecop') == '1.0.0rc1'
+          ).strip() == '8a8609150388866a21afddca5bf773cd6ec120cd'
+          assert version('rexecop') == '1.0.0rc2'
           assert Path(rexecop.__file__).resolve().is_relative_to(rexecop_root / 'src')
           for distribution_name, expected_sha in (
-              ('govengine', '9a78650a0e39524dcbf07d98f5fb71f89093fc66'),
-              ('sclite-core', '0b90c21569ea908ba7ddb468cd1ab6126342924f'),
+              ('govengine', 'e65ad22ec25d74bbbb4969bd614981a8ed5e47c8'),
+              ('sclite-core', 'c065d7a157665351054bacc7b5e3ae12b7cc9d98'),
           ):
               direct_url = json.loads(
                   distribution(distribution_name).read_text('direct_url.json') or '{}'
@@ -184,18 +184,25 @@ jobs:
           PY
 
       - name: Wheel install smoke
+        env:
+          REXECOP_SOURCE_ROOT: ${{ github.workspace }}/ci-deps/rexecop
         run: |
           python -m venv /tmp/tecrax-wheel-smoke
           /tmp/tecrax-wheel-smoke/bin/python -m pip install --upgrade pip
-          /tmp/tecrax-wheel-smoke/bin/python -m pip install dist/*.whl
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install --force-reinstall "govengine @ git+https://github.com/rozmiarD/GovEngine.git@e65ad22ec25d74bbbb4969bd614981a8ed5e47c8"
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install --force-reinstall "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@c065d7a157665351054bacc7b5e3ae12b7cc9d98"
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install ./ci-deps/rexecop
+          /tmp/tecrax-wheel-smoke/bin/python -m pip install --no-deps dist/*.whl
           mkdir -p /tmp/tecrax-wheel-smoke-empty
           (
             cd /tmp/tecrax-wheel-smoke-empty
             env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-smoke/bin/python -m pip check
             env -u PYTHONPATH -u PYTHONHOME /tmp/tecrax-wheel-smoke/bin/python - <<'PY'
+          import json
+          import os
           import subprocess
           import sys
-          from importlib.metadata import version
+          from importlib.metadata import distribution, version
           from pathlib import Path
 
           import govengine
@@ -203,11 +210,24 @@ jobs:
           import sclite
           import tecrax
 
+          rexecop_root = Path(os.environ['REXECOP_SOURCE_ROOT']).resolve()
+          assert subprocess.check_output(
+              ['git', '-C', str(rexecop_root), 'rev-parse', 'HEAD'],
+              text=True,
+          ).strip() == '8a8609150388866a21afddca5bf773cd6ec120cd'
+          for distribution_name, expected_sha in (
+              ('govengine', 'e65ad22ec25d74bbbb4969bd614981a8ed5e47c8'),
+              ('sclite-core', 'c065d7a157665351054bacc7b5e3ae12b7cc9d98'),
+          ):
+              direct_url = json.loads(
+                  distribution(distribution_name).read_text('direct_url.json') or '{}'
+              )
+              assert direct_url['vcs_info']['commit_id'] == expected_sha
           expected_versions = {
               'tecrax': '0.4.0rc3',
-              'rexecop': '1.0.0rc1',
-              'govengine': '1.0.0rc1',
-              'sclite-core': '2.0.0',
+              'rexecop': '1.0.0rc2',
+              'govengine': '1.0.0rc2',
+              'sclite-core': '2.0.1',
           }
           for distribution_name, expected_version in expected_versions.items():
               assert version(distribution_name) == expected_version

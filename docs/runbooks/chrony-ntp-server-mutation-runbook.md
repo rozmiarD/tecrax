@@ -132,10 +132,11 @@ attempt, plugin factory or connector I/O.
 This does not qualify exactly-once I/O, crash or power-loss recovery, worker
 recovery, restart or multiprocess fixture continuity, the operator wrapper,
 subprocess or network isolation, a live Chrony target, mutation readiness, release
-or publication. The production package pins the exact public
-`rexecop==1.0.0rc1` artifact and the normal installed graph is resolvable, but that
-artifact predates the latest same-version source-head T-205 remediation. Public
-installed-graph success therefore does not claim the governed source-only surface.
+or publication. The current source package metadata pins `rexecop==1.0.0rc2`, and its
+candidate graph is qualified against the exact non-editable RExecOp source snapshot
+with unconditional `pip check`. RExecOp `1.0.0rc2` is not yet published; public-index
+resolution is mandatory before Tecrax publication. Candidate-graph success therefore
+does not claim mutation readiness, release or publication.
 
 ## Run
 

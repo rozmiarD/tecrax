@@ -71,14 +71,16 @@ def test_public_truth_requires_status_smoke_before_normal_wheel_gate() -> None:
     ordered = (
         '      - name: Wheel status-only installed smoke\n'
         '      - name: Wheel install smoke\n'
-        '        run: python -m pip install dist/*.whl\n'
+        '        run: /tmp/tecrax-wheel-smoke/bin/python -m pip install '
+        '--force-reinstall\n'
         '        run: python -m pip check\n'
     )
 
     assert validator._wheel_smoke_order_errors(ordered) == []
     reversed_order = (
         '      - name: Wheel install smoke\n'
-        '        run: python -m pip install dist/*.whl\n'
+        '        run: /tmp/tecrax-wheel-smoke/bin/python -m pip install '
+        '--force-reinstall\n'
         '        run: python -m pip check\n'
         '      - name: Wheel status-only installed smoke\n'
     )
@@ -98,18 +100,18 @@ def test_version_and_public_truth_validator_agree() -> None:
     )
     assert result.stdout.strip() == (
         'public_truth_ok:tecrax==0.4.0rc3:'
-        'govengine==1.0.0rc1:'
-        'sclite-core==2.0.0:'
-        'rexecop==1.0.0rc1'
+        'govengine==1.0.0rc2:'
+        'sclite-core==2.0.1:'
+        'rexecop==1.0.0rc2'
     )
 
 
 @pytest.mark.parametrize(
     'dependency',
     (
-        'rexecop==0.3.0rc3',
-        'rexecop>=1.0.0rc1',
-        'rexecop~=1.0.0rc1',
+        'rexecop==1.0.0rc1',
+        'rexecop>=1.0.0rc2',
+        'rexecop~=1.0.0rc2',
     ),
     ids=('old-pin', 'minimum-range', 'compatible-range'),
 )
@@ -137,16 +139,31 @@ def test_public_truth_rejects_old_or_ranged_rexecop_dependency(
         (
             'README.md',
             'rexecop==0.3.0rc3',
-            'README.md:old_rexecop_production_truth',
+            'README.md:old_rexecop_production_truth:rexecop==0.3.0rc3',
+        ),
+        (
+            'README.md',
+            'rexecop==1.0.0rc1',
+            'README.md:old_rexecop_production_truth:rexecop==1.0.0rc1',
+        ),
+        (
+            'README.md',
+            'govengine==1.0.0rc1',
+            'README.md:old_govengine_production_truth:govengine==1.0.0rc1',
+        ),
+        (
+            'README.md',
+            'sclite-core==2.0.0',
+            'README.md:old_sclite_production_truth:sclite-core==2.0.0',
         ),
         (
             'PUBLIC_STATUS.md',
-            'rexecop>=1.0.0rc1',
+            'rexecop>=1.0.0rc2',
             'PUBLIC_STATUS.md:ranged_rexecop_production_truth',
         ),
         (
             'VALIDATION.md',
-            'rexecop~=1.0.0rc1',
+            'rexecop~=1.0.0rc2',
             'VALIDATION.md:ranged_rexecop_production_truth',
         ),
     ),
@@ -169,4 +186,71 @@ def test_public_truth_rejects_old_or_ranged_rexecop_doc_truth(
         ),
     )
 
-    assert expected_error in validator._rexecop_truth_drift_errors()
+    assert expected_error in validator._dependency_truth_drift_errors()
+
+
+@pytest.mark.parametrize(
+    'path',
+    (
+        'README.md',
+        'PUBLIC_STATUS.md',
+        'VALIDATION.md',
+        'docs/mutation-entry-criteria.md',
+        'docs/runbooks/chrony-ntp-server-mutation-runbook.md',
+    ),
+)
+def test_public_truth_rejects_false_public_resolution_claim(
+    monkeypatch: pytest.MonkeyPatch,
+    path: str,
+) -> None:
+    validator = _public_truth_validator()
+    original_read = validator._read
+    false_claim = 'The 0.4.0rc3 dependency graph is publicly resolvable from PyPI.'
+    monkeypatch.setattr(
+        validator,
+        '_read',
+        lambda candidate: (
+            f'{original_read(candidate)}\n{false_claim}\n'
+            if candidate == path
+            else original_read(candidate)
+        ),
+    )
+
+    assert (
+        f'{path}:false_public_index_resolution_claim'
+        in validator._dependency_truth_drift_errors()
+    )
+
+
+@pytest.mark.parametrize(
+    'path',
+    (
+        'README.md',
+        'PUBLIC_STATUS.md',
+        'VALIDATION.md',
+        'docs/mutation-entry-criteria.md',
+        'docs/runbooks/chrony-ntp-server-mutation-runbook.md',
+    ),
+)
+def test_public_truth_requires_deferred_public_index_gate(
+    monkeypatch: pytest.MonkeyPatch,
+    path: str,
+) -> None:
+    validator = _public_truth_validator()
+    original_read = validator._read
+    monkeypatch.setattr(
+        validator,
+        '_read',
+        lambda candidate: (
+            ' '.join(original_read(candidate).split()).replace(
+                validator.DEFERRED_PUBLIC_INDEX_MARKER, 'public-index gate removed'
+            )
+            if candidate == path
+            else original_read(candidate)
+        ),
+    )
+
+    assert (
+        f'{path}:missing_deferred_public_index_gate'
+        in validator._dependency_truth_drift_errors()
+    )
